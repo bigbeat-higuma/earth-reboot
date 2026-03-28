@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>地球再起動時間</title>
+<meta property="og:title" content="地球再起動時間">
+<meta property="og:description" content="AIが世界情勢を解析し、地球の再起動までのカウントダウンを算出するシステム">
+<meta property="og:type" content="website">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Noto+Serif+JP:wght@300;700&display=swap');
+
+  :root {
+    --blood: #8b0000;
+    --ember: #cc3300;
+    --glow: #ff2200;
+    --text: #cc9988;
+    --bright: #ffccaa;
+    --mono: 'Share Tech Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; min-height: 100vh; background: #050000; color: var(--text); font-family: var(--mono); overflow-x: hidden; }
+
+  body {
+    background:
+      radial-gradient(ellipse at 50% 100%, rgba(139,0,0,0.35) 0%, transparent 60%),
+      radial-gradient(ellipse at 50% 0%,   rgba(80,0,0,0.2)   0%, transparent 50%),
+      #050000;
+    display: flex; flex-direction: column; align-items: center;
+  }
+
+  body::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 999;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.4;
+  }
+  body::after {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 998;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+  }
+
+  header { width: 100%; text-align: center; padding: 40px 20px 10px; }
+  .title-jp {
+    font-family: 'Noto Serif JP', serif; font-weight: 700;
+    font-size: clamp(1.4rem, 5vw, 2.2rem);
+    color: var(--bright); letter-spacing: 0.3em;
+    text-shadow: 0 0 30px var(--glow), 0 0 60px var(--blood);
+    animation: flicker 7s infinite;
+  }
+  .title-en { font-family: 'Bebas Neue', sans-serif; font-size: clamp(0.7rem,2.5vw,1rem); color: var(--ember); letter-spacing: 0.5em; margin-top: 4px; opacity: 0.7; }
+
+  .divider { width: min(600px,90vw); height: 1px; background: linear-gradient(90deg,transparent,var(--blood),var(--ember),var(--blood),transparent); margin: 20px auto; animation: pulse-line 3s ease-in-out infinite; }
+  @keyframes pulse-line { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+  main { width: min(700px,95vw); display: flex; flex-direction: column; align-items: center; gap: 24px; padding-bottom: 60px; }
+
+  /* ── 共通ボックス ── */
+  .panel { width: 100%; border: 1px solid rgba(139,0,0,0.4); background: rgba(20,0,0,0.6); padding: 20px 24px; position: relative; }
+  .panel-label { position: absolute; top: -10px; left: 20px; font-size: 0.65rem; color: var(--ember); background: #050000; padding: 0 8px; letter-spacing: 0.2em; }
+
+  /* ── 現在時刻 ── */
+  #current-time { font-size: clamp(1.4rem,6vw,2.4rem); color: var(--bright); letter-spacing: 0.15em; text-shadow: 0 0 10px var(--ember); text-align: center; }
+  #current-date { font-size: 0.75rem; color: var(--text); margin-top: 4px; letter-spacing: 0.2em; opacity: 0.7; text-align: center; }
+
+  /* ── 再起動日時 ── */
+  .restart-box { border-color: rgba(180,0,0,0.6); background: rgba(30,0,0,0.7); text-align: center; box-shadow: 0 0 40px rgba(139,0,0,0.2), inset 0 0 40px rgba(80,0,0,0.1); }
+  .panel-label.red { color: #ff4444; }
+  #restart-datetime { font-family: 'Bebas Neue',sans-serif; font-size: clamp(1.6rem,7vw,3rem); color: #ff3333; letter-spacing: 0.1em; text-shadow: 0 0 20px #ff0000,0 0 40px rgba(255,0,0,0.5); animation: flicker 5s infinite; line-height: 1.1; }
+  .restart-warning { font-size: 0.6rem; color: var(--ember); letter-spacing: 0.3em; margin-top: 6px; opacity: 0.8; }
+
+  /* ── カウントダウン ── */
+  .countdown-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; text-align: center; }
+  .cd-unit { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .cd-value { font-family: 'Bebas Neue',sans-serif; font-size: clamp(2rem,8vw,4rem); color: var(--bright); text-shadow: 0 0 15px var(--glow); line-height: 1; transition: color 0.3s; }
+  .cd-value.tick { color:#ff0000; text-shadow: 0 0 30px #ff0000; }
+  .cd-label { font-size: 0.55rem; color: var(--ember); letter-spacing: 0.3em; opacity: 0.8; }
+
+  /* ── プログレス ── */
+  .progress-container { width: 100%; margin-top: 16px; }
+  .progress-label { font-size: 0.6rem; color: var(--ember); letter-spacing: 0.2em; margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .progress-bar-bg { width:100%; height:6px; background:rgba(80,0,0,0.3); border:1px solid rgba(139,0,0,0.3); overflow:hidden; }
+  .progress-bar-fill { height:100%; background:linear-gradient(90deg,var(--blood),var(--ember),var(--glow)); box-shadow:0 0 10px var(--glow); transition:width 1s linear; position:relative; }
+  .progress-bar-fill::after { content:''; position:absolute; right:0; top:0; width:3px; height:100%; background:#fff; box-shadow:0 0 6px #fff; animation:pulse-tip 1s ease-in-out infinite; }
+  @keyframes pulse-tip { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* ── AI解析ボックス ── */
+  .ai-status { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .ai-dot { width:8px; height:8px; border-radius:50%; background:var(--glow); box-shadow:0 0 8px var(--glow); animation:pulse-dot 1.5s ease-in-out infinite; flex-shrink:0; }
+  @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
+  .ai-status-text { font-size:0.65rem; color:var(--ember); letter-spacing:0.15em; }
+
+  #ai-summary { font-family:'Noto Serif JP',serif; font-weight:300; font-size:clamp(0.75rem,2.5vw,0.9rem); color:var(--text); line-height:1.9; letter-spacing:0.05em; border-left:2px solid rgba(139,0,0,0.5); padding-left:14px; min-height:80px; }
+
+  /* キー要因タグ */
+  .key-factors { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+  .factor-tag { font-size:0.6rem; color:var(--ember); border:1px solid rgba(139,0,0,0.4); padding:3px 10px; letter-spacing:0.1em; }
+
+  /* 脅威メーター */
+  .threat-meters { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px; }
+  .threat-item { display:flex; flex-direction:column; gap:4px; }
+  .threat-name { font-size:0.6rem; color:var(--ember); letter-spacing:0.2em; }
+  .threat-bar-bg { height:4px; background:rgba(60,0,0,0.4); overflow:hidden; }
+  .threat-bar-fill { height:100%; background:linear-gradient(90deg,var(--blood),var(--glow)); transition:width 1.5s ease; box-shadow:0 0 6px var(--ember); }
+  .threat-value { font-size:0.55rem; color:var(--text); text-align:right; }
+
+  /* キャッシュ情報バー */
+  .cache-info { display:flex; justify-content:space-between; align-items:center; margin-top:16px; padding-top:12px; border-top:1px solid rgba(80,0,0,0.3); }
+  .cache-badge { font-size:0.55rem; letter-spacing:0.15em; padding:2px 8px; border:1px solid; }
+  .cache-badge.live { color:#44ff88; border-color:rgba(68,255,136,0.4); }
+  .cache-badge.cached { color:var(--ember); border-color:rgba(139,0,0,0.4); }
+  .cache-next { font-size:0.55rem; color:rgba(120,60,60,0.7); letter-spacing:0.1em; }
+
+  /* ボタン */
+  .reload-btn { background:transparent; border:1px solid rgba(139,0,0,0.6); color:var(--ember); font-family:var(--mono); font-size:0.7rem; letter-spacing:0.3em; padding:10px 30px; cursor:pointer; transition:all 0.3s; }
+  .reload-btn:hover { border-color:var(--glow); color:var(--bright); box-shadow:0 0 20px rgba(255,0,0,0.3); }
+  .reload-btn:disabled { opacity:0.4; cursor:not-allowed; }
+
+  .footer-note { font-size:0.55rem; color:rgba(120,60,60,0.6); letter-spacing:0.2em; text-align:center; margin-top:8px; }
+
+  @keyframes flicker { 0%,95%,100%{opacity:1} 96%{opacity:0.8} 97%{opacity:1} 98%{opacity:0.6} 99%{opacity:1} }
+
+  /* ローディング */
+  .loading-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:500; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; }
+  .loading-overlay.hidden { display:none; }
+  .loading-text { font-family:var(--mono); font-size:0.8rem; color:var(--ember); letter-spacing:0.3em; animation:flicker 2s infinite; }
+  .loading-bar { width:300px; height:2px; background:rgba(80,0,0,0.3); overflow:hidden; }
+  .loading-bar-fill { height:100%; background:linear-gradient(90deg,var(--blood),var(--glow)); animation:loading-progress 3s linear forwards; }
+  @keyframes loading-progress { 0%{width:0%} 100%{width:100%} }
+
+  .glitch { animation:glitch 0.4s steps(2) 1; }
+  @keyframes glitch {
+    0%{transform:skewX(0deg) translateX(0);filter:none}
+    20%{transform:skewX(-5deg) translateX(-4px);filter:hue-rotate(90deg)}
+    40%{transform:skewX(5deg) translateX(4px);filter:hue-rotate(-90deg)}
+    60%{transform:skewX(-3deg) translateX(-2px);filter:brightness(2)}
+    100%{transform:skewX(0deg) translateX(0);filter:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-text" id="loading-text">// EARTH SYSTEM ANALYSIS INITIALIZING...</div>
+  <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+</div>
+
+<header>
+  <div class="title-jp">地球再起動時間</div>
+  <div class="title-en">EARTH REBOOT COUNTDOWN SYSTEM</div>
+</header>
+<div class="divider"></div>
+
+<main>
+
+  <!-- 現在時刻 -->
+  <div class="panel">
+    <div class="panel-label">// 現在時刻</div>
+    <div id="current-time">--:--:--</div>
+    <div id="current-date">----年--月--日 ---曜日</div>
+  </div>
+
+  <!-- 再起動日時 -->
+  <div class="panel restart-box">
+    <div class="panel-label red">// 地球再起動予定日時</div>
+    <div id="restart-datetime">解析中...</div>
+    <div class="restart-warning">⚠ SCHEDULED SYSTEM REBOOT — ALL DATA WILL BE ERASED ⚠</div>
+  </div>
+
+  <!-- カウントダウン -->
+  <div class="panel">
+    <div class="panel-label">// 残存時間</div>
+    <div class="countdown-grid">
+      <div class="cd-unit"><div class="cd-value" id="cd-days">---</div><div class="cd-label">DAYS / 日</div></div>
+      <div class="cd-unit"><div class="cd-value" id="cd-hours">--</div><div class="cd-label">HOURS / 時間</div></div>
+      <div class="cd-unit"><div class="cd-value" id="cd-mins">--</div><div class="cd-label">MINS / 分</div></div>
+      <div class="cd-unit"><div class="cd-value" id="cd-secs">--</div><div class="cd-label">SECS / 秒</div></div>
+    </div>
+    <div class="progress-container">
+      <div class="progress-label"><span>地球崩壊進行度</span><span id="progress-pct">0.000%</span></div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <!-- AI解析 -->
+  <div class="panel">
+    <div class="panel-label">// AI解析ログ — 地球危機指数</div>
+    <div class="ai-status">
+      <div class="ai-dot"></div>
+      <div class="ai-status-text" id="ai-status-label">// AI解析システム接続中...</div>
+    </div>
+    <div id="ai-summary">世界情勢を解析しています...</div>
+    <div class="key-factors" id="key-factors"></div>
+    <div class="threat-meters">
+      <div class="threat-item"><div class="threat-name">地政学的緊張</div><div class="threat-bar-bg"><div class="threat-bar-fill" id="t1" style="width:0%"></div></div><div class="threat-value" id="t1v">0%</div></div>
+      <div class="threat-item"><div class="threat-name">環境崩壊指数</div><div class="threat-bar-bg"><div class="threat-bar-fill" id="t2" style="width:0%"></div></div><div class="threat-value" id="t2v">0%</div></div>
+      <div class="threat-item"><div class="threat-name">経済システム不安</div><div class="threat-bar-bg"><div class="threat-bar-fill" id="t3" style="width:0%"></div></div><div class="threat-value" id="t3v">0%</div></div>
+      <div class="threat-item"><div class="threat-name">社会的混乱度</div><div class="threat-bar-bg"><div class="threat-bar-fill" id="t4" style="width:0%"></div></div><div class="threat-value" id="t4v">0%</div></div>
+    </div>
+    <div class="cache-info">
+      <span class="cache-badge" id="cache-badge">--</span>
+      <span class="cache-next" id="cache-next">--</span>
+    </div>
+    <div style="text-align:center;margin-top:16px;">
+      <button class="reload-btn" id="reload-btn" onclick="runAnalysis(true)">⟳ 世界情勢を強制再解析する</button>
+    </div>
+    <div class="footer-note" id="last-updated">最終解析: —</div>
+  </div>
+
+</main>
+
+<script>
+// ── 設定 ──────────────────────────────────────
+// 本番デプロイ後は "/api/analyze" のままでOK（同一ドメイン）
+const API_ENDPOINT = "/api/analyze";
+const DAYS_JP = ["日","月","火","水","木","金","土"];
+
+let rebootTarget = null;
+let analysisBaseTime = null;
+let totalSpanMs = null;
+
+// ── 時計 ─────────────────────────────────────
+function pad(n){ return String(n).padStart(2,"0"); }
+
+function updateClock(){
+  const now = new Date();
+  document.getElementById("current-time").textContent =
+    `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  document.getElementById("current-date").textContent =
+    `${now.getFullYear()}年${pad(now.getMonth()+1)}月${pad(now.getDate())}日 ${DAYS_JP[now.getDay()]}曜日`;
+
+  if(rebootTarget){
+    const diff = rebootTarget - now;
+    if(diff <= 0){
+      ["cd-days","cd-hours","cd-mins","cd-secs"].forEach(id=>document.getElementById(id).textContent="00");
+      document.getElementById("progress-fill").style.width = "100%";
+      document.getElementById("progress-pct").textContent = "100.000%";
+      return;
+    }
+    const days  = Math.floor(diff/(1000*60*60*24));
+    const hours = Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+    const mins  = Math.floor((diff%(1000*60*60))/(1000*60));
+    const secs  = Math.floor((diff%(1000*60))/1000);
+
+    const prevSecs = document.getElementById("cd-secs").textContent;
+    document.getElementById("cd-days").textContent  = String(days).padStart(3,"0");
+    document.getElementById("cd-hours").textContent = pad(hours);
+    document.getElementById("cd-mins").textContent  = pad(mins);
+    document.getElementById("cd-secs").textContent  = pad(secs);
+
+    if(prevSecs !== pad(secs)){
+      const el = document.getElementById("cd-secs");
+      el.classList.remove("tick"); void el.offsetWidth; el.classList.add("tick");
+      setTimeout(()=>el.classList.remove("tick"), 300);
+    }
+
+    if(totalSpanMs){
+      const elapsed = now - analysisBaseTime;
+      const pct = Math.min(100, (elapsed/totalSpanMs)*100);
+      document.getElementById("progress-fill").style.width = pct.toFixed(4)+"%";
+      document.getElementById("progress-pct").textContent  = pct.toFixed(3)+"%";
+    }
+  }
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── 解析呼び出し ──────────────────────────────
+async function runAnalysis(forceRefresh = false){
+  const btn = document.getElementById("reload-btn");
+  btn.disabled = true;
+  document.getElementById("ai-status-label").textContent = "// AI解析システム：世界情勢スキャン中...";
+
+  try {
+    const url = forceRefresh ? `${API_ENDPOINT}?refresh=1` : API_ENDPOINT;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    applyResult(json);
+  } catch(e) {
+    console.error(e);
+    document.getElementById("ai-status-label").textContent = "// 接続エラー — リトライしてください";
+    document.getElementById("ai-summary").textContent = "解析システムへの接続が失敗しました。";
+  }
+
+  btn.disabled = false;
+}
+
+// ── 結果を画面に反映 ──────────────────────────
+function applyResult(json){
+  const now = new Date();
+  const yearsMs = parseFloat(json.reboot_years_from_now) * 365.25 * 24 * 3600 * 1000;
+  const analyzedAt = json.analyzed_at ? new Date(json.analyzed_at) : now;
+  const newTarget  = new Date(analyzedAt.getTime() + yearsMs);
+
+  if(rebootTarget){
+    const el = document.getElementById("restart-datetime");
+    el.classList.add("glitch");
+    setTimeout(()=>el.classList.remove("glitch"), 500);
+  }
+
+  rebootTarget      = newTarget;
+  analysisBaseTime  = analyzedAt;
+  totalSpanMs       = yearsMs;
+
+  // 再起動日時
+  document.getElementById("restart-datetime").textContent =
+    `${newTarget.getFullYear()}年${pad(newTarget.getMonth()+1)}月${pad(newTarget.getDate())}日\n${pad(newTarget.getHours())}:${pad(newTarget.getMinutes())}`;
+
+  // 解析コメント
+  document.getElementById("ai-summary").textContent = json.summary_jp || "—";
+  document.getElementById("ai-status-label").textContent =
+    `// AI解析完了 — 再起動まで約${parseFloat(json.reboot_years_from_now).toFixed(1)}年`;
+
+  // キー要因タグ
+  const kf = document.getElementById("key-factors");
+  kf.innerHTML = "";
+  (json.key_factors || []).forEach(f => {
+    const tag = document.createElement("span");
+    tag.className = "factor-tag";
+    tag.textContent = f;
+    kf.appendChild(tag);
+  });
+
+  // 脅威メーター
+  const t = json.threats || {};
+  [["t1","t1v",t.geopolitical],["t2","t2v",t.environmental],["t3","t3v",t.economic],["t4","t4v",t.social]]
+    .forEach(([bid,vid,val])=>{
+      const v = val ?? 0;
+      document.getElementById(bid).style.width = v+"%";
+      document.getElementById(vid).textContent = v+"%";
+    });
+
+  // キャッシュ情報
+  const badge = document.getElementById("cache-badge");
+  const next  = document.getElementById("cache-next");
+  if(json.cached){
+    badge.textContent = `CACHED — ${json.cache_age_minutes}分前の解析`;
+    badge.className = "cache-badge cached";
+    next.textContent = `次回更新まで約 ${json.next_update_minutes} 分`;
+  } else {
+    badge.textContent = "LIVE — 今回新規解析";
+    badge.className = "cache-badge live";
+    next.textContent = `次回自動更新まで約 ${json.next_update_minutes} 分`;
+  }
+
+  // 最終解析日時
+  document.getElementById("last-updated").textContent =
+    `最終解析: ${analyzedAt.getFullYear()}/${pad(analyzedAt.getMonth()+1)}/${pad(analyzedAt.getDate())} ${pad(analyzedAt.getHours())}:${pad(analyzedAt.getMinutes())}`;
+
+  updateClock();
+}
+
+// ── 起動 ─────────────────────────────────────
+const LOADING_MSGS = [
+  "// EARTH SYSTEM ANALYSIS INITIALIZING...",
+  "// SCANNING GLOBAL THREAT MATRIX...",
+  "// CALCULATING REBOOT TIMESTAMP...",
+  "// SYSTEM READY"
+];
+let mi = 0;
+const lbl = document.getElementById("loading-text");
+const msgInterval = setInterval(()=>{ lbl.textContent = LOADING_MSGS[Math.min(mi++, LOADING_MSGS.length-1)]; }, 700);
+
+runAnalysis(false).finally(()=>{
+  clearInterval(msgInterval);
+  setTimeout(()=>document.getElementById("loading-overlay").classList.add("hidden"), 400);
+});
+</script>
+</body>
+</html>
