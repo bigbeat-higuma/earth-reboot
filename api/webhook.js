@@ -1,7 +1,5 @@
-// api/webhook.js — Stripe Webhookを受け取り、寄付をVercel KVに記録する
-// 決済完了 → このエンドポイントにStripeから通知が来る → KVに保存 → 再起動時間が延びる
-
-import { kv } from "@vercel/kv";
+// api/webhook.js — Stripe Webhookを受け取り、寄付をUpstash Redisに記録する
+import { Redis } from "@upstash/redis";
 
 export const config = { api: { bodyParser: false } };
 
@@ -17,12 +15,12 @@ async function getRawBody(req) {
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
 
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  const rawBody = await getRawBody(req);
-  const sig = req.headers["stripe-signature"];
+  const redis = new Redis({
+    url: process.env.KV_REST_API_URL,
+    token: process.env.KV_REST_API_TOKEN,
+  });
 
-  // Stripeの署名検証（簡易版 - 本番ではstripeライブラリ推奨）
-  // ここでは署名を信頼して処理（Vercelのエッジで十分安全）
+  const rawBody = await getRawBody(req);
   let event;
   try {
     event = JSON.parse(rawBody.toString());
@@ -30,7 +28,6 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Invalid JSON" });
   }
 
-  // 決済完了イベントのみ処理
   if (event.type !== "checkout.session.completed") {
     return res.status(200).json({ received: true });
   }
@@ -42,27 +39,23 @@ export default async function handler(req, res) {
   const sessionId    = session.id;
 
   try {
-    // 1) 寄付ログに追記（最新50件を保持）
-    const logsRaw = await kv.get("donation_logs");
+    const logsRaw = await redis.get("donation_logs");
     const logs = Array.isArray(logsRaw) ? logsRaw : [];
     logs.unshift({ id: sessionId, amount: amountJpy, delay: delaySeconds, at: donatedAt });
     if (logs.length > 50) logs.splice(50);
-    await kv.set("donation_logs", logs);
+    await redis.set("donation_logs", logs);
 
-    // 2) 累計寄付額・累計延命秒数を更新
-    const totalRaw = await kv.get("donation_total");
+    const totalRaw = await redis.get("donation_total");
     const total = totalRaw || { amount: 0, delay_seconds: 0, count: 0 };
     total.amount        += amountJpy;
     total.delay_seconds += delaySeconds;
     total.count         += 1;
     total.last_updated   = donatedAt;
-    await kv.set("donation_total", total);
+    await redis.set("donation_total", total);
 
-    console.log(`✅ 寄付記録: ${amountJpy}円 / +${delaySeconds}秒 / 累計${total.amount}円`);
     return res.status(200).json({ received: true });
-
   } catch (err) {
-    console.error("KV write error:", err);
+    console.error("Redis write error:", err);
     return res.status(500).json({ error: err.message });
   }
 }
