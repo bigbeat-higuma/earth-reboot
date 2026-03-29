@@ -149,7 +149,139 @@
   .evidence-item::before{content:"// ";color:var(--ember);opacity:.6;}
   .evidence-loading{font-size:.58rem;color:rgba(120,60,60,.5);letter-spacing:.1em;}
 
+
+  /* SNSシェアボタン */
+  .share-row { display:flex; gap:8px; margin-top:12px; }
+  .share-btn { flex:1; background:transparent; border:1px solid rgba(139,0,0,.5); color:var(--text); font-family:var(--mono); font-size:.65rem; letter-spacing:.2em; padding:8px; cursor:pointer; transition:all .2s; text-align:center; }
+  .share-btn:hover { border-color:var(--ember); color:var(--bright); }
+  .share-btn.x-btn { border-color:rgba(255,255,255,.2); color:rgba(200,200,200,.7); }
+  .share-btn.x-btn:hover { border-color:rgba(255,255,255,.5); color:#fff; }
+
+  /* カウントダウン崩壊演出 */
+  .collapse-overlay { position:fixed; inset:0; z-index:9000; display:none; flex-direction:column; align-items:center; justify-content:center; background:#000; }
+  .collapse-overlay.active { display:flex; }
+  .collapse-text { font-family:'Bebas Neue',sans-serif; font-size:clamp(3rem,15vw,8rem); color:#ff0000; text-shadow:0 0 40px #ff0000, 0 0 80px #ff0000; letter-spacing:.2em; animation:collapse-pulse 0.5s ease-in-out infinite; }
+  .collapse-sub { font-family:'Noto Serif JP',serif; font-size:clamp(.8rem,3vw,1.4rem); color:rgba(255,50,50,.8); margin-top:20px; letter-spacing:.3em; text-align:center; animation:flicker 0.3s infinite; }
+  .collapse-countdown { font-family:'Share Tech Mono',monospace; font-size:clamp(.6rem,2vw,.9rem); color:rgba(255,0,0,.5); margin-top:40px; letter-spacing:.2em; }
+  @keyframes collapse-pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.05);opacity:.8} }
+  .screen-glitch { animation: screen-glitch 0.1s steps(2) infinite; }
+  @keyframes screen-glitch {
+    0%{transform:translateX(0);filter:none}
+    25%{transform:translateX(-3px);filter:hue-rotate(90deg) brightness(1.5)}
+    50%{transform:translateX(3px);filter:hue-rotate(-90deg)}
+    75%{transform:translateX(-1px);filter:brightness(2)}
+    100%{transform:translateX(0);filter:none}
+  }
+
+
+  /* SNSシェアボタン */
+  .share-section{width:100%;display:flex;justify-content:center;margin-top:8px;}
+  .share-btn{background:transparent;border:1px solid rgba(139,0,0,.5);color:var(--text);font-family:var(--mono);font-size:.65rem;letter-spacing:.2em;padding:8px 20px;cursor:pointer;transition:all .3s;display:flex;align-items:center;gap:8px;}
+  .share-btn:hover{border-color:var(--ember);color:var(--bright);box-shadow:0 0 15px rgba(255,0,0,.2);}
+  .share-btn svg{width:14px;height:14px;fill:currentColor;}
+
+  /* カウントダウン崩壊演出 */
+  @keyframes collapse-shake{0%,100%{transform:translate(0,0) rotate(0)}25%{transform:translate(-3px,2px) rotate(-1deg)}75%{transform:translate(3px,-2px) rotate(1deg)}}
+  @keyframes collapse-glitch{0%{filter:none}20%{filter:hue-rotate(180deg) brightness(3)}40%{filter:invert(1)}60%{filter:hue-rotate(90deg) saturate(5)}80%{filter:brightness(0.1)}100%{filter:none}}
+  @keyframes collapse-fade{0%{opacity:1}50%{opacity:.3}100%{opacity:1}}
+  @keyframes scanline-fast{0%{background-position:0 0}100%{background-position:0 100px}}
+  .collapsing main{animation:collapse-shake .1s infinite;}
+  .collapsing .title-jp{animation:collapse-glitch .3s infinite;}
+  .collapsing body{animation:collapse-fade .5s infinite;}
+  .collapse-overlay{display:none;position:fixed;inset:0;z-index:900;background:rgba(139,0,0,.0);pointer-events:none;}
+  .collapse-overlay.active{display:block;animation:collapse-fade .5s infinite;}
+  .collapse-message{display:none;position:fixed;inset:0;z-index:910;align-items:center;justify-content:center;flex-direction:column;gap:20px;}
+  .collapse-message.active{display:flex;}
+  .collapse-msg-text{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,8vw,4rem);color:#ff0000;text-shadow:0 0 40px #ff0000,0 0 80px rgba(255,0,0,.5);letter-spacing:.2em;animation:flicker .2s infinite;text-align:center;}
+  .collapse-msg-sub{font-family:var(--mono);font-size:.8rem;color:var(--ember);letter-spacing:.3em;text-align:center;}
+
 </style>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX">
+// ── SNSシェア ────────────────────────────────
+function shareToX() {
+  if (!rebootTarget) return;
+  const effective = new Date(rebootTarget.getTime() + donationDelayMs);
+  const now = new Date();
+  const diff = effective - now;
+  const days = Math.floor(diff / (1000*60*60*24));
+  const years = (diff / (1000*60*60*24*365.25)).toFixed(1);
+
+  let timeText = days > 365
+    ? `約${years}年`
+    : `約${days}日`;
+
+  const text = lang === 'ja'
+    ? `🌍 地球の再起動まで${timeText}\n\nAIが世界情勢を解析した結果、地球のカウントダウンが始まっています。あなたの寄付がカウントダウンを押し戻すことができます。\n\n#地球再起動時間 #EarthReboot`
+    : `🌍 Earth reboots in ${timeText}\n\nAI has analyzed global threats and the countdown has begun. Your donation can push back the reboot.\n\n#EarthReboot #地球再起動時間`;
+
+  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent('https://earth-reboot.vercel.app')}`;
+  window.open(url, '_blank');
+}
+
+// ── カウントダウン崩壊演出 ────────────────────
+let collapseTriggered = false;
+
+function checkCollapse() {
+  if (!rebootTarget || collapseTriggered) return;
+  const effective = new Date(rebootTarget.getTime() + donationDelayMs);
+  const diff = effective - new Date();
+  if (diff <= 0) {
+    triggerCollapse();
+  }
+}
+
+function triggerCollapse() {
+  if (collapseTriggered) return;
+  collapseTriggered = true;
+
+  // 段階的に崩壊
+  setTimeout(() => {
+    document.body.classList.add('collapsing');
+    document.getElementById('collapse-overlay').classList.add('active');
+  }, 500);
+
+  setTimeout(() => {
+    document.getElementById('collapse-message').classList.add('active');
+  }, 2000);
+
+  // 画面要素を順番にグリッチ
+  const panels = document.querySelectorAll('.panel');
+  panels.forEach((p, i) => {
+    setTimeout(() => {
+      p.style.animation = `collapse-glitch ${0.2 + Math.random()*0.3}s infinite`;
+      p.style.opacity = Math.random() * 0.5 + 0.1;
+    }, i * 300);
+  });
+}
+
+// ── シェアボタンのテキスト更新 ────────────────
+function updateShareText() {
+  if (!rebootTarget) return;
+  const effective = new Date(rebootTarget.getTime() + donationDelayMs);
+  const diff = effective - new Date();
+  if (diff <= 0) return;
+  const years = (diff / (1000*60*60*24*365.25)).toFixed(1);
+  const days = Math.floor(diff / (1000*60*60*24));
+  const el = document.getElementById('share-years-text');
+  if (el) el.textContent = days > 365 ? `約${years}年` : `約${days}日`;
+}
+
+</script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX');
+</script>
+<meta property="og:image" content="https://earth-reboot.vercel.app/ogp.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://earth-reboot.vercel.app">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="地球再起動時間 / Earth Reboot Countdown">
+<meta name="twitter:description" content="AIが世界情勢を解析し、地球の再起動までのカウントダウンを算出。あなたの寄付がカウントダウンを押し戻す。">
+<meta name="twitter:image" content="https://earth-reboot.vercel.app/ogp.png">
 </head>
 <body>
 
@@ -171,6 +303,23 @@
 <div class="divider"></div>
 
 <main>
+
+
+  <!-- SNSシェアセクション -->
+  <div class="share-section" id="share-section">
+    <button class="share-btn" onclick="shareToX()">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      地球の再起動まで <span id="share-years-text">--</span> — Xに投稿する
+    </button>
+  </div>
+
+  <!-- 崩壊オーバーレイ -->
+  <div class="collapse-overlay" id="collapse-overlay"></div>
+  <div class="collapse-message" id="collapse-message">
+    <div class="collapse-msg-text">SYSTEM REBOOT</div>
+    <div class="collapse-msg-text">地球再起動中...</div>
+    <div class="collapse-msg-sub">// ALL DATA WILL BE ERASED — RESTARTING EARTH SYSTEM</div>
+  </div>
 
   <div class="extend-banner" id="extend-banner">
     <div class="extend-banner-title" id="extend-banner-title">▲ 地球の再起動が延長されました</div>
@@ -270,6 +419,10 @@
       <button class="reload-btn" id="reload-btn" onclick="runAnalysis(true)">⟳ 世界情勢を強制再解析する</button>
     </div>
     <div class="footer-note" id="last-updated">最終解析: —</div>
+  <div class="share-row">
+    <button class="share-btn x-btn" onclick="shareToX()">𝕏 Xに投稿する</button>
+    <button class="share-btn" onclick="copyUrl()">🔗 URLをコピー</button>
+  </div>
   </div>
 
   <div class="panel log-panel">
@@ -286,6 +439,13 @@
   </div>
 
 </main>
+
+<!-- 崩壊演出オーバーレイ -->
+<div class="collapse-overlay" id="collapse-overlay">
+  <div id="collapse-main-text" class="collapse-text">REBOOTING</div>
+  <div class="collapse-sub" id="collapse-sub">地球システムを再起動しています<br>EARTH SYSTEM REBOOTING...</div>
+  <div class="collapse-countdown" id="collapse-info">// ALL DATA WILL BE ERASED // CIVILIZATION RESET IN PROGRESS //</div>
+</div>
 
 <script>
 // ── 多言語テキスト ────────────────────────────
@@ -442,7 +602,7 @@ function updateClock(){
   if(!rebootTarget)return;
   const effective=new Date(rebootTarget.getTime()+donationDelayMs);
   const diff=effective-now;
-  if(diff<=0){["cd-days","cd-hours","cd-mins","cd-secs"].forEach(id=>document.getElementById(id).textContent="00");return;}
+  if(diff<=0){["cd-days","cd-hours","cd-mins","cd-secs"].forEach(id=>document.getElementById(id).textContent="00");triggerCollapse();return;}
   const days=Math.floor(diff/(1000*60*60*24)),hours=Math.floor((diff%(1000*60*60*24))/(1000*60*60)),mins=Math.floor((diff%(1000*60*60))/(1000*60)),secs=Math.floor((diff%(1000*60))/1000);
   const prev=document.getElementById("cd-secs").textContent;
   document.getElementById("cd-days").textContent=String(days).padStart(3,"0");
@@ -452,7 +612,7 @@ function updateClock(){
   if(prev!==pad(secs)){const el=document.getElementById("cd-secs");el.classList.remove("tick");void el.offsetWidth;el.classList.add("tick");setTimeout(()=>el.classList.remove("tick"),300);}
   if(totalSpanMs){const pct=Math.min(100,((now-analysisBaseTime)/(totalSpanMs+donationDelayMs))*100);document.getElementById("progress-fill").style.width=pct.toFixed(4)+"%";document.getElementById("progress-pct").textContent=pct.toFixed(3)+"%";}
 }
-setInterval(updateClock,1000);
+setInterval(()=>{updateClock();checkCollapse();updateShareText();},1000);
 
 function updateRestartDisplay(){
   if(!rebootTarget)return;
@@ -593,6 +753,71 @@ function updateEvidence(evidence) {
     ).join('');
   });
 }
+
+
+// ── SNSシェア ──────────────────────────────
+function shareToX() {
+  if (!rebootTarget) { alert(lang==='ja'?'解析完了後にシェアできます':'Please wait for analysis to complete'); return; }
+  const effective = new Date(rebootTarget.getTime() + donationDelayMs);
+  const diff = effective - new Date();
+  const years = (diff / (1000*60*60*24*365.25)).toFixed(1);
+  const textJa = `地球の再起動まで約${years}年。AIが世界情勢から算出したカウントダウン。あなたの寄付が再起動を遅らせる。 #地球再起動時間`;
+  const textEn = `The Earth will reboot in ~${years} years. AI-calculated countdown from global events. Your donation delays the reboot. #EarthReboot`;
+  const text = lang === 'ja' ? textJa : textEn;
+  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent('https://earth-reboot.vercel.app')}`;
+  window.open(url, '_blank');
+}
+
+function copyUrl() {
+  navigator.clipboard.writeText('https://earth-reboot.vercel.app').then(() => {
+    const btn = document.querySelector('.share-btn:not(.x-btn)');
+    const orig = btn.textContent;
+    btn.textContent = lang==='ja' ? '✓ コピーしました' : '✓ Copied!';
+    setTimeout(() => btn.textContent = orig, 2000);
+  });
+}
+
+// ── カウントダウン崩壊演出 ──────────────────────
+let collapseTriggered = false;
+
+function triggerCollapse() {
+  if (collapseTriggered) return;
+  collapseTriggered = true;
+
+  const overlay = document.getElementById('collapse-overlay');
+  overlay.classList.add('active');
+
+  // Glitch effect on body
+  document.body.classList.add('screen-glitch');
+
+  // Sequence of messages
+  const messages = [
+    { text: 'REBOOTING', sub: lang==='ja'?'地球システムを再起動しています\nEARTH SYSTEM REBOOTING...':'EARTH SYSTEM REBOOTING...', delay: 0 },
+    { text: 'ERASING', sub: lang==='ja'?'すべてのデータを消去中\nERASING ALL CIVILIZATION DATA...':'ERASING ALL CIVILIZATION DATA...', delay: 2000 },
+    { text: 'RESETTING', sub: lang==='ja'?'文明をリセット中\nRESETTING CIVILIZATION...':'RESETTING CIVILIZATION...', delay: 4000 },
+    { text: 'COMPLETE', sub: lang==='ja'?'再起動が完了しました\nREBOOT COMPLETE':'REBOOT COMPLETE', delay: 6000 },
+  ];
+
+  messages.forEach(({ text, sub, delay }) => {
+    setTimeout(() => {
+      document.getElementById('collapse-main-text').textContent = text;
+      document.getElementById('collapse-sub').innerHTML = sub;
+    }, delay);
+  });
+
+  // Click to dismiss after 8s
+  setTimeout(() => {
+    document.getElementById('collapse-info').textContent = '// TAP TO RESTART OBSERVATION //';
+    overlay.addEventListener('click', () => {
+      overlay.classList.remove('active');
+      document.body.classList.remove('screen-glitch');
+      collapseTriggered = false;
+    }, { once: true });
+  }, 7000);
+}
+
+// カウントダウンが0になったら崩壊演出を発動
+const _origUpdateClock = updateClock;
 
 </script>
 </body>
