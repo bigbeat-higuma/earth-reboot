@@ -18,7 +18,7 @@ export default async function handler(req, res) {
 
   // 寄付額に応じて「延命秒数」を計算
   // 100円 = 86400秒（1日）延びるイメージ
-  const delaySeconds = Math.floor((amount / 100) * 86400);
+  const delaySeconds = Math.floor((amount / 100) * 21600); // 100円=6時間
 
   try {
     const origin = req.headers.origin || `https://${req.headers.host}`;
