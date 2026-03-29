@@ -129,6 +129,20 @@
   @keyframes loading-progress{0%{width:0%}100%{width:100%}}
   @keyframes glitch{0%{transform:skewX(0) translateX(0);filter:none}20%{transform:skewX(-5deg) translateX(-4px);filter:hue-rotate(90deg)}40%{transform:skewX(5deg) translateX(4px);filter:hue-rotate(-90deg)}60%{transform:skewX(-3deg) translateX(-2px);filter:brightness(2)}100%{transform:skewX(0) translateX(0);filter:none}}
   .glitch{animation:glitch .4s steps(2) 1;}
+
+  /* 脅威メーター クリック展開 */
+  .threat-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:2px 0;transition:opacity .2s;}
+  .threat-header:hover{opacity:.8;}
+  .threat-right{display:flex;align-items:center;gap:6px;}
+  .threat-arrow{font-size:.5rem;color:var(--ember);transition:transform .3s;line-height:1;}
+  .threat-arrow.open{transform:rotate(90deg);}
+  .evidence-box{overflow:hidden;max-height:0;transition:max-height .4s ease;margin-top:0;}
+  .evidence-box.open{max-height:200px;margin-top:8px;}
+  .evidence-list{border-left:1px solid rgba(139,0,0,.4);padding-left:10px;display:flex;flex-direction:column;gap:4px;}
+  .evidence-item{font-size:.58rem;color:var(--text);letter-spacing:.05em;line-height:1.6;opacity:.85;}
+  .evidence-item::before{content:"// ";color:var(--ember);opacity:.6;}
+  .evidence-loading{font-size:.58rem;color:rgba(120,60,60,.5);letter-spacing:.1em;}
+
 </style>
 </head>
 <body>
@@ -209,10 +223,38 @@
     <div id="ai-summary">世界情勢を解析しています...</div>
     <div class="key-factors" id="key-factors"></div>
     <div class="threat-meters">
-      <div class="threat-item"><div class="threat-name" id="lbl-t1">地政学的緊張</div><div class="threat-bar-bg"><div class="threat-bar-fill" id="t1" style="width:0%"></div></div><div class="threat-value" id="t1v">0%</div></div>
-      <div class="threat-item"><div class="threat-name" id="lbl-t2">環境崩壊指数</div><div class="threat-bar-bg"><div class="threat-bar-fill" id="t2" style="width:0%"></div></div><div class="threat-value" id="t2v">0%</div></div>
-      <div class="threat-item"><div class="threat-name" id="lbl-t3">経済システム不安</div><div class="threat-bar-bg"><div class="threat-bar-fill" id="t3" style="width:0%"></div></div><div class="threat-value" id="t3v">0%</div></div>
-      <div class="threat-item"><div class="threat-name" id="lbl-t4">社会的混乱度</div><div class="threat-bar-bg"><div class="threat-bar-fill" id="t4" style="width:0%"></div></div><div class="threat-value" id="t4v">0%</div></div>
+      <div class="threat-item">
+        <div class="threat-header" onclick="toggleEvidence('geo')">
+          <div class="threat-name" id="lbl-t1">地政学的緊張</div>
+          <div class="threat-right"><div class="threat-value" id="t1v">0%</div><div class="threat-arrow" id="arrow-geo">▶</div></div>
+        </div>
+        <div class="threat-bar-bg"><div class="threat-bar-fill" id="t1" style="width:0%"></div></div>
+        <div class="evidence-box" id="ev-geo"><div class="evidence-list" id="evl-geo"><div class="evidence-loading">// データ読み込み中...</div></div></div>
+      </div>
+      <div class="threat-item">
+        <div class="threat-header" onclick="toggleEvidence('env')">
+          <div class="threat-name" id="lbl-t2">環境崩壊指数</div>
+          <div class="threat-right"><div class="threat-value" id="t2v">0%</div><div class="threat-arrow" id="arrow-env">▶</div></div>
+        </div>
+        <div class="threat-bar-bg"><div class="threat-bar-fill" id="t2" style="width:0%"></div></div>
+        <div class="evidence-box" id="ev-env"><div class="evidence-list" id="evl-env"><div class="evidence-loading">// データ読み込み中...</div></div></div>
+      </div>
+      <div class="threat-item">
+        <div class="threat-header" onclick="toggleEvidence('eco')">
+          <div class="threat-name" id="lbl-t3">経済システム不安</div>
+          <div class="threat-right"><div class="threat-value" id="t3v">0%</div><div class="threat-arrow" id="arrow-eco">▶</div></div>
+        </div>
+        <div class="threat-bar-bg"><div class="threat-bar-fill" id="t3" style="width:0%"></div></div>
+        <div class="evidence-box" id="ev-eco"><div class="evidence-list" id="evl-eco"><div class="evidence-loading">// データ読み込み中...</div></div></div>
+      </div>
+      <div class="threat-item">
+        <div class="threat-header" onclick="toggleEvidence('soc')">
+          <div class="threat-name" id="lbl-t4">社会的混乱度</div>
+          <div class="threat-right"><div class="threat-value" id="t4v">0%</div><div class="threat-arrow" id="arrow-soc">▶</div></div>
+        </div>
+        <div class="threat-bar-bg"><div class="threat-bar-fill" id="t4" style="width:0%"></div></div>
+        <div class="evidence-box" id="ev-soc"><div class="evidence-list" id="evl-soc"><div class="evidence-loading">// データ読み込み中...</div></div></div>
+      </div>
     </div>
     <div class="cache-info">
       <span class="cache-badge" id="cache-badge">--</span>
@@ -433,6 +475,7 @@ function applyResult(json){
   updateRestartDisplay();
   document.getElementById("ai-summary").textContent=json.summary_jp||"—";
   document.getElementById("ai-status-label").textContent=t("aiComplete", parseFloat(json.reboot_years_from_now).toFixed(1));
+  updateEvidence(json.threat_evidence);
   const kf=document.getElementById("key-factors");kf.innerHTML="";
   (json.key_factors||[]).forEach(f=>{const tag=document.createElement("span");tag.className="factor-tag";tag.textContent=f;kf.appendChild(tag);});
   const th=json.threats||{};
@@ -509,6 +552,42 @@ Promise.all([runAnalysis(false),loadDonationStats()]).finally(()=>{
   clearInterval(iv);
   setTimeout(()=>{document.getElementById("loading-overlay").classList.add("hidden");handlePostDonate();},400);
 });
+
+// 証拠データ
+let threatEvidence = {};
+
+function toggleEvidence(key) {
+  const box = document.getElementById('ev-' + key);
+  const arrow = document.getElementById('arrow-' + key);
+  const isOpen = box.classList.contains('open');
+  box.classList.toggle('open', !isOpen);
+  arrow.classList.toggle('open', !isOpen);
+}
+
+function updateEvidence(evidence) {
+  if (!evidence) return;
+  threatEvidence = evidence;
+  const map = { geo: 'geopolitical', env: 'environmental', eco: 'economic', soc: 'social' };
+  const labelMap = {
+    geo: { ja: '地政学的緊張', en: 'Geopolitical Tension' },
+    env: { ja: '環境崩壊指数', en: 'Environmental Collapse' },
+    eco: { ja: '経済システム不安', en: 'Economic Instability' },
+    soc: { ja: '社会的混乱度', en: 'Social Disorder' },
+  };
+  Object.entries(map).forEach(([key, field]) => {
+    const items = evidence[field] || [];
+    const list = document.getElementById('evl-' + key);
+    if (!list) return;
+    if (items.length === 0) {
+      list.innerHTML = '<div class="evidence-loading">// データなし</div>';
+      return;
+    }
+    list.innerHTML = items.map(item =>
+      `<div class="evidence-item">${item}</div>`
+    ).join('');
+  });
+}
+
 </script>
 </body>
 </html>
