@@ -1,10 +1,10 @@
 // api/analyze.js — Vercel Serverless Function
-// 6時間キャッシュ + レート制限対策 + フォールバック付き
+// 6時間キャッシュ + レート制限対策 + フォールバック + citeタグ除去
 
 import { Redis } from "@upstash/redis";
 
-const CACHE_DURATION_MS = 6 * 60 * 60 * 1000; // 6時間
-const RETRY_WAIT_MS = 60 * 1000; // エラー後1分間は再試行しない
+const CACHE_DURATION_MS = 6 * 60 * 60 * 1000;
+const RETRY_WAIT_MS = 60 * 1000;
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -39,24 +39,16 @@ export default async function handler(req, res) {
     }
   }
 
-  // レート制限中かチェック（エラー後1分間は試行しない）
+  // レート制限チェック
   try {
     const rateLimitUntil = await redis.get("rate_limit_until");
     if (rateLimitUntil && now < parseInt(rateLimitUntil)) {
       const waitSecs = Math.ceil((parseInt(rateLimitUntil) - now) / 1000);
-      // キャッシュがあれば返す
       const cached = await redis.get("analysis_cache");
       if (cached) {
         const ageMinutes = Math.floor((now - new Date(cached.analyzed_at).getTime()) / 60000);
-        return res.status(200).json({
-          ...cached,
-          cached: true,
-          cache_age_minutes: ageMinutes,
-          next_update_minutes: waitSecs,
-          rate_limited: true,
-        });
+        return res.status(200).json({ ...cached, cached: true, cache_age_minutes: ageMinutes, next_update_minutes: waitSecs, rate_limited: true });
       }
-      // キャッシュもない場合はフォールバック
       return res.status(200).json(getFallback(waitSecs));
     }
   } catch (e) {
@@ -73,11 +65,12 @@ export default async function handler(req, res) {
 今日は${dateStr}です。
 
 現在の世界情勢（地政学的緊張、気候変動、経済不安、社会的混乱、テクノロジーリスク）を総合評価し、以下のJSONのみを返してください。
-説明文やMarkdownコードブロックは一切含めないこと。
+説明文やMarkdownコードブロック、引用タグ（<cite>等のHTMLタグ）は一切含めないこと。
+summary_jpは純粋なテキストのみで記述すること。
 
 {
   "reboot_years_from_now": <0.5〜50の数値>,
-  "summary_jp": "<ホラー・終末感のある文体で200字程度の日本語>",
+  "summary_jp": "<ホラー・終末感のある文体で200字程度の日本語。HTMLタグを含めないこと>",
   "threats": {
     "geopolitical": <0〜100の整数>,
     "environmental": <0〜100の整数>,
@@ -98,7 +91,6 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
         max_tokens: 800,
-        // web_searchなし（トークン節約）
         messages: [{ role: "user", content: prompt }],
       }),
     });
@@ -106,21 +98,13 @@ export default async function handler(req, res) {
     if (!response.ok) {
       const errText = await response.text();
       console.error("Anthropic API error:", errText);
-
-      // レート制限エラーなら1分間待機フラグを立てる
       if (errText.includes("rate_limit_error")) {
         try { await redis.set("rate_limit_until", String(now + RETRY_WAIT_MS)); } catch(e){}
       }
-
-      // キャッシュがあれば返す
       try {
         const cached = await redis.get("analysis_cache");
-        if (cached) {
-          const ageMinutes = Math.floor((now - new Date(cached.analyzed_at).getTime()) / 60000);
-          return res.status(200).json({ ...cached, cached: true, cache_age_minutes: ageMinutes, fallback: true });
-        }
+        if (cached) return res.status(200).json({ ...cached, cached: true, fallback: true });
       } catch(e){}
-
       return res.status(200).json(getFallback(60));
     }
 
@@ -128,6 +112,14 @@ export default async function handler(req, res) {
     const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("");
     const clean = text.replace(/```json|```/g, "").trim();
     const parsed = JSON.parse(clean);
+
+    // citeタグ・HTMLタグをすべて除去
+    if (parsed.summary_jp) {
+      parsed.summary_jp = removeTags(parsed.summary_jp);
+    }
+    if (parsed.key_factors) {
+      parsed.key_factors = parsed.key_factors.map(f => removeTags(f));
+    }
 
     const result = {
       ...parsed,
@@ -137,9 +129,7 @@ export default async function handler(req, res) {
       next_update_minutes: Math.ceil(CACHE_DURATION_MS / 60000),
     };
 
-    // キャッシュ保存
     try { await redis.set("analysis_cache", result); } catch(e){}
-    // レート制限フラグをクリア
     try { await redis.del("rate_limit_until"); } catch(e){}
 
     return res.status(200).json(result);
@@ -154,7 +144,16 @@ export default async function handler(req, res) {
   }
 }
 
-// フォールバックデータ（APIが使えない時に返す暫定値）
+// HTMLタグ・citeタグを除去する関数
+function removeTags(str) {
+  if (!str) return str;
+  return str
+    .replace(/<cite[^>]*>.*?<\/cite>/gi, "")  // <cite>...</cite> ごと削除
+    .replace(/<[^>]+>/g, "")                   // その他のHTMLタグを削除
+    .replace(/\s+/g, " ")                       // 連続スペースを整理
+    .trim();
+}
+
 function getFallback(nextMinutes) {
   return {
     reboot_years_from_now: 7.3,
