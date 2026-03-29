@@ -1,8 +1,10 @@
 // api/analyze.js — Vercel Serverless Function
-// APIキーはサーバー側で管理。6時間キャッシュで呼び出し回数を激減させる。
+// 6時間キャッシュ + レート制限対策 + フォールバック付き
+
 import { Redis } from "@upstash/redis";
 
 const CACHE_DURATION_MS = 6 * 60 * 60 * 1000; // 6時間
+const RETRY_WAIT_MS = 60 * 1000; // エラー後1分間は再試行しない
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -14,12 +16,12 @@ export default async function handler(req, res) {
   const forceRefresh = req.query.refresh === "1";
   const now = Date.now();
 
-  // Upstash Redisからキャッシュを取得
   const redis = new Redis({
     url: process.env.KV_REST_API_URL,
     token: process.env.KV_REST_API_TOKEN,
   });
 
+  // キャッシュチェック
   if (!forceRefresh) {
     try {
       const cached = await redis.get("analysis_cache");
@@ -37,6 +39,30 @@ export default async function handler(req, res) {
     }
   }
 
+  // レート制限中かチェック（エラー後1分間は試行しない）
+  try {
+    const rateLimitUntil = await redis.get("rate_limit_until");
+    if (rateLimitUntil && now < parseInt(rateLimitUntil)) {
+      const waitSecs = Math.ceil((parseInt(rateLimitUntil) - now) / 1000);
+      // キャッシュがあれば返す
+      const cached = await redis.get("analysis_cache");
+      if (cached) {
+        const ageMinutes = Math.floor((now - new Date(cached.analyzed_at).getTime()) / 60000);
+        return res.status(200).json({
+          ...cached,
+          cached: true,
+          cache_age_minutes: ageMinutes,
+          next_update_minutes: waitSecs,
+          rate_limited: true,
+        });
+      }
+      // キャッシュもない場合はフォールバック
+      return res.status(200).json(getFallback(waitSecs));
+    }
+  } catch (e) {
+    console.log("Rate limit check error:", e.message);
+  }
+
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: "API key not configured" });
 
@@ -50,8 +76,8 @@ export default async function handler(req, res) {
 説明文やMarkdownコードブロックは一切含めないこと。
 
 {
-  "reboot_years_from_now": <0.5〜50の数値。世界が危険なほど短く、安定しているほど長い>,
-  "summary_jp": "<現在の世界情勢の総括コメント。ホラー・終末感のある文体で200字程度の日本語>",
+  "reboot_years_from_now": <0.5〜50の数値>,
+  "summary_jp": "<ホラー・終末感のある文体で200字程度の日本語>",
   "threats": {
     "geopolitical": <0〜100の整数>,
     "environmental": <0〜100の整数>,
@@ -71,16 +97,31 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 1000,
-        tools: [{ type: "web_search_20250305", name: "web_search" }],
+        max_tokens: 800,
+        // web_searchなし（トークン節約）
         messages: [{ role: "user", content: prompt }],
       }),
     });
 
     if (!response.ok) {
-      const err = await response.text();
-      console.error("Anthropic API error:", err);
-      return res.status(502).json({ error: "Upstream API error", detail: err });
+      const errText = await response.text();
+      console.error("Anthropic API error:", errText);
+
+      // レート制限エラーなら1分間待機フラグを立てる
+      if (errText.includes("rate_limit_error")) {
+        try { await redis.set("rate_limit_until", String(now + RETRY_WAIT_MS)); } catch(e){}
+      }
+
+      // キャッシュがあれば返す
+      try {
+        const cached = await redis.get("analysis_cache");
+        if (cached) {
+          const ageMinutes = Math.floor((now - new Date(cached.analyzed_at).getTime()) / 60000);
+          return res.status(200).json({ ...cached, cached: true, cache_age_minutes: ageMinutes, fallback: true });
+        }
+      } catch(e){}
+
+      return res.status(200).json(getFallback(60));
     }
 
     const data = await response.json();
@@ -96,23 +137,34 @@ export default async function handler(req, res) {
       next_update_minutes: Math.ceil(CACHE_DURATION_MS / 60000),
     };
 
-    // Redisにキャッシュ保存
-    try {
-      await redis.set("analysis_cache", result);
-    } catch (e) {
-      console.log("Cache write error:", e.message);
-    }
+    // キャッシュ保存
+    try { await redis.set("analysis_cache", result); } catch(e){}
+    // レート制限フラグをクリア
+    try { await redis.del("rate_limit_until"); } catch(e){}
 
     return res.status(200).json(result);
+
   } catch (err) {
     console.error("Handler error:", err);
-
-    // エラー時はキャッシュから返す
     try {
       const cached = await redis.get("analysis_cache");
       if (cached) return res.status(200).json({ ...cached, cached: true, fallback: true });
-    } catch (e) {}
-
-    return res.status(500).json({ error: "Analysis failed", detail: err.message });
+    } catch(e){}
+    return res.status(200).json(getFallback(60));
   }
+}
+
+// フォールバックデータ（APIが使えない時に返す暫定値）
+function getFallback(nextMinutes) {
+  return {
+    reboot_years_from_now: 7.3,
+    summary_jp: "解析システムが一時的に過負荷状態にあります。しかし地球のカウントダウンは止まらない。この沈黙そのものが、何かの前兆かもしれない。システムは間もなく復旧します。",
+    threats: { geopolitical: 72, environmental: 68, economic: 61, social: 55 },
+    key_factors: ["システム過負荷", "解析一時停止中", "間もなく復旧"],
+    analyzed_at: new Date().toISOString(),
+    cached: true,
+    cache_age_minutes: 0,
+    next_update_minutes: nextMinutes,
+    fallback: true,
+  };
 }
