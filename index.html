@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>地球再起動時間</title>
+<meta property="og:title" content="地球再起動時間">
+<meta property="og:description" content="AIが世界情勢を解析し、地球の再起動までのカウントダウンを算出。寄付で再起動を遅らせることができます。">
+<meta property="og:type" content="website">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Noto+Serif+JP:wght@300;700&display=swap');
+
+  :root {
+    --blood:#8b0000; --ember:#cc3300; --glow:#ff2200;
+    --text:#cc9988;  --bright:#ffccaa;
+    --green:#44ff88; --green-dim:rgba(68,255,136,0.15);
+    --mono:'Share Tech Mono',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:100%;min-height:100vh;background:#050000;color:var(--text);font-family:var(--mono);overflow-x:hidden;}
+  body{background:radial-gradient(ellipse at 50% 100%,rgba(139,0,0,.35) 0%,transparent 60%),radial-gradient(ellipse at 50% 0%,rgba(80,0,0,.2) 0%,transparent 50%),#050000;display:flex;flex-direction:column;align-items:center;}
+  body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.4;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");}
+  body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:998;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.08) 2px,rgba(0,0,0,.08) 4px);}
+
+  header{width:100%;text-align:center;padding:40px 20px 10px;}
+  .title-jp{font-family:'Noto Serif JP',serif;font-weight:700;font-size:clamp(1.4rem,5vw,2.2rem);color:var(--bright);letter-spacing:.3em;text-shadow:0 0 30px var(--glow),0 0 60px var(--blood);animation:flicker 7s infinite;}
+  .title-en{font-family:'Bebas Neue',sans-serif;font-size:clamp(.7rem,2.5vw,1rem);color:var(--ember);letter-spacing:.5em;margin-top:4px;opacity:.7;}
+  .divider{width:min(600px,90vw);height:1px;background:linear-gradient(90deg,transparent,var(--blood),var(--ember),var(--blood),transparent);margin:20px auto;animation:pulse-line 3s ease-in-out infinite;}
+
+  main{width:min(700px,95vw);display:flex;flex-direction:column;align-items:center;gap:24px;padding-bottom:80px;}
+
+  .panel{width:100%;border:1px solid rgba(139,0,0,.4);background:rgba(20,0,0,.6);padding:20px 24px;position:relative;}
+  .panel-label{position:absolute;top:-10px;left:20px;font-size:.65rem;color:var(--ember);background:#050000;padding:0 8px;letter-spacing:.2em;}
+  .panel-label.red{color:#ff4444;}
+  .panel-label.green{color:var(--green);}
+
+  #current-time{font-size:clamp(1.4rem,6vw,2.4rem);color:var(--bright);letter-spacing:.15em;text-shadow:0 0 10px var(--ember);text-align:center;}
+  #current-date{font-size:.75rem;color:var(--text);margin-top:4px;letter-spacing:.2em;opacity:.7;text-align:center;}
+
+  .restart-box{border-color:rgba(180,0,0,.6);background:rgba(30,0,0,.7);text-align:center;box-shadow:0 0 40px rgba(139,0,0,.2),inset 0 0 40px rgba(80,0,0,.1);}
+  #restart-datetime{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.6rem,7vw,3rem);color:#ff3333;letter-spacing:.1em;text-shadow:0 0 20px #ff0000,0 0 40px rgba(255,0,0,.5);animation:flicker 5s infinite;line-height:1.1;white-space:pre-line;}
+  .restart-warning{font-size:.6rem;color:var(--ember);letter-spacing:.3em;margin-top:6px;opacity:.8;}
+
+  .extend-banner{display:none;border:1px solid rgba(68,255,136,.4);background:rgba(0,40,20,.8);padding:14px 20px;text-align:center;width:min(700px,95vw);}
+  .extend-banner.show{display:block;animation:pulse-green 2s ease-in-out 3;}
+  .extend-banner-title{font-size:clamp(.9rem,3vw,1.2rem);color:var(--green);letter-spacing:.2em;text-shadow:0 0 15px var(--green);}
+  .extend-banner-sub{font-size:.65rem;color:rgba(68,255,136,.7);letter-spacing:.2em;margin-top:6px;}
+
+  .countdown-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;}
+  .cd-unit{display:flex;flex-direction:column;align-items:center;gap:4px;}
+  .cd-value{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,8vw,4rem);color:var(--bright);text-shadow:0 0 15px var(--glow);line-height:1;transition:color .3s;}
+  .cd-value.tick{color:#ff0000;text-shadow:0 0 30px #ff0000;}
+  .cd-value.extend-col{color:var(--green);text-shadow:0 0 30px var(--green);}
+  .cd-label{font-size:.55rem;color:var(--ember);letter-spacing:.3em;opacity:.8;}
+  .progress-container{width:100%;margin-top:16px;}
+  .progress-label{font-size:.6rem;color:var(--ember);letter-spacing:.2em;margin-bottom:6px;display:flex;justify-content:space-between;}
+  .progress-bar-bg{width:100%;height:6px;background:rgba(80,0,0,.3);border:1px solid rgba(139,0,0,.3);overflow:hidden;}
+  .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--blood),var(--ember),var(--glow));box-shadow:0 0 10px var(--glow);transition:width 1s linear;position:relative;}
+  .progress-bar-fill::after{content:'';position:absolute;right:0;top:0;width:3px;height:100%;background:#fff;box-shadow:0 0 6px #fff;animation:pulse-tip 1s ease-in-out infinite;}
+
+  .ai-status{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+  .ai-dot{width:8px;height:8px;border-radius:50%;background:var(--glow);box-shadow:0 0 8px var(--glow);animation:pulse-dot 1.5s ease-in-out infinite;flex-shrink:0;}
+  .ai-status-text{font-size:.65rem;color:var(--ember);letter-spacing:.15em;}
+  #ai-summary{font-family:'Noto Serif JP',serif;font-weight:300;font-size:clamp(.75rem,2.5vw,.9rem);color:var(--text);line-height:1.9;letter-spacing:.05em;border-left:2px solid rgba(139,0,0,.5);padding-left:14px;min-height:80px;}
+  .key-factors{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}
+  .factor-tag{font-size:.6rem;color:var(--ember);border:1px solid rgba(139,0,0,.4);padding:3px 10px;letter-spacing:.1em;}
+  .threat-meters{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;}
+  .threat-item{display:flex;flex-direction:column;gap:4px;}
+  .threat-name{font-size:.6rem;color:var(--ember);letter-spacing:.2em;}
+  .threat-bar-bg{height:4px;background:rgba(60,0,0,.4);overflow:hidden;}
+  .threat-bar-fill{height:100%;background:linear-gradient(90deg,var(--blood),var(--glow));transition:width 1.5s ease;box-shadow:0 0 6px var(--ember);}
+  .threat-value{font-size:.55rem;color:var(--text);text-align:right;}
+  .cache-info{display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding-top:12px;border-top:1px solid rgba(80,0,0,.3);}
+  .cache-badge{font-size:.55rem;letter-spacing:.15em;padding:2px 8px;border:1px solid;}
+  .cache-badge.live{color:var(--green);border-color:rgba(68,255,136,.4);}
+  .cache-badge.cached{color:var(--ember);border-color:rgba(139,0,0,.4);}
+  .cache-next{font-size:.55rem;color:rgba(120,60,60,.7);letter-spacing:.1em;}
+
+  /* 寄付パネル */
+  .donate-panel{border-color:rgba(68,255,136,.25);background:rgba(0,20,10,.7);}
+  .donate-intro{font-family:'Noto Serif JP',serif;font-weight:300;font-size:clamp(.75rem,2.5vw,.85rem);color:var(--text);line-height:1.9;margin-bottom:16px;border-left:2px solid rgba(68,255,136,.3);padding-left:14px;}
+  .donate-intro strong{color:var(--green);font-weight:700;}
+  .amount-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
+  .amount-btn{background:transparent;border:1px solid rgba(68,255,136,.3);color:rgba(68,255,136,.8);font-family:var(--mono);font-size:.75rem;padding:10px 4px;cursor:pointer;transition:all .2s;text-align:center;letter-spacing:.05em;}
+  .amount-btn:hover,.amount-btn.active{border-color:var(--green);color:var(--green);background:var(--green-dim);box-shadow:0 0 12px rgba(68,255,136,.2);}
+  .amount-custom{display:flex;gap:8px;margin-bottom:16px;align-items:center;}
+  .amount-custom input{flex:1;background:transparent;border:1px solid rgba(68,255,136,.3);color:var(--green);font-family:var(--mono);font-size:.8rem;padding:8px 12px;outline:none;}
+  .amount-custom input:focus{border-color:var(--green);}
+  .amount-custom span{font-size:.7rem;color:rgba(68,255,136,.6);white-space:nowrap;}
+  .delay-preview{font-size:.65rem;color:rgba(68,255,136,.7);text-align:center;margin-bottom:16px;letter-spacing:.15em;min-height:1.2em;}
+  .donate-btn{width:100%;background:transparent;border:1px solid rgba(68,255,136,.5);color:var(--green);font-family:var(--mono);font-size:.8rem;letter-spacing:.3em;padding:14px;cursor:pointer;transition:all .3s;}
+  .donate-btn:hover{background:var(--green-dim);box-shadow:0 0 20px rgba(68,255,136,.3);}
+  .donate-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+  /* 実績ログ */
+  .log-panel{border-color:rgba(68,255,136,.2);background:rgba(0,15,8,.8);}
+  .log-summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;}
+  .log-stat{text-align:center;border:1px solid rgba(68,255,136,.2);padding:10px 8px;}
+  .log-stat-value{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.2rem,4vw,1.8rem);color:var(--green);text-shadow:0 0 10px rgba(68,255,136,.5);}
+  .log-stat-label{font-size:.55rem;color:rgba(68,255,136,.5);letter-spacing:.2em;margin-top:2px;}
+  .log-list{display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto;}
+  .log-list::-webkit-scrollbar{width:3px;}
+  .log-list::-webkit-scrollbar-thumb{background:rgba(139,0,0,.4);}
+  .log-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border:1px solid rgba(68,255,136,.1);background:rgba(0,20,10,.4);font-size:.6rem;letter-spacing:.1em;}
+  .log-item-left{color:rgba(68,255,136,.7);}
+  .log-item-right{color:var(--text);text-align:right;}
+  .log-empty{font-size:.65rem;color:rgba(120,60,60,.5);text-align:center;padding:20px;letter-spacing:.2em;}
+
+  .reload-btn{background:transparent;border:1px solid rgba(139,0,0,.6);color:var(--ember);font-family:var(--mono);font-size:.7rem;letter-spacing:.3em;padding:10px 30px;cursor:pointer;transition:all .3s;}
+  .reload-btn:hover{border-color:var(--glow);color:var(--bright);box-shadow:0 0 20px rgba(255,0,0,.3);}
+  .reload-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .footer-note{font-size:.55rem;color:rgba(120,60,60,.6);letter-spacing:.2em;text-align:center;margin-top:8px;}
+
+  .loading-overlay{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;}
+  .loading-overlay.hidden{display:none;}
+  .loading-text{font-size:.8rem;color:var(--ember);letter-spacing:.3em;animation:flicker 2s infinite;}
+  .loading-bar{width:300px;height:2px;background:rgba(80,0,0,.3);overflow:hidden;}
+  .loading-bar-fill{height:100%;background:linear-gradient(90deg,var(--blood),var(--glow));animation:loading-progress 3s linear forwards;}
+
+  @keyframes flicker{0%,95%,100%{opacity:1}96%{opacity:.8}97%{opacity:1}98%{opacity:.6}99%{opacity:1}}
+  @keyframes pulse-line{0%,100%{opacity:.4}50%{opacity:1}}
+  @keyframes pulse-tip{0%,100%{opacity:1}50%{opacity:.3}}
+  @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+  @keyframes pulse-green{0%,100%{box-shadow:0 0 10px rgba(68,255,136,.2)}50%{box-shadow:0 0 30px rgba(68,255,136,.5)}}
+  @keyframes loading-progress{0%{width:0%}100%{width:100%}}
+  @keyframes glitch{0%{transform:skewX(0) translateX(0);filter:none}20%{transform:skewX(-5deg) translateX(-4px);filter:hue-rotate(90deg)}40%{transform:skewX(5deg) translateX(4px);filter:hue-rotate(-90deg)}60%{transform:skewX(-3deg) translateX(-2px);filter:brightness(2)}100%{transform:skewX(0) translateX(0);filter:none}}
+  .glitch{animation:glitch .4s steps(2) 1;}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-text" id="loading-text">// EARTH SYSTEM ANALYSIS INITIALIZING...</div>
+  <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+</div>
+
+<header>
+  <div class="title-jp">地球再起動時間</div>
+  <div class="title-en">EARTH REBOOT COUNTDOWN SYSTEM</div>
+</header>
+<div class="divider"></div>
+
+<main>
+
+  <div class="extend-banner" id="extend-banner">
+    <div class="extend-banner-title" id="extend-banner-title">▲ 地球の再起動が延長されました</div>
+    <div class="extend-banner-sub" id="extend-banner-sub">寄付によりカウントダウンが更新されました</div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-label">// 現在時刻</div>
+    <div id="current-time">--:--:--</div>
+    <div id="current-date">----年--月--日 ---曜日</div>
+  </div>
+
+  <div class="panel restart-box">
+    <div class="panel-label red">// 地球再起動予定日時</div>
+    <div id="restart-datetime">解析中...</div>
+    <div class="restart-warning">⚠ SCHEDULED SYSTEM REBOOT — ALL DATA WILL BE ERASED ⚠</div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-label">// 残存時間</div>
+    <div class="countdown-grid">
+      <div class="cd-unit"><div class="cd-value" id="cd-days">---</div><div class="cd-label">DAYS / 日</div></div>
+      <div class="cd-unit"><div class="cd-value" id="cd-hours">--</div><div class="cd-label">HOURS / 時間</div></div>
+      <div class="cd-unit"><div class="cd-value" id="cd-mins">--</div><div class="cd-label">MINS / 分</div></div>
+      <div class="cd-unit"><div class="cd-value" id="cd-secs">--</div><div class="cd-label">SECS / 秒</div></div>
+    </div>
+    <div class="progress-container">
+      <div class="progress-label"><span>地球崩壊進行度</span><span id="progress-pct">0.000%</span></div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <!-- 寄付パネル -->
+  <div class="panel donate-panel">
+    <div class="panel-label green">// 地球を救う — 再起動を遅らせる</div>
+    <div class="donate-intro">
+      寄付はそのまま<strong>環境保全活動</strong>に充てられます。<br>
+      <strong>100円につきわずか6時間</strong>——それでも、あなたの支援がカウントダウンを押し戻します。
+    </div>
+    <div class="amount-grid">
+      <button class="amount-btn" onclick="selectAmount(500,this)">¥500<br><span style="font-size:.55rem;opacity:.7">+30時間</span></button>
+      <button class="amount-btn active" onclick="selectAmount(1000,this)">¥1,000<br><span style="font-size:.55rem;opacity:.7">+2.5日</span></button>
+      <button class="amount-btn" onclick="selectAmount(3000,this)">¥3,000<br><span style="font-size:.55rem;opacity:.7">+7.5日</span></button>
+      <button class="amount-btn" onclick="selectAmount(10000,this)">¥10,000<br><span style="font-size:.55rem;opacity:.7">+25日</span></button>
+    </div>
+    <div class="amount-custom">
+      <input type="number" id="custom-amount" placeholder="金額を入力" min="100" max="100000" value="1000" oninput="onCustomAmount(this.value)">
+      <span>円</span>
+    </div>
+    <div class="delay-preview" id="delay-preview">この寄付により、再起動が 60時間 延長されます</div>
+    <button class="donate-btn" id="donate-btn" onclick="startDonate()">▶ 今すぐ寄付して地球を救う</button>
+  </div>
+
+  <!-- AI解析 -->
+  <div class="panel">
+    <div class="panel-label">// AI解析ログ — 地球危機指数</div>
+    <div class="ai-status"><div class="ai-dot"></div><div class="ai-status-text" id="ai-status-label">// AI解析システム接続中...</div></div>
+    <div id="ai-summary">世界情勢を解析しています...</div>
+    <div class="key-factors" id="key-factors"></div>
+    <div class="threat-meters">
+      <div class="threat-item"><div class="threat-name">地政学的緊張</div><div class="threat-bar-bg"><div class="threat-bar-fill" id="t1" style="width:0%"></div></div><div class="threat-value" id="t1v">0%</div></div>
+      <div class="threat-item"><div class="threat-name">環境崩壊指数</div><div class="threat-bar-bg"><div class="threat-bar-fill" id="t2" style="width:0%"></div></div><div class="threat-value" id="t2v">0%</div></div>
+      <div class="threat-item"><div class="threat-name">経済システム不安</div><div class="threat-bar-bg"><div class="threat-bar-fill" id="t3" style="width:0%"></div></div><div class="threat-value" id="t3v">0%</div></div>
+      <div class="threat-item"><div class="threat-name">社会的混乱度</div><div class="threat-bar-bg"><div class="threat-bar-fill" id="t4" style="width:0%"></div></div><div class="threat-value" id="t4v">0%</div></div>
+    </div>
+    <div class="cache-info">
+      <span class="cache-badge" id="cache-badge">--</span>
+      <span class="cache-next" id="cache-next">--</span>
+    </div>
+    <div style="text-align:center;margin-top:16px;">
+      <button class="reload-btn" id="reload-btn" onclick="runAnalysis(true)">⟳ 世界情勢を強制再解析する</button>
+    </div>
+    <div class="footer-note" id="last-updated">最終解析: —</div>
+  </div>
+
+  <!-- 実績ログ -->
+  <div class="panel log-panel">
+    <div class="panel-label green">// 寄付実績 — 透明性ログ</div>
+    <div class="log-summary">
+      <div class="log-stat"><div class="log-stat-value" id="log-total-amount">¥0</div><div class="log-stat-label">累計寄付額</div></div>
+      <div class="log-stat"><div class="log-stat-value" id="log-total-delay">0時間</div><div class="log-stat-label">累計延命時間</div></div>
+      <div class="log-stat"><div class="log-stat-value" id="log-total-count">0件</div><div class="log-stat-label">支援者数</div></div>
+    </div>
+    <div class="log-list" id="log-list">
+      <div class="log-empty">// まだ寄付実績がありません</div>
+    </div>
+    <div class="footer-note" style="margin-top:12px;">収益は環境保全団体への寄付に充てられます</div>
+  </div>
+
+</main>
+
+<script>
+const DAYS_JP=["日","月","火","水","木","金","土"];
+let rebootTarget=null,analysisBaseTime=null,totalSpanMs=null,donationDelayMs=0,selectedAmount=1000;
+
+function pad(n){return String(n).padStart(2,"0");}
+
+// 秒数を「XX時間」「XX日YY時間」に変換
+function formatHours(seconds){
+  const h=Math.floor(seconds/3600);
+  if(h<24) return h+"時間";
+  const d=Math.floor(h/24),rh=h%24;
+  return rh>0?d+"日"+rh+"時間":d+"日";
+}
+
+function updateClock(){
+  const now=new Date();
+  document.getElementById("current-time").textContent=`${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  document.getElementById("current-date").textContent=`${now.getFullYear()}年${pad(now.getMonth()+1)}月${pad(now.getDate())}日 ${DAYS_JP[now.getDay()]}曜日`;
+  if(!rebootTarget)return;
+  const effective=new Date(rebootTarget.getTime()+donationDelayMs);
+  const diff=effective-now;
+  if(diff<=0){["cd-days","cd-hours","cd-mins","cd-secs"].forEach(id=>document.getElementById(id).textContent="00");return;}
+  const days=Math.floor(diff/(1000*60*60*24)),hours=Math.floor((diff%(1000*60*60*24))/(1000*60*60)),mins=Math.floor((diff%(1000*60*60))/(1000*60)),secs=Math.floor((diff%(1000*60))/1000);
+  const prev=document.getElementById("cd-secs").textContent;
+  document.getElementById("cd-days").textContent=String(days).padStart(3,"0");
+  document.getElementById("cd-hours").textContent=pad(hours);
+  document.getElementById("cd-mins").textContent=pad(mins);
+  document.getElementById("cd-secs").textContent=pad(secs);
+  if(prev!==pad(secs)){const el=document.getElementById("cd-secs");el.classList.remove("tick");void el.offsetWidth;el.classList.add("tick");setTimeout(()=>el.classList.remove("tick"),300);}
+  if(totalSpanMs){const pct=Math.min(100,((now-analysisBaseTime)/(totalSpanMs+donationDelayMs))*100);document.getElementById("progress-fill").style.width=pct.toFixed(4)+"%";document.getElementById("progress-pct").textContent=pct.toFixed(3)+"%";}
+}
+setInterval(updateClock,1000);updateClock();
+
+function updateRestartDisplay(){
+  if(!rebootTarget)return;
+  const e=new Date(rebootTarget.getTime()+donationDelayMs);
+  document.getElementById("restart-datetime").textContent=`${e.getFullYear()}年${pad(e.getMonth()+1)}月${pad(e.getDate())}日\n${pad(e.getHours())}:${pad(e.getMinutes())}`;
+}
+
+async function runAnalysis(force=false){
+  const btn=document.getElementById("reload-btn");btn.disabled=true;
+  document.getElementById("ai-status-label").textContent="// AI解析システム：世界情勢スキャン中...";
+  try{
+    const res=await fetch(force?"/api/analyze?refresh=1":"/api/analyze");
+    if(!res.ok)throw new Error(`HTTP ${res.status}`);
+    applyResult(await res.json());
+  }catch(e){document.getElementById("ai-status-label").textContent="// 接続エラー";document.getElementById("ai-summary").textContent="解析システムへの接続が失敗しました。";}
+  btn.disabled=false;
+}
+
+function applyResult(json){
+  const now=new Date(),yearsMs=parseFloat(json.reboot_years_from_now)*365.25*24*3600*1000,analyzedAt=json.analyzed_at?new Date(json.analyzed_at):now;
+  if(rebootTarget){const el=document.getElementById("restart-datetime");el.classList.add("glitch");setTimeout(()=>el.classList.remove("glitch"),500);}
+  rebootTarget=new Date(analyzedAt.getTime()+yearsMs);analysisBaseTime=analyzedAt;totalSpanMs=yearsMs;
+  updateRestartDisplay();
+  document.getElementById("ai-summary").textContent=json.summary_jp||"—";
+  document.getElementById("ai-status-label").textContent=`// AI解析完了 — 再起動まで約${parseFloat(json.reboot_years_from_now).toFixed(1)}年`;
+  const kf=document.getElementById("key-factors");kf.innerHTML="";
+  (json.key_factors||[]).forEach(f=>{const t=document.createElement("span");t.className="factor-tag";t.textContent=f;kf.appendChild(t);});
+  const th=json.threats||{};
+  [["t1","t1v",th.geopolitical],["t2","t2v",th.environmental],["t3","t3v",th.economic],["t4","t4v",th.social]].forEach(([b,v,val])=>{const n=val??0;document.getElementById(b).style.width=n+"%";document.getElementById(v).textContent=n+"%";});
+  const badge=document.getElementById("cache-badge");
+  if(json.cached){badge.textContent=`CACHED — ${json.cache_age_minutes}分前の解析`;badge.className="cache-badge cached";document.getElementById("cache-next").textContent=`次回更新まで約${json.next_update_minutes}分`;}
+  else{badge.textContent="LIVE — 今回新規解析";badge.className="cache-badge live";document.getElementById("cache-next").textContent=`次回自動更新まで約${json.next_update_minutes}分`;}
+  document.getElementById("last-updated").textContent=`最終解析: ${analyzedAt.getFullYear()}/${pad(analyzedAt.getMonth()+1)}/${pad(analyzedAt.getDate())} ${pad(analyzedAt.getHours())}:${pad(analyzedAt.getMinutes())}`;
+  updateClock();
+}
+
+// 100円=6時間
+function calcDelay(amount){ return Math.floor((amount/100)*6*3600); }
+
+function selectAmount(v,el){
+  selectedAmount=v;document.getElementById("custom-amount").value=v;
+  document.querySelectorAll(".amount-btn").forEach(b=>b.classList.remove("active"));
+  el.classList.add("active");updateDelayPreview(v);
+}
+function onCustomAmount(v){selectedAmount=parseInt(v)||0;document.querySelectorAll(".amount-btn").forEach(b=>b.classList.remove("active"));updateDelayPreview(selectedAmount);}
+function updateDelayPreview(a){
+  if(a<100){document.getElementById("delay-preview").textContent="100円以上で寄付できます";return;}
+  const s=calcDelay(a);
+  document.getElementById("delay-preview").textContent=`この寄付により、再起動が ${formatHours(s)} 延長されます`;
+}
+updateDelayPreview(1000);
+
+async function startDonate(){
+  if(!selectedAmount||selectedAmount<100){alert("100円以上の金額を入力してください");return;}
+  const btn=document.getElementById("donate-btn");btn.disabled=true;btn.textContent="// 決済ページへ接続中...";
+  try{
+    const res=await fetch("/api/donate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({amount:selectedAmount})});
+    const data=await res.json();
+    if(data.url){window.location.href=data.url;}else throw new Error(data.error||"Unknown error");
+  }catch(e){alert("エラー: "+e.message);btn.disabled=false;btn.textContent="▶ 今すぐ寄付して地球を救う";}
+}
+
+async function loadDonationStats(){
+  try{
+    const res=await fetch("/api/donation-stats");const data=await res.json();const t=data.total||{};
+    document.getElementById("log-total-amount").textContent=`¥${(t.amount||0).toLocaleString()}`;
+    // 時間表示
+    document.getElementById("log-total-delay").textContent=formatHours(t.delay_seconds||0);
+    document.getElementById("log-total-count").textContent=`${t.count||0}件`;
+    donationDelayMs=(t.delay_seconds||0)*1000;updateRestartDisplay();
+    const list=document.getElementById("log-list"),logs=data.logs||[];
+    if(!logs.length){list.innerHTML='<div class="log-empty">// まだ寄付実績がありません</div>';return;}
+    list.innerHTML=logs.map(l=>{
+      const d=new Date(l.at),ds=`${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      return`<div class="log-item"><span class="log-item-left">+${formatHours(l.delay)} 延命 / ¥${l.amount.toLocaleString()}</span><span class="log-item-right">${ds}</span></div>`;
+    }).join("");
+  }catch(e){console.error(e);}
+}
+
+function handlePostDonate(){
+  const p=new URLSearchParams(location.search);
+  if(p.get("donated")!=="1")return;
+  const amount=parseInt(p.get("amount")||"0"),delay=parseInt(p.get("delay")||"0");
+  const banner=document.getElementById("extend-banner");
+  document.getElementById("extend-banner-title").textContent=`▲ 地球の再起動が ${formatHours(delay)} 延長されました`;
+  document.getElementById("extend-banner-sub").textContent=`¥${amount.toLocaleString()}の寄付ありがとうございます。カウントダウンが更新されました。`;
+  banner.classList.add("show");
+  ["cd-days","cd-hours","cd-mins","cd-secs"].forEach(id=>{const el=document.getElementById(id);el.classList.add("extend-col");setTimeout(()=>el.classList.remove("extend-col"),4000);});
+  history.replaceState({},"","/");
+  setTimeout(()=>banner.classList.remove("show"),8000);
+}
+
+const MSGS=["// EARTH SYSTEM ANALYSIS INITIALIZING...","// SCANNING GLOBAL THREAT MATRIX...","// CALCULATING REBOOT TIMESTAMP...","// LOADING DONATION RECORDS...","// SYSTEM READY"];
+let mi=0;const lbl=document.getElementById("loading-text");
+const iv=setInterval(()=>{lbl.textContent=MSGS[Math.min(mi++,MSGS.length-1)];},700);
+Promise.all([runAnalysis(false),loadDonationStats()]).finally(()=>{clearInterval(iv);setTimeout(()=>{document.getElementById("loading-overlay").classList.add("hidden");handlePostDonate();},400);});
+</script>
+</body>
+</html>
