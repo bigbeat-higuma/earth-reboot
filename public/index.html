@@ -178,19 +178,19 @@
     <div class="panel-label green">// 地球を救う — 再起動を遅らせる</div>
     <div class="donate-intro">
       寄付はそのまま<strong>環境保全活動</strong>に充てられます。<br>
-      <strong>100円につき地球の再起動が1日延長</strong>されます。あなたの支援が、カウントダウンを押し戻します。
+      <strong>100円につきわずか6時間</strong>——それでも、あなたの支援がカウントダウンを押し戻します。
     </div>
     <div class="amount-grid">
-      <button class="amount-btn" onclick="selectAmount(500,this)">¥500<br><span style="font-size:.55rem;opacity:.7">+5日</span></button>
-      <button class="amount-btn active" onclick="selectAmount(1000,this)">¥1,000<br><span style="font-size:.55rem;opacity:.7">+10日</span></button>
-      <button class="amount-btn" onclick="selectAmount(3000,this)">¥3,000<br><span style="font-size:.55rem;opacity:.7">+30日</span></button>
-      <button class="amount-btn" onclick="selectAmount(10000,this)">¥10,000<br><span style="font-size:.55rem;opacity:.7">+100日</span></button>
+      <button class="amount-btn" onclick="selectAmount(500,this)">¥500<br><span style="font-size:.55rem;opacity:.7">+30時間</span></button>
+      <button class="amount-btn active" onclick="selectAmount(1000,this)">¥1,000<br><span style="font-size:.55rem;opacity:.7">+2.5日</span></button>
+      <button class="amount-btn" onclick="selectAmount(3000,this)">¥3,000<br><span style="font-size:.55rem;opacity:.7">+7.5日</span></button>
+      <button class="amount-btn" onclick="selectAmount(10000,this)">¥10,000<br><span style="font-size:.55rem;opacity:.7">+25日</span></button>
     </div>
     <div class="amount-custom">
       <input type="number" id="custom-amount" placeholder="金額を入力" min="100" max="100000" value="1000" oninput="onCustomAmount(this.value)">
       <span>円</span>
     </div>
-    <div class="delay-preview" id="delay-preview">この寄付により、再起動が 10日 延長されます</div>
+    <div class="delay-preview" id="delay-preview">この寄付により、再起動が 60時間 延長されます</div>
     <button class="donate-btn" id="donate-btn" onclick="startDonate()">▶ 今すぐ寄付して地球を救う</button>
   </div>
 
@@ -221,7 +221,7 @@
     <div class="panel-label green">// 寄付実績 — 透明性ログ</div>
     <div class="log-summary">
       <div class="log-stat"><div class="log-stat-value" id="log-total-amount">¥0</div><div class="log-stat-label">累計寄付額</div></div>
-      <div class="log-stat"><div class="log-stat-value" id="log-total-delay">0日</div><div class="log-stat-label">累計延命日数</div></div>
+      <div class="log-stat"><div class="log-stat-value" id="log-total-delay">0時間</div><div class="log-stat-label">累計延命時間</div></div>
       <div class="log-stat"><div class="log-stat-value" id="log-total-count">0件</div><div class="log-stat-label">支援者数</div></div>
     </div>
     <div class="log-list" id="log-list">
@@ -237,6 +237,14 @@ const DAYS_JP=["日","月","火","水","木","金","土"];
 let rebootTarget=null,analysisBaseTime=null,totalSpanMs=null,donationDelayMs=0,selectedAmount=1000;
 
 function pad(n){return String(n).padStart(2,"0");}
+
+// 秒数を「XX時間」「XX日YY時間」に変換
+function formatHours(seconds){
+  const h=Math.floor(seconds/3600);
+  if(h<24) return h+"時間";
+  const d=Math.floor(h/24),rh=h%24;
+  return rh>0?d+"日"+rh+"時間":d+"日";
+}
 
 function updateClock(){
   const now=new Date();
@@ -292,13 +300,20 @@ function applyResult(json){
   updateClock();
 }
 
+// 100円=6時間
+function calcDelay(amount){ return Math.floor((amount/100)*6*3600); }
+
 function selectAmount(v,el){
   selectedAmount=v;document.getElementById("custom-amount").value=v;
   document.querySelectorAll(".amount-btn").forEach(b=>b.classList.remove("active"));
   el.classList.add("active");updateDelayPreview(v);
 }
 function onCustomAmount(v){selectedAmount=parseInt(v)||0;document.querySelectorAll(".amount-btn").forEach(b=>b.classList.remove("active"));updateDelayPreview(selectedAmount);}
-function updateDelayPreview(a){document.getElementById("delay-preview").textContent=a>=100?`この寄付により、再起動が ${Math.floor(a/100)}日 延長されます`:"100円以上で寄付できます";}
+function updateDelayPreview(a){
+  if(a<100){document.getElementById("delay-preview").textContent="100円以上で寄付できます";return;}
+  const s=calcDelay(a);
+  document.getElementById("delay-preview").textContent=`この寄付により、再起動が ${formatHours(s)} 延長されます`;
+}
 updateDelayPreview(1000);
 
 async function startDonate(){
@@ -315,21 +330,25 @@ async function loadDonationStats(){
   try{
     const res=await fetch("/api/donation-stats");const data=await res.json();const t=data.total||{};
     document.getElementById("log-total-amount").textContent=`¥${(t.amount||0).toLocaleString()}`;
-    document.getElementById("log-total-delay").textContent=`${Math.floor((t.delay_seconds||0)/86400)}日`;
+    // 時間表示
+    document.getElementById("log-total-delay").textContent=formatHours(t.delay_seconds||0);
     document.getElementById("log-total-count").textContent=`${t.count||0}件`;
     donationDelayMs=(t.delay_seconds||0)*1000;updateRestartDisplay();
     const list=document.getElementById("log-list"),logs=data.logs||[];
     if(!logs.length){list.innerHTML='<div class="log-empty">// まだ寄付実績がありません</div>';return;}
-    list.innerHTML=logs.map(l=>{const d=new Date(l.at),ds=`${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;return`<div class="log-item"><span class="log-item-left">+${Math.floor(l.delay/86400)}日延命 / ¥${l.amount.toLocaleString()}</span><span class="log-item-right">${ds}</span></div>`;}).join("");
+    list.innerHTML=logs.map(l=>{
+      const d=new Date(l.at),ds=`${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      return`<div class="log-item"><span class="log-item-left">+${formatHours(l.delay)} 延命 / ¥${l.amount.toLocaleString()}</span><span class="log-item-right">${ds}</span></div>`;
+    }).join("");
   }catch(e){console.error(e);}
 }
 
 function handlePostDonate(){
   const p=new URLSearchParams(location.search);
   if(p.get("donated")!=="1")return;
-  const amount=parseInt(p.get("amount")||"0"),delay=parseInt(p.get("delay")||"0"),days=Math.floor(delay/86400);
+  const amount=parseInt(p.get("amount")||"0"),delay=parseInt(p.get("delay")||"0");
   const banner=document.getElementById("extend-banner");
-  document.getElementById("extend-banner-title").textContent=`▲ 地球の再起動が ${days}日 延長されました`;
+  document.getElementById("extend-banner-title").textContent=`▲ 地球の再起動が ${formatHours(delay)} 延長されました`;
   document.getElementById("extend-banner-sub").textContent=`¥${amount.toLocaleString()}の寄付ありがとうございます。カウントダウンが更新されました。`;
   banner.classList.add("show");
   ["cd-days","cd-hours","cd-mins","cd-secs"].forEach(id=>{const el=document.getElementById(id);el.classList.add("extend-col");setTimeout(()=>el.classList.remove("extend-col"),4000);});
