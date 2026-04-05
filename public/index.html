@@ -208,6 +208,15 @@
   .bmac-btn{width:100%;background:transparent;border:1px solid rgba(255,221,0,.3);color:rgba(255,221,0,.8);font-family:var(--mono);font-size:.8rem;letter-spacing:.2em;padding:12px;cursor:pointer;transition:all .3s;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:10px;}
   .bmac-btn:hover{background:rgba(255,221,0,.08);border-color:rgba(255,221,0,.6);color:#ffdd00;box-shadow:0 0 15px rgba(255,221,0,.2);}
 
+
+  /* 世界時計 */
+  .world-clocks{display:none;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(139,0,0,.3);}
+  .world-clocks.show{display:grid;}
+  .world-clock-item{text-align:center;}
+  .world-clock-city{font-size:.55rem;color:var(--ember);letter-spacing:.15em;margin-bottom:3px;opacity:.8;}
+  .world-clock-time{font-family:'Bebas Neue',sans-serif;font-size:clamp(1rem,3vw,1.4rem);color:var(--text);letter-spacing:.1em;text-shadow:0 0 8px rgba(204,51,0,.4);}
+  .world-clock-date{font-size:.5rem;color:rgba(120,60,60,.6);letter-spacing:.1em;margin-top:2px;}
+
 </style>
 <!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-GY482ZK0BW">
@@ -224,6 +233,39 @@ function donatePayPal() {
   // PayPal.meリンクに金額を付加（JPY指定）
   const url = `https://paypal.me/earthreboot/${amount}JPY`;
   window.open(url, '_blank');
+}
+
+
+// ── 世界時計 ─────────────────────────────────
+const WORLD_CITIES = [
+  { id: 'tokyo',   tz: 'Asia/Tokyo',          city: 'TOKYO'    },
+  { id: 'newyork', tz: 'America/New_York',     city: 'NEW YORK' },
+  { id: 'london',  tz: 'Europe/London',        city: 'LONDON'   },
+  { id: 'paris',   tz: 'Europe/Paris',         city: 'PARIS'    },
+];
+
+function updateWorldClocks() {
+  const now = new Date();
+  WORLD_CITIES.forEach(c => {
+    const timeEl = document.getElementById('wc-' + c.id);
+    const dateEl = document.getElementById('wd-' + c.id);
+    if (!timeEl || !dateEl) return;
+    const timeStr = now.toLocaleTimeString('en-US', { timeZone: c.tz, hour12: false, hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    const dateStr = now.toLocaleDateString('en-US', { timeZone: c.tz, month:'2-digit', day:'2-digit' });
+    timeEl.textContent = timeStr;
+    dateEl.textContent = dateStr;
+  });
+}
+
+function toggleWorldClocks() {
+  const el = document.getElementById('world-clocks');
+  if (!el) return;
+  if (lang === 'en') {
+    el.classList.add('show');
+    updateWorldClocks();
+  } else {
+    el.classList.remove('show');
+  }
 }
 
 // ── SNSシェア ────────────────────────────────
@@ -358,6 +400,28 @@ function updateShareText() {
     <div class="panel-label" id="lbl-current">// 現在時刻</div>
     <div id="current-time">--:--:--</div>
     <div id="current-date">----年--月--日 ---曜日</div>
+    <div class="world-clocks" id="world-clocks">
+      <div class="world-clock-item">
+        <div class="world-clock-city">TOKYO</div>
+        <div class="world-clock-time" id="wc-tokyo">--:--:--</div>
+        <div class="world-clock-date" id="wd-tokyo">--/--</div>
+      </div>
+      <div class="world-clock-item">
+        <div class="world-clock-city">NEW YORK</div>
+        <div class="world-clock-time" id="wc-newyork">--:--:--</div>
+        <div class="world-clock-date" id="wd-newyork">--/--</div>
+      </div>
+      <div class="world-clock-item">
+        <div class="world-clock-city">LONDON</div>
+        <div class="world-clock-time" id="wc-london">--:--:--</div>
+        <div class="world-clock-date" id="wd-london">--/--</div>
+      </div>
+      <div class="world-clock-item">
+        <div class="world-clock-city">PARIS</div>
+        <div class="world-clock-time" id="wc-paris">--:--:--</div>
+        <div class="world-clock-date" id="wd-paris">--/--</div>
+      </div>
+    </div>
   </div>
 
   <div class="panel restart-box">
@@ -580,6 +644,7 @@ function setLang(l) {
   document.getElementById("btn-jp").classList.toggle("active", l==="ja");
   document.getElementById("btn-en").classList.toggle("active", l==="en");
   applyLang();
+  toggleWorldClocks();
 }
 
 function applyLang() {
@@ -650,7 +715,7 @@ function updateClock(){
   if(prev!==pad(secs)){const el=document.getElementById("cd-secs");el.classList.remove("tick");void el.offsetWidth;el.classList.add("tick");setTimeout(()=>el.classList.remove("tick"),300);}
   if(totalSpanMs){const pct=Math.min(100,((now-analysisBaseTime)/(totalSpanMs+donationDelayMs))*100);document.getElementById("progress-fill").style.width=pct.toFixed(4)+"%";document.getElementById("progress-pct").textContent=pct.toFixed(3)+"%";}
 }
-setInterval(()=>{updateClock();checkCollapse();updateShareText();},1000);
+setInterval(()=>{updateClock();checkCollapse();updateShareText();if(lang==="en")updateWorldClocks();},1000);
 
 function updateRestartDisplay(){
   if(!rebootTarget)return;
@@ -750,6 +815,7 @@ let mi=0;const lbl=document.getElementById("loading-text");
 const iv=setInterval(()=>{lbl.textContent=MSGS[Math.min(mi++,MSGS.length-1)];},700);
 
 applyLang();
+toggleWorldClocks();
 updateDelayPreview(1000);
 
 Promise.all([runAnalysis(false),loadDonationStats()]).finally(()=>{
