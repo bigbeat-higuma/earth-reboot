@@ -644,7 +644,6 @@ function setLang(l) {
   document.getElementById("btn-jp").classList.toggle("active", l==="ja");
   document.getElementById("btn-en").classList.toggle("active", l==="en");
   applyLang();
-  toggleWorldClocks();
 }
 
 function applyLang() {
@@ -674,6 +673,7 @@ function applyLang() {
   document.getElementById("lbl-log-footer").textContent = t("logFooter");
   const pd = document.getElementById('paypal-divider');
   if(pd) pd.textContent = lang==='ja' ? 'または' : 'or';
+  if(typeof toggleWorldClocks==="function") toggleWorldClocks();
   document.getElementById("custom-amount").placeholder = lang==="ja" ? "金額を入力" : "Amount";
   document.title = t("title") + " / Earth Reboot Countdown";
   updateDelayPreview(selectedAmount);
@@ -715,7 +715,7 @@ function updateClock(){
   if(prev!==pad(secs)){const el=document.getElementById("cd-secs");el.classList.remove("tick");void el.offsetWidth;el.classList.add("tick");setTimeout(()=>el.classList.remove("tick"),300);}
   if(totalSpanMs){const pct=Math.min(100,((now-analysisBaseTime)/(totalSpanMs+donationDelayMs))*100);document.getElementById("progress-fill").style.width=pct.toFixed(4)+"%";document.getElementById("progress-pct").textContent=pct.toFixed(3)+"%";}
 }
-setInterval(()=>{updateClock();checkCollapse();updateShareText();if(lang==="en")updateWorldClocks();},1000);
+setInterval(function(){updateClock();if(typeof checkCollapse==="function")checkCollapse();if(typeof updateShareText==="function")updateShareText();if(lang==="en"&&typeof updateWorldClocks==="function")updateWorldClocks();},1000);
 
 function updateRestartDisplay(){
   if(!rebootTarget)return;
@@ -815,7 +815,6 @@ let mi=0;const lbl=document.getElementById("loading-text");
 const iv=setInterval(()=>{lbl.textContent=MSGS[Math.min(mi++,MSGS.length-1)];},700);
 
 applyLang();
-toggleWorldClocks();
 updateDelayPreview(1000);
 
 Promise.all([runAnalysis(false),loadDonationStats()]).finally(()=>{
