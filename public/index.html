@@ -217,12 +217,19 @@
 
 
   /* 世界時計 */
-  .world-clocks{display:none;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(139,0,0,.3);}
+  .world-clocks{display:none;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(139,0,0,.3);}
   .world-clocks.show{display:grid;}
-  .world-clock-item{text-align:center;}
-  .world-clock-city{font-size:.55rem;color:var(--ember);letter-spacing:.15em;margin-bottom:3px;opacity:.8;}
-  .world-clock-time{font-family:'Bebas Neue',sans-serif;font-size:clamp(1rem,3vw,1.4rem);color:var(--text);letter-spacing:.1em;text-shadow:0 0 8px rgba(204,51,0,.4);}
-  .world-clock-date{font-size:.5rem;color:rgba(120,60,60,.6);letter-spacing:.1em;margin-top:2px;}
+  .world-clock-item{text-align:center;padding:6px 4px;border-radius:4px;transition:background .2s;}
+  .world-clock-item:hover{background:rgba(139,0,0,.15);}
+  .world-clock-city{font-size:.5rem;color:var(--ember);letter-spacing:.1em;margin-bottom:3px;opacity:.8;}
+  .world-clock-time{font-family:'Bebas Neue',sans-serif;font-size:clamp(.85rem,2.5vw,1.3rem);color:var(--text);letter-spacing:.1em;text-shadow:0 0 8px rgba(204,51,0,.4);}
+  .world-clock-date{font-size:.45rem;color:rgba(120,60,60,.6);letter-spacing:.1em;margin-top:2px;}
+
+  /* 都市選択ボタン */
+  .city-switch{position:fixed;top:44px;left:8px;z-index:1000;display:flex;flex-direction:column;gap:4px;}
+  .city-btn{background:rgba(5,0,0,.8);border:1px solid rgba(139,0,0,.4);color:rgba(180,80,80,.7);font-family:var(--mono);font-size:.5rem;letter-spacing:.1em;padding:4px 8px;cursor:pointer;transition:all .2s;text-align:left;white-space:nowrap;}
+  .city-btn:hover{border-color:var(--ember);color:var(--text);}
+  .city-btn.active{border-color:var(--glow);color:var(--bright);background:rgba(139,0,0,.2);}
 
 </style>
 <!-- Google Analytics -->
@@ -244,16 +251,9 @@ function donatePayPal() {
 
 
 // ── 世界時計 ─────────────────────────────────
-const WORLD_CITIES = [
-  { id: 'tokyo',   tz: 'Asia/Tokyo',          city: 'TOKYO'    },
-  { id: 'newyork', tz: 'America/New_York',     city: 'NEW YORK' },
-  { id: 'london',  tz: 'Europe/London',        city: 'LONDON'   },
-  { id: 'paris',   tz: 'Europe/Paris',         city: 'PARIS'    },
-];
-
 function updateWorldClocks() {
   const now = new Date();
-  WORLD_CITIES.forEach(c => {
+  Object.values(CITIES).forEach(c => {
     const timeEl = document.getElementById('wc-' + c.id);
     const dateEl = document.getElementById('wd-' + c.id);
     if (!timeEl || !dateEl) return;
@@ -267,12 +267,9 @@ function updateWorldClocks() {
 function toggleWorldClocks() {
   const el = document.getElementById('world-clocks');
   if (!el) return;
-  if (lang === 'en') {
-    el.classList.add('show');
-    updateWorldClocks();
-  } else {
-    el.classList.remove('show');
-  }
+  // 常に表示（都市選択UIが常時表示のため）
+  el.classList.add('show');
+  updateWorldClocks();
 }
 
 // ── SNSシェア ────────────────────────────────
@@ -362,10 +359,19 @@ function updateShareText() {
 </head>
 <body>
 
-<!-- 言語切り替えボタン -->
+<!-- 言語切り替えボタン（後方互換） -->
 <div class="lang-switch">
   <button class="lang-btn active" id="btn-jp" onclick="setLang('ja')">JP</button>
   <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+</div>
+
+<!-- 都市選択UI -->
+<div class="city-switch" id="city-switch">
+  <button class="city-btn active" id="city-btn-tokyo"   onclick="setCity('tokyo')">🇯🇵 TOKYO</button>
+  <button class="city-btn"        id="city-btn-newyork" onclick="setCity('newyork')">🇺🇸 NY</button>
+  <button class="city-btn"        id="city-btn-london"  onclick="setCity('london')">🇬🇧 LONDON</button>
+  <button class="city-btn"        id="city-btn-paris"   onclick="setCity('paris')">🇫🇷 PARIS</button>
+  <button class="city-btn"        id="city-btn-berlin"  onclick="setCity('berlin')">🇩🇪 BERLIN</button>
 </div>
 
 <div class="loading-overlay" id="loading-overlay">
@@ -408,26 +414,32 @@ function updateShareText() {
     <div id="current-time">--:--:--</div>
     <div id="current-date">----年--月--日 ---曜日</div>
     <div class="world-clocks" id="world-clocks">
-      <div class="world-clock-item">
-        <div class="world-clock-city">TOKYO</div>
+      <div class="world-clock-item" onclick="setCity('tokyo')" style="cursor:pointer">
+        <div class="world-clock-city">🇯🇵 TOKYO</div>
         <div class="world-clock-time" id="wc-tokyo">--:--:--</div>
         <div class="world-clock-date" id="wd-tokyo">--/--</div>
       </div>
-      <div class="world-clock-item">
-        <div class="world-clock-city">NEW YORK</div>
+      <div class="world-clock-item" onclick="setCity('newyork')" style="cursor:pointer">
+        <div class="world-clock-city">🇺🇸 NEW YORK</div>
         <div class="world-clock-time" id="wc-newyork">--:--:--</div>
         <div class="world-clock-date" id="wd-newyork">--/--</div>
       </div>
-      <div class="world-clock-item">
-        <div class="world-clock-city">LONDON</div>
+      <div class="world-clock-item" onclick="setCity('london')" style="cursor:pointer">
+        <div class="world-clock-city">🇬🇧 LONDON</div>
         <div class="world-clock-time" id="wc-london">--:--:--</div>
         <div class="world-clock-date" id="wd-london">--/--</div>
       </div>
-      <div class="world-clock-item">
-        <div class="world-clock-city">PARIS</div>
+      <div class="world-clock-item" onclick="setCity('paris')" style="cursor:pointer">
+        <div class="world-clock-city">🇫🇷 PARIS</div>
         <div class="world-clock-time" id="wc-paris">--:--:--</div>
         <div class="world-clock-date" id="wd-paris">--/--</div>
       </div>
+      <div class="world-clock-item" onclick="setCity('berlin')" style="cursor:pointer">
+        <div class="world-clock-city">🇩🇪 BERLIN</div>
+        <div class="world-clock-time" id="wc-berlin">--:--:--</div>
+        <div class="world-clock-date" id="wd-berlin">--/--</div>
+      </div>
+    </div>
     </div>
   </div>
 
@@ -637,13 +649,63 @@ const T = {
     extendSub: (a) => `Thank you for your ¥${a.toLocaleString()} donation. Countdown updated.`,
     loading: ["// EARTH SYSTEM ANALYSIS INITIALIZING...", "// SCANNING GLOBAL THREAT MATRIX...", "// CALCULATING REBOOT TIMESTAMP...", "// LOADING DONATION RECORDS...", "// SYSTEM READY"],
     currency: "JPY",
+  },
+  de: {
+    title: "Erde Neustart Countdown",
+    lblCurrent: "// AKTUELLE UHRZEIT",
+    lblReboot: "// GEPLANTES NEUSTART-DATUM",
+    lblWarning: "⚠ SYSTEM-NEUSTART GEPLANT — ALLE DATEN WERDEN GELÖSCHT ⚠",
+    lblRemaining: "// VERBLEIBENDE ZEIT",
+    lblDays: "TAGE", lblHours: "STUNDEN", lblMins: "MIN", lblSecs: "SEK",
+    lblProgress: "FORTSCHRITT DES ERDUNTERGANGS",
+    lblDonateTitle: "// RETTE DIE ERDE — VERZÖGERE DEN NEUSTART",
+    donateIntro: `Alle Spenden fließen direkt in den <strong>Umweltschutz</strong>.<br><strong>Jede ¥100 kauft nur 6 Stunden</strong>——aber deine Unterstützung schiebt den Countdown zurück.`,
+    donateBtn: "▶ JETZT SPENDEN UND DIE ERDE RETTEN",
+    donateBtnLoading: "// VERBINDUNG ZUR ZAHLUNG...",
+    delayPreview: (h) => `Diese Spende verlängert den Neustart um ${h}`,
+    delayMin: "Mindestspende: ¥100",
+    lblAiTitle: "// KI-ANALYSE — GLOBALER BEDROHUNGSINDEX",
+    aiConnecting: "// KI-ANALYSESYSTEM VERBINDET...",
+    aiScanning: "// KI-SYSTEM: SCANNT WELTLAGE...",
+    aiComplete: (y) => `// ANALYSE ABGESCHLOSSEN — NEUSTART IN ~${y} JAHREN`,
+    aiError: "// VERBINDUNGSFEHLER",
+    aiErrorMsg: "Verbindung zum Analysesystem fehlgeschlagen.",
+    analyzing: "Weltlage wird analysiert...",
+    t1: "Geopolitische Spannung", t2: "Umweltkollaps", t3: "Wirtschaftsinstabilität", t4: "Soziale Unordnung",
+    cached: (m) => `GECACHT — Analyse vor ${m} Min.`,
+    cacheNext: (m) => `Nächste Aktualisierung in ~${m} Min.`,
+    live: "LIVE — Neue Analyse",
+    liveNext: (m) => `Auto-Update in ~${m} Min.`,
+    reloadBtn: "⟳ WELTLAGE NEU ANALYSIEREN",
+    lastUpdated: (s) => `Letzte Analyse: ${s}`,
+    lblLogTitle: "// SPENDENPROTOKOLL — TRANSPARENZ",
+    lblTotalAmount: "GESAMT GESPENDET", lblTotalDelay: "GESAMTVERZÖGERUNG", lblTotalCount: "UNTERSTÜTZER",
+    logEmpty: "// Noch keine Spenden",
+    logFooter: "Alle Einnahmen gehen an Umweltschutzorganisationen",
+    logItem: (h, a) => `+${h} Verzögerung / ¥${a.toLocaleString()}`,
+    extendTitle: (h) => `▲ ERDE-NEUSTART UM ${h} VERZÖGERT`,
+    extendSub: (a) => `Danke für deine Spende von ¥${a.toLocaleString()}. Countdown aktualisiert.`,
+    loading: ["// ERDSYSTEM-ANALYSE INITIALISIERT...", "// GLOBALE BEDROHUNGSMATRIX WIRD GESCANNT...", "// NEUSTART-ZEITSTEMPEL WIRD BERECHNET...", "// SPENDENAUFZEICHNUNGEN WERDEN GELADEN...", "// SYSTEM BEREIT"],
+    currency: "JPY",
   }
 };
 
 let lang = localStorage.getItem("lang") || "ja";
 const DAYS_JP = ["日","月","火","水","木","金","土"];
 const DAYS_EN = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const DAYS_DE = ["So","Mo","Di","Mi","Do","Fr","Sa"];
 let rebootTarget=null,analysisBaseTime=null,totalSpanMs=null,donationDelayMs=0,selectedAmount=1000;
+
+// 都市設定（言語・タイムゾーン対応）
+const CITIES = {
+  tokyo:   { id: 'tokyo',   label: 'TOKYO',    tz: 'Asia/Tokyo',       lang: 'ja', flag: '🇯🇵' },
+  newyork: { id: 'newyork', label: 'NEW YORK', tz: 'America/New_York', lang: 'en', flag: '🇺🇸' },
+  london:  { id: 'london',  label: 'LONDON',   tz: 'Europe/London',    lang: 'en', flag: '🇬🇧' },
+  paris:   { id: 'paris',   label: 'PARIS',    tz: 'Europe/Paris',     lang: 'en', flag: '🇫🇷' },
+  berlin:  { id: 'berlin',  label: 'BERLIN',   tz: 'Europe/Berlin',    lang: 'de', flag: '🇩🇪' },
+};
+
+let currentCity = localStorage.getItem("city") || "tokyo";
 
 function t(key, ...args) {
   const v = T[lang][key];
@@ -655,6 +717,28 @@ function setLang(l) {
   localStorage.setItem("lang", l);
   document.getElementById("btn-jp").classList.toggle("active", l==="ja");
   document.getElementById("btn-en").classList.toggle("active", l==="en");
+  applyLang();
+}
+
+// 都市選択で言語と時刻を切り替え
+function setCity(cityId) {
+  const city = CITIES[cityId];
+  if (!city) return;
+  currentCity = cityId;
+  lang = city.lang;
+  localStorage.setItem("city", cityId);
+  localStorage.setItem("lang", lang);
+
+  // 都市ボタンのactive状態を更新
+  Object.keys(CITIES).forEach(id => {
+    const btn = document.getElementById('city-btn-' + id);
+    if (btn) btn.classList.toggle('active', id === cityId);
+  });
+
+  // 旧JP/ENボタンも同期
+  document.getElementById("btn-jp").classList.toggle("active", lang==="ja");
+  document.getElementById("btn-en").classList.toggle("active", lang==="en");
+
   applyLang();
 }
 
@@ -708,11 +792,23 @@ function formatHours(seconds){
 
 function updateClock(){
   const now=new Date();
-  document.getElementById("current-time").textContent=`${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  const city = CITIES[currentCity] || CITIES.tokyo;
+  const tz = city.tz;
+
+  // 現地時刻を取得
+  const timeStr = now.toLocaleTimeString('en-US', { timeZone: tz, hour12: false, hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  document.getElementById("current-time").textContent = timeStr;
+
+  // 日付表示（言語別）
   if(lang==="ja"){
-    document.getElementById("current-date").textContent=`${now.getFullYear()}年${pad(now.getMonth()+1)}月${pad(now.getDate())}日 ${DAYS_JP[now.getDay()]}曜日`;
+    const d = new Date(now.toLocaleString('en-US', { timeZone: tz }));
+    document.getElementById("current-date").textContent=`${d.getFullYear()}年${pad(d.getMonth()+1)}月${pad(d.getDate())}日 ${DAYS_JP[d.getDay()]}曜日`;
+  } else if(lang==="de"){
+    const d = new Date(now.toLocaleString('en-US', { timeZone: tz }));
+    document.getElementById("current-date").textContent=`${DAYS_DE[d.getDay()]}, ${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()}`;
   } else {
-    document.getElementById("current-date").textContent=`${DAYS_EN[now.getDay()]}, ${now.getFullYear()}/${pad(now.getMonth()+1)}/${pad(now.getDate())}`;
+    const d = new Date(now.toLocaleString('en-US', { timeZone: tz }));
+    document.getElementById("current-date").textContent=`${DAYS_EN[d.getDay()]}, ${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())}`;
   }
   if(!rebootTarget)return;
   const effective=new Date(rebootTarget.getTime()+donationDelayMs);
@@ -1017,6 +1113,12 @@ async function checkPushState() {
   }
 }
 window.addEventListener('load', checkPushState);
+
+// ページ読み込み時に保存済み都市を反映
+window.addEventListener('load', () => {
+  const savedCity = localStorage.getItem("city") || "tokyo";
+  setCity(savedCity);
+});
 
 </script>
 </body>
