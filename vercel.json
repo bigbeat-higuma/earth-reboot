@@ -1,8 +1,8 @@
 {
-  "functions": {
-    "api/analyze.js":        { "maxDuration": 30 },
-    "api/donate.js":         { "maxDuration": 10 },
-    "api/webhook.js":        { "maxDuration": 10 },
-    "api/donation-stats.js": { "maxDuration": 10 }
-  }
+  "crons": [
+    {
+      "path": "/api/notify",
+      "schedule": "0 9 * * *"
+    }
+  ]
 }
