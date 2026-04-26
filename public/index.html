@@ -219,14 +219,8 @@
 
 </style>
 <!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-GY482ZK0BW"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-GY482ZK0BW');
-</script>
-<script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-GY482ZK0BW">
+
 
 // Buy Me a Coffee
 function donateBMaC() {
@@ -236,9 +230,11 @@ function donateBMaC() {
 // PayPal寄付
 function donatePayPal() {
   const amount = selectedAmount || 1000;
+  // PayPal.meリンクに金額を付加（JPY指定）
   const url = `https://paypal.me/earthreboot/${amount}JPY`;
   window.open(url, '_blank');
 }
+
 
 // ── 世界時計 ─────────────────────────────────
 const WORLD_CITIES = [
@@ -341,6 +337,12 @@ function updateShareText() {
   if (el) el.textContent = days > 365 ? `約${years}年` : `約${days}日`;
 }
 
+</script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-GY482ZK0BW');
 </script>
 <meta property="og:image" content="https://earth-reboot.vercel.app/ogp.png">
 <meta property="og:image:width" content="1200">
@@ -878,7 +880,56 @@ function copyUrl() {
   });
 }
 
+// ── カウントダウン崩壊演出 ──────────────────────
+let collapseTriggered = false;
 
+function triggerCollapse() {
+  if (collapseTriggered) return;
+  collapseTriggered = true;
+
+  const overlay = document.getElementById('collapse-overlay');
+  overlay.classList.add('active');
+
+  // Glitch effect on body
+  document.body.classList.add('screen-glitch');
+
+  // Sequence of messages
+  const messages = [
+    { text: 'REBOOTING', sub: lang==='ja'?'地球システムを再起動しています\nEARTH SYSTEM REBOOTING...':'EARTH SYSTEM REBOOTING...', delay: 0 },
+    { text: 'ERASING', sub: lang==='ja'?'すべてのデータを消去中\nERASING ALL CIVILIZATION DATA...':'ERASING ALL CIVILIZATION DATA...', delay: 2000 },
+    { text: 'RESETTING', sub: lang==='ja'?'文明をリセット中\nRESETTING CIVILIZATION...':'RESETTING CIVILIZATION...', delay: 4000 },
+    { text: 'COMPLETE', sub: lang==='ja'?'再起動が完了しました\nREBOOT COMPLETE':'REBOOT COMPLETE', delay: 6000 },
+  ];
+
+  messages.forEach(({ text, sub, delay }) => {
+    setTimeout(() => {
+      document.getElementById('collapse-main-text').textContent = text;
+      document.getElementById('collapse-sub').innerHTML = sub;
+    }, delay);
+  });
+
+  // Click to dismiss after 8s
+  setTimeout(() => {
+    document.getElementById('collapse-info').textContent = '// TAP TO RESTART OBSERVATION //';
+    overlay.addEventListener('click', () => {
+      overlay.classList.remove('active');
+      document.body.classList.remove('screen-glitch');
+      collapseTriggered = false;
+    }, { once: true });
+  }, 7000);
+}
+
+// カウントダウンが0になったら崩壊演出を発動
+const _origUpdateClock = updateClock;
+
+// ── ServiceWorker登録 ────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(() => console.log('[SW] Registered'))
+      .catch((e) => console.warn('[SW] Registration failed:', e));
+  });
+}
 
 </script>
 </body>
