@@ -28,8 +28,8 @@ self.addEventListener('activate', (e) => {
 
 // ネットワーク優先、失敗時はキャッシュを返す
 self.addEventListener('fetch', (e) => {
-  // APIリクエストはキャッシュしない
-  if (e.request.url.includes('/api/')) {
+  // APIリクエストとPOSTはキャッシュしない
+  if (e.request.url.includes('/api/') || e.request.method !== 'GET') {
     return;
   }
   e.respondWith(
