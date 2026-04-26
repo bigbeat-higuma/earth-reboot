@@ -42,3 +42,23 @@ self.addEventListener('fetch', (e) => {
       .catch(() => caches.match(e.request))
   );
 });
+
+// ── プッシュ通知受信 ──────────────────────────
+self.addEventListener('push', (e) => {
+  const data = e.data ? e.data.json() : {};
+  const title = data.title || '🌍 地球再起動時間';
+  const options = {
+    body: data.body || '地球の状況を確認してください。',
+    icon: data.icon || '/icon-192.png',
+    badge: data.badge || '/icon-192.png',
+    data: { url: data.url || 'https://earth-reboot.vercel.app' },
+  };
+  e.waitUntil(self.registration.showNotification(title, options));
+});
+
+// 通知タップで画面を開く
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const url = e.notification.data?.url || 'https://earth-reboot.vercel.app';
+  e.waitUntil(clients.openWindow(url));
+});

@@ -209,6 +209,12 @@
   .bmac-btn{width:100%;background:transparent;border:1px solid rgba(255,221,0,.3);color:rgba(255,221,0,.8);font-family:var(--mono);font-size:.8rem;letter-spacing:.2em;padding:12px;cursor:pointer;transition:all .3s;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:10px;}
   .bmac-btn:hover{background:rgba(255,221,0,.08);border-color:rgba(255,221,0,.6);color:#ffdd00;box-shadow:0 0 15px rgba(255,221,0,.2);}
 
+  /* プッシュ通知ボタン */
+  .notify-btn{width:100%;background:transparent;border:1px solid rgba(100,200,255,.3);color:rgba(100,200,255,.8);font-family:var(--mono);font-size:.8rem;letter-spacing:.2em;padding:12px;cursor:pointer;transition:all .3s;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:10px;}
+  .notify-btn:hover{background:rgba(100,200,255,.08);border-color:rgba(100,200,255,.6);color:#64c8ff;box-shadow:0 0 15px rgba(100,200,255,.2);}
+  .notify-btn.subscribed{border-color:rgba(68,255,136,.4);color:rgba(68,255,136,.8);}
+  .notify-btn.subscribed:hover{background:rgba(68,255,136,.08);border-color:rgba(68,255,136,.6);color:#44ff88;}
+
 
   /* 世界時計 */
   .world-clocks{display:none;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(139,0,0,.3);}
@@ -470,6 +476,11 @@ function updateShareText() {
     </button>
     <button class="bmac-btn" onclick="donateBMaC()">
       ☕ Buy Me a Coffeeで支援する
+    </button>
+
+    <!-- プッシュ通知購読ボタン -->
+    <button class="notify-btn" id="notify-btn" onclick="togglePushSubscription()">
+      🔔 <span id="notify-btn-text">地球の危機を通知で受け取る</span>
     </button>
   </div>
 
@@ -931,6 +942,81 @@ if ('serviceWorker' in navigator) {
       .catch((e) => console.warn('[SW] Registration failed:', e));
   });
 }
+
+// ── プッシュ通知購読 ──────────────────────────
+const VAPID_PUBLIC_KEY = 'BPuZl5c1rEZUtmdB8UGw1UhAQoI4-yBYLdkudXvDgJD-haQlmEEscJRnI6Zj1nA5ymeNYDHCymuKOtwmXwAPLJ8';
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+}
+
+async function togglePushSubscription() {
+  if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+    alert('このブラウザはプッシュ通知に対応していません。');
+    return;
+  }
+
+  const btn = document.getElementById('notify-btn');
+  const btnText = document.getElementById('notify-btn-text');
+
+  // 既に購読中なら解除
+  const reg = await navigator.serviceWorker.ready;
+  const existing = await reg.pushManager.getSubscription();
+  if (existing) {
+    await existing.unsubscribe();
+    btn.classList.remove('subscribed');
+    btnText.textContent = lang === 'en' ? 'Get Earth Crisis Alerts' : '地球の危機を通知で受け取る';
+    return;
+  }
+
+  // 通知許可を求める
+  const permission = await Notification.requestPermission();
+  if (permission !== 'granted') {
+    alert(lang === 'en' ? 'Notification permission denied.' : '通知の許可が必要です。');
+    return;
+  }
+
+  try {
+    btn.disabled = true;
+    btnText.textContent = lang === 'en' ? 'Registering...' : '登録中...';
+
+    const subscription = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+    });
+
+    await fetch('/api/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(subscription),
+    });
+
+    btn.classList.add('subscribed');
+    btnText.textContent = lang === 'en' ? '🔔 Alerts Enabled — Tap to Disable' : '🔔 通知ON — タップで解除';
+  } catch (err) {
+    console.error('Push subscription error:', err);
+    btnText.textContent = lang === 'en' ? 'Registration Failed' : '登録に失敗しました';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ページ読み込み時に購読状態を反映
+async function checkPushState() {
+  if (!('serviceWorker' in navigator)) return;
+  const reg = await navigator.serviceWorker.ready;
+  const sub = await reg.pushManager.getSubscription();
+  if (sub) {
+    const btn = document.getElementById('notify-btn');
+    const btnText = document.getElementById('notify-btn-text');
+    if (btn) btn.classList.add('subscribed');
+    if (btnText) btnText.textContent = lang === 'en' ? '🔔 Alerts Enabled — Tap to Disable' : '🔔 通知ON — タップで解除';
+  }
+}
+window.addEventListener('load', checkPushState);
 
 </script>
 </body>
