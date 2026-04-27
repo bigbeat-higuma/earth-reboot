@@ -724,6 +724,7 @@ function setLang(l) {
 function setCity(cityId) {
   const city = CITIES[cityId];
   if (!city) return;
+  const prevLang = lang;
   currentCity = cityId;
   lang = city.lang;
   localStorage.setItem("city", cityId);
@@ -740,6 +741,11 @@ function setCity(cityId) {
   document.getElementById("btn-en").classList.toggle("active", lang==="en");
 
   applyLang();
+
+  // 言語が変わったらAI解析を再取得
+  if (prevLang !== lang && typeof runAnalysis === 'function') {
+    runAnalysis(false);
+  }
 }
 
 function applyLang() {
@@ -835,7 +841,8 @@ async function runAnalysis(force=false){
   const btn=document.getElementById("reload-btn");btn.disabled=true;
   document.getElementById("ai-status-label").textContent=t("aiScanning");
   try{
-    const res=await fetch(force?"/api/analyze?refresh=1":"/api/analyze");
+    const url = force ? `/api/analyze?refresh=1&lang=${lang}` : `/api/analyze?lang=${lang}`;
+    const res=await fetch(url);
     if(!res.ok)throw new Error(`HTTP ${res.status}`);
     applyResult(await res.json());
   }catch(e){
@@ -850,7 +857,7 @@ function applyResult(json){
   if(rebootTarget){const el=document.getElementById("restart-datetime");el.classList.add("glitch");setTimeout(()=>el.classList.remove("glitch"),500);}
   rebootTarget=new Date(analyzedAt.getTime()+yearsMs);analysisBaseTime=analyzedAt;totalSpanMs=yearsMs;
   updateRestartDisplay();
-  document.getElementById("ai-summary").textContent=json.summary_jp||"—";
+  document.getElementById("ai-summary").textContent=json.summary||json.summary_jp||"—";
   document.getElementById("ai-status-label").textContent=t("aiComplete", parseFloat(json.reboot_years_from_now).toFixed(1));
   updateEvidence(json.threat_evidence);
   const kf=document.getElementById("key-factors");kf.innerHTML="";
