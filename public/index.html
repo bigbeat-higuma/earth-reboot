@@ -217,7 +217,7 @@
 
 
   /* 世界時計 */
-  .world-clocks{display:none;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(139,0,0,.3);}
+  .world-clocks{display:none;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(139,0,0,.3);}
   .world-clocks.show{display:grid;}
   .world-clock-item{text-align:center;padding:6px 4px;border-radius:4px;transition:background .2s;}
   .world-clock-item:hover{background:rgba(139,0,0,.15);}
@@ -369,6 +369,7 @@ function updateShareText() {
 <div class="city-switch" id="city-switch">
   <button class="city-btn active" id="city-btn-tokyo"   onclick="setCity('tokyo')">🇯🇵 TOKYO</button>
   <button class="city-btn"        id="city-btn-newyork" onclick="setCity('newyork')">🇺🇸 NY</button>
+  <button class="city-btn"        id="city-btn-la"      onclick="setCity('la')">🇺🇸 L.A.</button>
   <button class="city-btn"        id="city-btn-london"  onclick="setCity('london')">🇬🇧 LONDON</button>
   <button class="city-btn"        id="city-btn-paris"   onclick="setCity('paris')">🇫🇷 PARIS</button>
   <button class="city-btn"        id="city-btn-berlin"  onclick="setCity('berlin')">🇩🇪 BERLIN</button>
@@ -423,6 +424,11 @@ function updateShareText() {
         <div class="world-clock-city">🇺🇸 NEW YORK</div>
         <div class="world-clock-time" id="wc-newyork">--:--:--</div>
         <div class="world-clock-date" id="wd-newyork">--/--</div>
+      </div>
+      <div class="world-clock-item" onclick="setCity('la')" style="cursor:pointer">
+        <div class="world-clock-city">🇺🇸 L.A.</div>
+        <div class="world-clock-time" id="wc-la">--:--:--</div>
+        <div class="world-clock-date" id="wd-la">--/--</div>
       </div>
       <div class="world-clock-item" onclick="setCity('london')" style="cursor:pointer">
         <div class="world-clock-city">🇬🇧 LONDON</div>
@@ -737,11 +743,12 @@ let rebootTarget=null,analysisBaseTime=null,totalSpanMs=null,donationDelayMs=0,s
 
 // 都市設定（言語・タイムゾーン対応）
 const CITIES = {
-  tokyo:   { id: 'tokyo',   label: 'TOKYO',    tz: 'Asia/Tokyo',       lang: 'ja', flag: '🇯🇵' },
-  newyork: { id: 'newyork', label: 'NEW YORK', tz: 'America/New_York', lang: 'en', flag: '🇺🇸' },
-  london:  { id: 'london',  label: 'LONDON',   tz: 'Europe/London',    lang: 'en', flag: '🇬🇧' },
-  paris:   { id: 'paris',   label: 'PARIS',    tz: 'Europe/Paris',     lang: 'fr', flag: '🇫🇷' },
-  berlin:  { id: 'berlin',  label: 'BERLIN',   tz: 'Europe/Berlin',    lang: 'de', flag: '🇩🇪' },
+  tokyo:   { id: 'tokyo',   label: 'TOKYO',    tz: 'Asia/Tokyo',          lang: 'ja', flag: '🇯🇵' },
+  newyork: { id: 'newyork', label: 'NEW YORK', tz: 'America/New_York',    lang: 'en', flag: '🇺🇸' },
+  la:      { id: 'la',      label: 'L.A.',     tz: 'America/Los_Angeles', lang: 'en', flag: '🇺🇸' },
+  london:  { id: 'london',  label: 'LONDON',   tz: 'Europe/London',       lang: 'en', flag: '🇬🇧' },
+  paris:   { id: 'paris',   label: 'PARIS',    tz: 'Europe/Paris',        lang: 'fr', flag: '🇫🇷' },
+  berlin:  { id: 'berlin',  label: 'BERLIN',   tz: 'Europe/Berlin',       lang: 'de', flag: '🇩🇪' },
 };
 
 let currentCity = localStorage.getItem("city") || "tokyo";
