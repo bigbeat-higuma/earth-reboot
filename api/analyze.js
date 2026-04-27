@@ -94,6 +94,35 @@ Keine HTML-Tags, kein Markdown, keine Anführungszeichen-Tags. Nur reiner Text.
     fallbackFactors: ["Systemüberlastung", "Analyse pausiert", "Bald wiederhergestellt"],
     fallbackEvidence: ["Daten werden abgerufen...", "Daten werden abgerufen...", "Daten werden abgerufen..."],
   },
+  fr: {
+    dateFormat: (d) => `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`,
+    prompt: (dateStr) => `Tu es l'IA du "Système de Redémarrage de la Terre".
+Aujourd'hui, nous sommes le ${dateStr}.
+
+Évalue la situation mondiale actuelle et retourne UNIQUEMENT le JSON suivant.
+Aucune balise HTML, aucun markdown, aucune balise de citation. Texte pur uniquement.
+
+{
+  "reboot_years_from_now": <nombre entre 0.5 et 50>,
+  "summary": "<texte d'environ 200 caractères en style horreur/apocalyptique en français>",
+  "threats": {
+    "geopolitical": <entier 0-100>,
+    "environmental": <entier 0-100>,
+    "economic": <entier 0-100>,
+    "social": <entier 0-100>
+  },
+  "threat_evidence": {
+    "geopolitical": ["<preuve 1 (max. 60 caractères)>", "<preuve 2>", "<preuve 3>"],
+    "environmental": ["<preuve 1>", "<preuve 2>", "<preuve 3>"],
+    "economic":      ["<preuve 1>", "<preuve 2>", "<preuve 3>"],
+    "social":        ["<preuve 1>", "<preuve 2>", "<preuve 3>"]
+  },
+  "key_factors": ["<facteur 1 (max. 30 caractères)>", "<facteur 2>", "<facteur 3>"]
+}`,
+    fallbackSummary: "Le système d'analyse est temporairement surchargé. Mais le compte à rebours de la Terre ne s'arrête jamais. Le système sera bientôt rétabli.",
+    fallbackFactors: ["Surcharge système", "Analyse en pause", "Rétablissement imminent"],
+    fallbackEvidence: ["Récupération des données...", "Récupération des données...", "Récupération des données..."],
+  },
 };
 
 export default async function handler(req, res) {
@@ -104,7 +133,7 @@ export default async function handler(req, res) {
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
 
   const forceRefresh = req.query.refresh === "1";
-  const lang = ["ja", "en", "de"].includes(req.query.lang) ? req.query.lang : "ja";
+  const lang = ["ja", "en", "de", "fr"].includes(req.query.lang) ? req.query.lang : "ja";
   const cacheKey = `analysis_cache_${lang}`;
   const now = Date.now();
 
@@ -177,10 +206,7 @@ export default async function handler(req, res) {
     const clean = text.replace(/```json|```/g, "").trim();
     const parsed = JSON.parse(clean);
 
-    // summary_jpとsummaryを統一
     if (parsed.summary_jp && !parsed.summary) parsed.summary = parsed.summary_jp;
-
-    // タグ除去
     if (parsed.summary) parsed.summary = removeTags(parsed.summary);
     if (parsed.summary_jp) parsed.summary_jp = parsed.summary;
     if (parsed.key_factors) parsed.key_factors = parsed.key_factors.map(f => removeTags(f));

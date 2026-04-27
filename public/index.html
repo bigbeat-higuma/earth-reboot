@@ -687,6 +687,44 @@ const T = {
     extendSub: (a) => `Danke für deine Spende von ¥${a.toLocaleString()}. Countdown aktualisiert.`,
     loading: ["// ERDSYSTEM-ANALYSE INITIALISIERT...", "// GLOBALE BEDROHUNGSMATRIX WIRD GESCANNT...", "// NEUSTART-ZEITSTEMPEL WIRD BERECHNET...", "// SPENDENAUFZEICHNUNGEN WERDEN GELADEN...", "// SYSTEM BEREIT"],
     currency: "JPY",
+  },
+  fr: {
+    title: "Compte à Rebours du Redémarrage",
+    lblCurrent: "// HEURE ACTUELLE",
+    lblReboot: "// DATE DE REDÉMARRAGE PRÉVUE",
+    lblWarning: "⚠ REDÉMARRAGE SYSTÈME PRÉVU — TOUTES LES DONNÉES SERONT EFFACÉES ⚠",
+    lblRemaining: "// TEMPS RESTANT",
+    lblDays: "JOURS", lblHours: "HEURES", lblMins: "MIN", lblSecs: "SEC",
+    lblProgress: "PROGRESSION DE L'EFFONDREMENT",
+    lblDonateTitle: "// SAUVEZ LA TERRE — RETARDEZ LE REDÉMARRAGE",
+    donateIntro: `Tous les dons vont directement à la <strong>conservation de l'environnement</strong>.<br><strong>Chaque ¥100 n'achète que 6 heures</strong>——mais votre soutien repousse le compte à rebours.`,
+    donateBtn: "▶ FAIRE UN DON ET SAUVER LA TERRE",
+    donateBtnLoading: "// CONNEXION AU PAIEMENT...",
+    delayPreview: (h) => `Ce don prolongera le redémarrage de ${h}`,
+    delayMin: "Don minimum: ¥100",
+    lblAiTitle: "// JOURNAL D'ANALYSE IA — INDICE DE MENACE MONDIAL",
+    aiConnecting: "// SYSTÈME D'ANALYSE IA EN CONNEXION...",
+    aiScanning: "// SYSTÈME IA: ANALYSE DE LA SITUATION MONDIALE...",
+    aiComplete: (y) => `// ANALYSE TERMINÉE — REDÉMARRAGE DANS ~${y} ANS`,
+    aiError: "// ERREUR DE CONNEXION",
+    aiErrorMsg: "Échec de la connexion au système d'analyse.",
+    analyzing: "Analyse de la situation mondiale...",
+    t1: "Tension Géopolitique", t2: "Effondrement Environnemental", t3: "Instabilité Économique", t4: "Désordre Social",
+    cached: (m) => `EN CACHE — Analyse il y a ${m} min`,
+    cacheNext: (m) => `Prochaine mise à jour dans ~${m} min`,
+    live: "EN DIRECT — Nouvelle analyse",
+    liveNext: (m) => `Mise à jour auto dans ~${m} min`,
+    reloadBtn: "⟳ FORCER UNE NOUVELLE ANALYSE MONDIALE",
+    lastUpdated: (s) => `Dernière analyse: ${s}`,
+    lblLogTitle: "// JOURNAL DES DONS — REGISTRE DE TRANSPARENCE",
+    lblTotalAmount: "TOTAL DES DONS", lblTotalDelay: "DÉLAI TOTAL", lblTotalCount: "SUPPORTERS",
+    logEmpty: "// Pas encore de dons",
+    logFooter: "Tous les bénéfices vont aux organisations de protection de l'environnement",
+    logItem: (h, a) => `+${h} délai / ¥${a.toLocaleString()}`,
+    extendTitle: (h) => `▲ REDÉMARRAGE DE LA TERRE RETARDÉ DE ${h}`,
+    extendSub: (a) => `Merci pour votre don de ¥${a.toLocaleString()}. Compte à rebours mis à jour.`,
+    loading: ["// ANALYSE DU SYSTÈME TERRESTRE...", "// ANALYSE DE LA MATRICE DE MENACES...", "// CALCUL DE L'HORODATAGE...", "// CHARGEMENT DES DONS...", "// SYSTÈME PRÊT"],
+    currency: "JPY",
   }
 };
 
@@ -694,6 +732,7 @@ let lang = localStorage.getItem("lang") || "ja";
 const DAYS_JP = ["日","月","火","水","木","金","土"];
 const DAYS_EN = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const DAYS_DE = ["So","Mo","Di","Mi","Do","Fr","Sa"];
+const DAYS_FR = ["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
 let rebootTarget=null,analysisBaseTime=null,totalSpanMs=null,donationDelayMs=0,selectedAmount=1000;
 
 // 都市設定（言語・タイムゾーン対応）
@@ -701,7 +740,7 @@ const CITIES = {
   tokyo:   { id: 'tokyo',   label: 'TOKYO',    tz: 'Asia/Tokyo',       lang: 'ja', flag: '🇯🇵' },
   newyork: { id: 'newyork', label: 'NEW YORK', tz: 'America/New_York', lang: 'en', flag: '🇺🇸' },
   london:  { id: 'london',  label: 'LONDON',   tz: 'Europe/London',    lang: 'en', flag: '🇬🇧' },
-  paris:   { id: 'paris',   label: 'PARIS',    tz: 'Europe/Paris',     lang: 'en', flag: '🇫🇷' },
+  paris:   { id: 'paris',   label: 'PARIS',    tz: 'Europe/Paris',     lang: 'fr', flag: '🇫🇷' },
   berlin:  { id: 'berlin',  label: 'BERLIN',   tz: 'Europe/Berlin',    lang: 'de', flag: '🇩🇪' },
 };
 
@@ -791,6 +830,16 @@ function formatHours(seconds){
     const d=Math.floor(h/24),rh=h%24;
     return rh>0?d+"d "+rh+"h":d+"d";
   }
+  if(lang==="de"){
+    if(h<24) return h+"Std.";
+    const d=Math.floor(h/24),rh=h%24;
+    return rh>0?d+"T "+rh+"Std.":d+"T";
+  }
+  if(lang==="fr"){
+    if(h<24) return h+"h";
+    const d=Math.floor(h/24),rh=h%24;
+    return rh>0?d+"j "+rh+"h":d+"j";
+  }
   if(h<24) return h+"時間";
   const d=Math.floor(h/24),rh=h%24;
   return rh>0?d+"日"+rh+"時間":d+"日";
@@ -812,6 +861,9 @@ function updateClock(){
   } else if(lang==="de"){
     const d = new Date(now.toLocaleString('en-US', { timeZone: tz }));
     document.getElementById("current-date").textContent=`${DAYS_DE[d.getDay()]}, ${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()}`;
+  } else if(lang==="fr"){
+    const d = new Date(now.toLocaleString('en-US', { timeZone: tz }));
+    document.getElementById("current-date").textContent=`${DAYS_FR[d.getDay()]} ${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
   } else {
     const d = new Date(now.toLocaleString('en-US', { timeZone: tz }));
     document.getElementById("current-date").textContent=`${DAYS_EN[d.getDay()]}, ${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())}`;
