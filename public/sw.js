@@ -1,4 +1,4 @@
-const CACHE_NAME = 'earth-reboot-v1';
+const CACHE_NAME = 'earth-reboot-v2';
 const ASSETS = [
   '/',
   '/index.html',
@@ -6,9 +6,9 @@ const ASSETS = [
   '/apple-touch-icon.png',
   '/icon-192.png',
   '/icon-512.png',
+  '/favicon.ico',
 ];
 
-// インストール時にキャッシュ
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
@@ -16,7 +16,6 @@ self.addEventListener('install', (e) => {
   self.skipWaiting();
 });
 
-// 古いキャッシュを削除
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) =>
@@ -26,24 +25,25 @@ self.addEventListener('activate', (e) => {
   self.clients.claim();
 });
 
-// ネットワーク優先、失敗時はキャッシュを返す
 self.addEventListener('fetch', (e) => {
-  // APIリクエストとPOSTはキャッシュしない
-  if (e.request.url.includes('/api/') || e.request.method !== 'GET') {
-    return;
-  }
+  if (e.request.url.includes('/api/') || e.request.method !== 'GET') return;
   e.respondWith(
     fetch(e.request)
       .then((res) => {
-        const clone = res.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone));
+        if (res.ok) {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone));
+        }
         return res;
       })
-      .catch(() => caches.match(e.request))
+      .catch(() => {
+        return caches.match(e.request).then((cached) => {
+          return cached || caches.match('/index.html');
+        });
+      })
   );
 });
 
-// ── プッシュ通知受信 ──────────────────────────
 self.addEventListener('push', (e) => {
   const data = e.data ? e.data.json() : {};
   const title = data.title || '🌍 地球再起動時間';
@@ -56,7 +56,6 @@ self.addEventListener('push', (e) => {
   e.waitUntil(self.registration.showNotification(title, options));
 });
 
-// 通知タップで画面を開く
 self.addEventListener('notificationclick', (e) => {
   e.notification.close();
   const url = e.notification.data?.url || 'https://earth-reboot.vercel.app';

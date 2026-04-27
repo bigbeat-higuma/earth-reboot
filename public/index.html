@@ -896,17 +896,97 @@ function updateRestartDisplay(){
   document.getElementById("restart-datetime").textContent=`${e.getFullYear()}/${pad(e.getMonth()+1)}/${pad(e.getDate())}\n${pad(e.getHours())}:${pad(e.getMinutes())}`;
 }
 
+// ── オフラインキャッシュ ──────────────────────
+const OFFLINE_KEY = 'offline_analysis';
+const OFFLINE_REBOOT_KEY = 'offline_reboot';
+
+function saveOfflineData(json) {
+  try {
+    localStorage.setItem(OFFLINE_KEY + '_' + (json.lang || lang), JSON.stringify(json));
+    // 再起動日時も保存
+    if (rebootTarget) {
+      localStorage.setItem(OFFLINE_REBOOT_KEY, JSON.stringify({
+        rebootTarget: rebootTarget.toISOString(),
+        analysisBaseTime: analysisBaseTime ? analysisBaseTime.toISOString() : null,
+        totalSpanMs,
+        donationDelayMs,
+        savedAt: new Date().toISOString(),
+      }));
+    }
+  } catch(e) {}
+}
+
+function loadOfflineData() {
+  try {
+    const saved = localStorage.getItem(OFFLINE_KEY + '_' + lang);
+    return saved ? JSON.parse(saved) : null;
+  } catch(e) { return null; }
+}
+
+function loadOfflineReboot() {
+  try {
+    const saved = localStorage.getItem(OFFLINE_REBOOT_KEY);
+    return saved ? JSON.parse(saved) : null;
+  } catch(e) { return null; }
+}
+
+function showOfflineBanner() {
+  let banner = document.getElementById('offline-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'offline-banner';
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:2000;background:rgba(80,40,0,0.95);border-bottom:1px solid rgba(255,140,0,0.5);color:rgba(255,180,50,0.9);font-family:var(--mono);font-size:0.6rem;letter-spacing:0.15em;padding:6px 16px;text-align:center;';
+    document.body.appendChild(banner);
+  }
+  banner.textContent = lang === 'ja' ? '// オフラインモード — 最後に保存されたデータを表示中'
+    : lang === 'fr' ? '// MODE HORS LIGNE — Affichage des dernières données sauvegardées'
+    : lang === 'de' ? '// OFFLINE-MODUS — Letzte gespeicherte Daten werden angezeigt'
+    : '// OFFLINE MODE — Showing last saved data';
+  banner.style.display = 'block';
+}
+
+function hideOfflineBanner() {
+  const banner = document.getElementById('offline-banner');
+  if (banner) banner.style.display = 'none';
+}
+
 async function runAnalysis(force=false){
   const btn=document.getElementById("reload-btn");btn.disabled=true;
   document.getElementById("ai-status-label").textContent=t("aiScanning");
+
+  // オンラインか確認
+  if (!navigator.onLine) {
+    const offline = loadOfflineData();
+    if (offline) {
+      applyResult(offline);
+      showOfflineBanner();
+    } else {
+      document.getElementById("ai-status-label").textContent=t("aiError");
+      document.getElementById("ai-summary").textContent=t("aiErrorMsg");
+      showOfflineBanner();
+    }
+    btn.disabled=false;
+    return;
+  }
+
   try{
     const url = force ? `/api/analyze?refresh=1&lang=${lang}` : `/api/analyze?lang=${lang}`;
     const res=await fetch(url);
     if(!res.ok)throw new Error(`HTTP ${res.status}`);
-    applyResult(await res.json());
+    const json = await res.json();
+    saveOfflineData(json);
+    hideOfflineBanner();
+    applyResult(json);
   }catch(e){
-    document.getElementById("ai-status-label").textContent=t("aiError");
-    document.getElementById("ai-summary").textContent=t("aiErrorMsg");
+    // ネットワークエラー時はオフラインデータを使用
+    const offline = loadOfflineData();
+    if (offline) {
+      applyResult(offline);
+      showOfflineBanner();
+    } else {
+      document.getElementById("ai-status-label").textContent=t("aiError");
+      document.getElementById("ai-summary").textContent=t("aiErrorMsg");
+    }
   }
   btn.disabled=false;
 }
@@ -916,6 +996,8 @@ function applyResult(json){
   if(rebootTarget){const el=document.getElementById("restart-datetime");el.classList.add("glitch");setTimeout(()=>el.classList.remove("glitch"),500);}
   rebootTarget=new Date(analyzedAt.getTime()+yearsMs);analysisBaseTime=analyzedAt;totalSpanMs=yearsMs;
   updateRestartDisplay();
+  // 再起動データをオフライン用に保存
+  saveOfflineData(json);
   document.getElementById("ai-summary").textContent=json.summary||json.summary_jp||"—";
   document.getElementById("ai-status-label").textContent=t("aiComplete", parseFloat(json.reboot_years_from_now).toFixed(1));
   updateEvidence(json.threat_evidence);
@@ -930,6 +1012,15 @@ function applyResult(json){
   document.getElementById("last-updated").textContent=t("lastUpdated",`${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`);
   updateClock();
 }
+
+// オンライン復帰時に自動更新
+window.addEventListener('online', () => {
+  hideOfflineBanner();
+  runAnalysis(false);
+});
+window.addEventListener('offline', () => {
+  showOfflineBanner();
+});
 
 function calcDelay(amount){return Math.floor((amount/100)*6*3600);}
 
