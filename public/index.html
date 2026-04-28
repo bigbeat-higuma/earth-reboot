@@ -217,7 +217,7 @@
 
 
   /* 世界時計 */
-  .world-clocks{display:none;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(139,0,0,.3);}
+  .world-clocks{display:none;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(139,0,0,.3);}
   .world-clocks.show{display:grid;}
   .world-clock-item{text-align:center;padding:6px 4px;border-radius:4px;transition:background .2s;}
   .world-clock-item:hover{background:rgba(139,0,0,.15);}
@@ -368,6 +368,7 @@ function updateShareText() {
 <!-- 都市選択UI -->
 <div class="city-switch" id="city-switch">
   <button class="city-btn active" id="city-btn-tokyo"   onclick="setCity('tokyo')">🇯🇵 TOKYO</button>
+  <button class="city-btn"        id="city-btn-beijing" onclick="setCity('beijing')">🇨🇳 北京</button>
   <button class="city-btn"        id="city-btn-newyork" onclick="setCity('newyork')">🇺🇸 NY</button>
   <button class="city-btn"        id="city-btn-la"      onclick="setCity('la')">🇺🇸 L.A.</button>
   <button class="city-btn"        id="city-btn-london"  onclick="setCity('london')">🇬🇧 LONDON</button>
@@ -419,6 +420,11 @@ function updateShareText() {
         <div class="world-clock-city">🇯🇵 TOKYO</div>
         <div class="world-clock-time" id="wc-tokyo">--:--:--</div>
         <div class="world-clock-date" id="wd-tokyo">--/--</div>
+      </div>
+      <div class="world-clock-item" onclick="setCity('beijing')" style="cursor:pointer">
+        <div class="world-clock-city">🇨🇳 北京</div>
+        <div class="world-clock-time" id="wc-beijing">--:--:--</div>
+        <div class="world-clock-date" id="wd-beijing">--/--</div>
       </div>
       <div class="world-clock-item" onclick="setCity('newyork')" style="cursor:pointer">
         <div class="world-clock-city">🇺🇸 NEW YORK</div>
@@ -731,6 +737,44 @@ const T = {
     extendSub: (a) => `Merci pour votre don de ¥${a.toLocaleString()}. Compte à rebours mis à jour.`,
     loading: ["// ANALYSE DU SYSTÈME TERRESTRE...", "// ANALYSE DE LA MATRICE DE MENACES...", "// CALCUL DE L'HORODATAGE...", "// CHARGEMENT DES DONS...", "// SYSTÈME PRÊT"],
     currency: "JPY",
+  },
+  zh: {
+    title: "地球重启倒计时",
+    lblCurrent: "// 当前时间",
+    lblReboot: "// 预定重启日期",
+    lblWarning: "⚠ 系统重启已预定 — 所有数据将被清除 ⚠",
+    lblRemaining: "// 剩余时间",
+    lblDays: "天", lblHours: "时", lblMins: "分", lblSecs: "秒",
+    lblProgress: "地球崩溃进度",
+    lblDonateTitle: "// 拯救地球 — 延迟重启",
+    donateIntro: `所有捐款直接用于<strong>环境保护</strong>。<br><strong>每¥100仅延迟6小时</strong>——但您的支持能推迟倒计时。`,
+    donateBtn: "▶ 立即捐款，拯救地球",
+    donateBtnLoading: "// 正在连接支付...",
+    delayPreview: (h) => `此捐款将延迟重启 ${h}`,
+    delayMin: "最低捐款：¥100",
+    lblAiTitle: "// AI分析日志 — 全球威胁指数",
+    aiConnecting: "// AI分析系统连接中...",
+    aiScanning: "// AI系统：正在扫描全球形势...",
+    aiComplete: (y) => `// 分析完成 — 重启倒计时约${y}年`,
+    aiError: "// 连接错误",
+    aiErrorMsg: "无法连接到分析系统。",
+    analyzing: "正在分析全球形势...",
+    t1: "地缘政治紧张", t2: "环境崩溃", t3: "经济不稳定", t4: "社会动荡",
+    cached: (m) => `已缓存 — ${m}分钟前的分析`,
+    cacheNext: (m) => `下次更新约${m}分钟后`,
+    live: "实时 — 最新分析",
+    liveNext: (m) => `自动更新约${m}分钟后`,
+    reloadBtn: "⟳ 强制重新分析全球形势",
+    lastUpdated: (s) => `最后分析：${s}`,
+    lblLogTitle: "// 捐款记录 — 透明度日志",
+    lblTotalAmount: "累计捐款", lblTotalDelay: "累计延迟时间", lblTotalCount: "支持者数",
+    logEmpty: "// 暂无捐款记录",
+    logFooter: "所有收益将捐给环境保护组织",
+    logItem: (h, a) => `+${h} 延迟 / ¥${a.toLocaleString()}`,
+    extendTitle: (h) => `▲ 地球重启已延迟 ${h}`,
+    extendSub: (a) => `感谢您捐款 ¥${a.toLocaleString()}。倒计时已更新。`,
+    loading: ["// 地球系统分析初始化...", "// 扫描全球威胁矩阵...", "// 计算重启时间戳...", "// 加载捐款记录...", "// 系统就绪"],
+    currency: "JPY",
   }
 };
 
@@ -739,11 +783,13 @@ const DAYS_JP = ["日","月","火","水","木","金","土"];
 const DAYS_EN = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const DAYS_DE = ["So","Mo","Di","Mi","Do","Fr","Sa"];
 const DAYS_FR = ["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
+const DAYS_ZH = ["日","一","二","三","四","五","六"];
 let rebootTarget=null,analysisBaseTime=null,totalSpanMs=null,donationDelayMs=0,selectedAmount=1000;
 
 // 都市設定（言語・タイムゾーン対応）
 const CITIES = {
   tokyo:   { id: 'tokyo',   label: 'TOKYO',    tz: 'Asia/Tokyo',          lang: 'ja', flag: '🇯🇵' },
+  beijing: { id: 'beijing', label: 'BEIJING',  tz: 'Asia/Shanghai',       lang: 'zh', flag: '🇨🇳' },
   newyork: { id: 'newyork', label: 'NEW YORK', tz: 'America/New_York',    lang: 'en', flag: '🇺🇸' },
   la:      { id: 'la',      label: 'L.A.',     tz: 'America/Los_Angeles', lang: 'en', flag: '🇺🇸' },
   london:  { id: 'london',  label: 'LONDON',   tz: 'Europe/London',       lang: 'en', flag: '🇬🇧' },
@@ -847,6 +893,11 @@ function formatHours(seconds){
     const d=Math.floor(h/24),rh=h%24;
     return rh>0?d+"j "+rh+"h":d+"j";
   }
+  if(lang==="zh"){
+    if(h<24) return h+"小时";
+    const d=Math.floor(h/24),rh=h%24;
+    return rh>0?d+"天"+rh+"小时":d+"天";
+  }
   if(h<24) return h+"時間";
   const d=Math.floor(h/24),rh=h%24;
   return rh>0?d+"日"+rh+"時間":d+"日";
@@ -871,6 +922,9 @@ function updateClock(){
   } else if(lang==="fr"){
     const d = new Date(now.toLocaleString('en-US', { timeZone: tz }));
     document.getElementById("current-date").textContent=`${DAYS_FR[d.getDay()]} ${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
+  } else if(lang==="zh"){
+    const d = new Date(now.toLocaleString('en-US', { timeZone: tz }));
+    document.getElementById("current-date").textContent=`${d.getFullYear()}年${pad(d.getMonth()+1)}月${pad(d.getDate())}日 星期${DAYS_ZH[d.getDay()]}`;
   } else {
     const d = new Date(now.toLocaleString('en-US', { timeZone: tz }));
     document.getElementById("current-date").textContent=`${DAYS_EN[d.getDay()]}, ${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())}`;
@@ -941,6 +995,7 @@ function showOfflineBanner() {
   banner.textContent = lang === 'ja' ? '// オフラインモード — 最後に保存されたデータを表示中'
     : lang === 'fr' ? '// MODE HORS LIGNE — Affichage des dernières données sauvegardées'
     : lang === 'de' ? '// OFFLINE-MODUS — Letzte gespeicherte Daten werden angezeigt'
+    : lang === 'zh' ? '// 离线模式 — 显示最后保存的数据'
     : '// OFFLINE MODE — Showing last saved data';
   banner.style.display = 'block';
 }

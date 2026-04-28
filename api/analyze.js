@@ -5,7 +5,6 @@ import { Redis } from "@upstash/redis";
 const CACHE_DURATION_MS = 6 * 60 * 60 * 1000;
 const RETRY_WAIT_MS = 60 * 1000;
 
-// 言語別プロンプト設定
 const LANG_CONFIG = {
   ja: {
     dateFormat: (d) => `${d.getFullYear()}年${String(d.getMonth()+1).padStart(2,"0")}月${String(d.getDate()).padStart(2,"0")}日`,
@@ -123,6 +122,35 @@ Aucune balise HTML, aucun markdown, aucune balise de citation. Texte pur uniquem
     fallbackFactors: ["Surcharge système", "Analyse en pause", "Rétablissement imminent"],
     fallbackEvidence: ["Récupération des données...", "Récupération des données...", "Récupération des données..."],
   },
+  zh: {
+    dateFormat: (d) => `${d.getFullYear()}年${String(d.getMonth()+1).padStart(2,"0")}月${String(d.getDate()).padStart(2,"0")}日`,
+    prompt: (dateStr) => `你是"地球重启系统"的分析AI。
+今天是${dateStr}。
+
+请综合评估当前全球形势，仅返回以下JSON格式内容。
+不得包含HTML标签、引用标签或Markdown格式。所有内容均为纯文本。
+
+{
+  "reboot_years_from_now": <0.5到50之间的数值>,
+  "summary": "<用恐怖、末日风格写约200字的中文内容>",
+  "threats": {
+    "geopolitical": <0到100的整数>,
+    "environmental": <0到100的整数>,
+    "economic": <0到100的整数>,
+    "social": <0到100的整数>
+  },
+  "threat_evidence": {
+    "geopolitical": ["<依据1（30字以内）>", "<依据2>", "<依据3>"],
+    "environmental": ["<依据1>", "<依据2>", "<依据3>"],
+    "economic":      ["<依据1>", "<依据2>", "<依据3>"],
+    "social":        ["<依据1>", "<依据2>", "<依据3>"]
+  },
+  "key_factors": ["<主要因素1（15字以内）>", "<主要因素2>", "<主要因素3>"]
+}`,
+    fallbackSummary: "分析系统暂时过载。但地球的倒计时从未停止。系统即将恢复。",
+    fallbackFactors: ["系统过载", "分析暂停", "即将恢复"],
+    fallbackEvidence: ["数据获取中...", "数据获取中...", "数据获取中..."],
+  },
 };
 
 export default async function handler(req, res) {
@@ -133,7 +161,7 @@ export default async function handler(req, res) {
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
 
   const forceRefresh = req.query.refresh === "1";
-  const lang = ["ja", "en", "de", "fr"].includes(req.query.lang) ? req.query.lang : "ja";
+  const lang = ["ja", "en", "de", "fr", "zh"].includes(req.query.lang) ? req.query.lang : "ja";
   const cacheKey = `analysis_cache_${lang}`;
   const now = Date.now();
 
