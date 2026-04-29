@@ -264,10 +264,8 @@ function donatePayPay() {
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
   const isAndroid = /android/i.test(navigator.userAgent);
   if (isIOS || isAndroid) {
-    const appUrl = 'paypay://qr?link=' + encodeURIComponent(url);
-    const timer = setTimeout(() => { window.open(url, '_blank'); }, 1200);
-    window.location.href = appUrl;
-    window.addEventListener('blur', () => clearTimeout(timer), { once: true });
+    // PayPayの公式ディープリンク形式
+    window.open(url, '_blank');
   } else {
     window.open(url, '_blank');
   }
