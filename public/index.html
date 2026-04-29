@@ -237,8 +237,14 @@
 
 </style>
 <!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-GY482ZK0BW">
-
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-GY482ZK0BW"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-GY482ZK0BW');
+</script>
+<script>
 
 // Buy Me a Coffee
 function donateBMaC() {
@@ -255,16 +261,11 @@ function donatePayPal() {
 // PayPay寄付
 function donatePayPay() {
   const url = 'https://qr.paypay.ne.jp/p2p01_iXYwKRTx5OLMvGIH';
-  // スマホの場合はPayPayアプリを直接起動
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
   const isAndroid = /android/i.test(navigator.userAgent);
   if (isIOS || isAndroid) {
-    // アプリURLスキームを試みる
     const appUrl = 'paypay://qr?link=' + encodeURIComponent(url);
-    const timer = setTimeout(() => {
-      // アプリが開けなかった場合はブラウザで開く
-      window.open(url, '_blank');
-    }, 1200);
+    const timer = setTimeout(() => { window.open(url, '_blank'); }, 1200);
     window.location.href = appUrl;
     window.addEventListener('blur', () => clearTimeout(timer), { once: true });
   } else {
@@ -364,12 +365,6 @@ function updateShareText() {
   if (el) el.textContent = days > 365 ? `約${years}年` : `約${days}日`;
 }
 
-</script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-GY482ZK0BW');
 </script>
 <meta property="og:image" content="https://earth-reboot.vercel.app/ogp.png">
 <meta property="og:image:width" content="1200">
