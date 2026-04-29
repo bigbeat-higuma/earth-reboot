@@ -254,7 +254,22 @@ function donatePayPal() {
 
 // PayPay寄付
 function donatePayPay() {
-  window.open('https://qr.paypay.ne.jp/p2p01_iXYwKRTx5OLMvGIH', '_blank');
+  const url = 'https://qr.paypay.ne.jp/p2p01_iXYwKRTx5OLMvGIH';
+  // スマホの場合はPayPayアプリを直接起動
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isAndroid = /android/i.test(navigator.userAgent);
+  if (isIOS || isAndroid) {
+    // アプリURLスキームを試みる
+    const appUrl = 'paypay://qr?link=' + encodeURIComponent(url);
+    const timer = setTimeout(() => {
+      // アプリが開けなかった場合はブラウザで開く
+      window.open(url, '_blank');
+    }, 1200);
+    window.location.href = appUrl;
+    window.addEventListener('blur', () => clearTimeout(timer), { once: true });
+  } else {
+    window.open(url, '_blank');
+  }
 }
 
 
