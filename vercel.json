@@ -4,5 +4,8 @@
       "path": "/api/notify",
       "schedule": "0 9 * * *"
     }
+  ],
+  "rewrites": [
+    { "source": "/game", "destination": "/game.html" }
   ]
 }
