@@ -131,31 +131,33 @@ body::after {
 #text-area {
   flex: 1;
   overflow-y: auto;
-  padding: 14px 16px 8px;
+  padding: 16px 20px 8px;
   position: relative;
   z-index: 10;
   scrollbar-width: none;
-  min-height: 120px;
-  background: rgba(2,0,0,.95);
+  min-height: 150px;
+  background: #0a0000;
+  border-top: 1px solid #440000;
 }
 
 #text-area::-webkit-scrollbar { display: none; }
 
 #speaker {
   font-family: var(--mono);
-  font-size: .7rem;
-  color: var(--amber);
+  font-size: .75rem;
+  color: #cc6600;
   letter-spacing: .2em;
-  margin-bottom: 6px;
-  min-height: 1em;
+  margin-bottom: 8px;
+  min-height: 1.2em;
 }
 
 #text-box {
-  font-size: .95rem;
+  font-size: 1rem;
   line-height: 1.9;
-  color: var(--white);
+  color: #ffeeee;
   letter-spacing: .05em;
   min-height: 4em;
+  text-shadow: 0 0 8px rgba(255,100,100,.5);
 }
 
 #text-cursor {
