@@ -86,7 +86,7 @@ body::after {
 #scene-bg {
   position: relative;
   flex-shrink: 0;
-  height: 38dvh;
+  height: min(38dvh, 220px);
   overflow: hidden;
   background: #050000;
 }
@@ -135,6 +135,8 @@ body::after {
   position: relative;
   z-index: 10;
   scrollbar-width: none;
+  min-height: 120px;
+  background: rgba(2,0,0,.95);
 }
 
 #text-area::-webkit-scrollbar { display: none; }
