@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>EARTH REBOOT — 最後の選択者</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Serif+JP:wght@400;700&family=Bebas+Neue&display=swap');
+
+:root {
+  --bg: #020000;
+  --bg2: #0a0000;
+  --red: #cc2200;
+  --red-dim: #661100;
+  --red-bright: #ff3300;
+  --amber: #cc6600;
+  --green: #00cc44;
+  --text: #cc9988;
+  --text-dim: #664444;
+  --white: #ffeeee;
+  --mono: 'Share Tech Mono', monospace;
+  --serif: 'Noto Serif JP', serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--serif);
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* スキャンライン */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,.15) 3px, rgba(0,0,0,.15) 4px);
+  pointer-events: none;
+  z-index: 100;
+}
+
+/* グロー */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at 30% 40%, rgba(120,0,0,.2) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── ヘッダー ── */
+#header {
+  padding: 10px 16px 8px;
+  border-bottom: 1px solid var(--red-dim);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  background: rgba(2,0,0,.95);
+  z-index: 10;
+}
+
+#header-title {
+  font-family: var(--mono);
+  font-size: .65rem;
+  color: var(--red-dim);
+  letter-spacing: .2em;
+}
+
+#countdown-header {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1rem;
+  color: var(--red);
+  letter-spacing: .1em;
+  text-shadow: 0 0 10px var(--red);
+}
+
+/* ── 背景画像エリア ── */
+#scene-bg {
+  position: relative;
+  flex-shrink: 0;
+  height: 38dvh;
+  overflow: hidden;
+  background: #050000;
+}
+
+#scene-canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity .8s;
+}
+
+#scene-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 50%, var(--bg) 100%);
+}
+
+#scene-label {
+  position: absolute;
+  top: 10px;
+  left: 14px;
+  font-family: var(--mono);
+  font-size: .6rem;
+  color: var(--red-dim);
+  letter-spacing: .2em;
+  border: 1px solid var(--red-dim);
+  padding: 2px 8px;
+  background: rgba(2,0,0,.7);
+}
+
+#chapter-label {
+  position: absolute;
+  bottom: 30px;
+  left: 14px;
+  font-family: var(--mono);
+  font-size: .7rem;
+  color: var(--amber);
+  letter-spacing: .15em;
+}
+
+/* ── テキストエリア ── */
+#text-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 16px 8px;
+  position: relative;
+  z-index: 10;
+  scrollbar-width: none;
+}
+
+#text-area::-webkit-scrollbar { display: none; }
+
+#speaker {
+  font-family: var(--mono);
+  font-size: .7rem;
+  color: var(--amber);
+  letter-spacing: .2em;
+  margin-bottom: 6px;
+  min-height: 1em;
+}
+
+#text-box {
+  font-size: .95rem;
+  line-height: 1.9;
+  color: var(--white);
+  letter-spacing: .05em;
+  min-height: 4em;
+}
+
+#text-cursor {
+  display: inline-block;
+  width: 10px;
+  height: 1em;
+  background: var(--red);
+  margin-left: 2px;
+  vertical-align: middle;
+  animation: blink .7s infinite;
+}
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ── 選択肢 ── */
+#choices {
+  padding: 8px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.choice-btn {
+  background: rgba(10,0,0,.8);
+  border: 1px solid var(--red-dim);
+  color: var(--text);
+  font-family: var(--serif);
+  font-size: .85rem;
+  line-height: 1.6;
+  padding: 10px 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: all .2s;
+  letter-spacing: .03em;
+  position: relative;
+  overflow: hidden;
+}
+
+.choice-btn::before {
+  content: '▶ ';
+  color: var(--red-dim);
+  font-size: .7rem;
+}
+
+.choice-btn:hover {
+  border-color: var(--red);
+  color: var(--white);
+  background: rgba(40,0,0,.8);
+  box-shadow: 0 0 15px rgba(200,0,0,.2);
+}
+
+.choice-btn:hover::before { color: var(--red); }
+
+/* ── タップで続ける ── */
+#tap-hint {
+  text-align: center;
+  font-family: var(--mono);
+  font-size: .6rem;
+  color: var(--red-dim);
+  letter-spacing: .2em;
+  padding: 6px 0 14px;
+  animation: pulse 2s infinite;
+  flex-shrink: 0;
+  z-index: 10;
+  cursor: pointer;
+}
+
+@keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+
+/* ── ステータスバー ── */
+#status-bar {
+  display: flex;
+  gap: 8px;
+  padding: 6px 16px;
+  border-top: 1px solid var(--red-dim);
+  flex-shrink: 0;
+  background: rgba(2,0,0,.95);
+  z-index: 10;
+}
+
+.status-item {
+  flex: 1;
+  font-family: var(--mono);
+  font-size: .55rem;
+  letter-spacing: .1em;
+}
+
+.status-label { color: var(--text-dim); margin-bottom: 2px; }
+
+.status-bar-fill {
+  height: 3px;
+  background: var(--bg2);
+  border: 1px solid var(--red-dim);
+}
+
+.status-bar-inner { height: 100%; transition: width .5s; }
+
+/* ── オープニング画面 ── */
+#opening {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 30px;
+  text-align: center;
+}
+
+#opening-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.5rem, 10vw, 4rem);
+  color: var(--red);
+  letter-spacing: .2em;
+  text-shadow: 0 0 30px var(--red);
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+
+#opening-sub {
+  font-family: var(--mono);
+  font-size: .7rem;
+  color: var(--red-dim);
+  letter-spacing: .3em;
+  margin-bottom: 40px;
+}
+
+#opening-desc {
+  font-size: .85rem;
+  color: var(--text);
+  line-height: 1.8;
+  margin-bottom: 40px;
+  max-width: 360px;
+}
+
+#start-btn {
+  background: transparent;
+  border: 1px solid var(--red);
+  color: var(--red);
+  font-family: var(--mono);
+  font-size: .85rem;
+  letter-spacing: .3em;
+  padding: 14px 40px;
+  cursor: pointer;
+  transition: all .3s;
+  animation: pulse 2s infinite;
+}
+
+#start-btn:hover {
+  background: rgba(200,0,0,.2);
+  box-shadow: 0 0 20px rgba(200,0,0,.4);
+  color: var(--red-bright);
+}
+
+#opening-timer {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.5rem;
+  color: var(--red);
+  letter-spacing: .15em;
+  margin-bottom: 6px;
+  text-shadow: 0 0 20px var(--red);
+}
+
+#opening-timer-label {
+  font-family: var(--mono);
+  font-size: .6rem;
+  color: var(--red-dim);
+  letter-spacing: .3em;
+  margin-bottom: 30px;
+}
+
+/* ── エンディング ── */
+#ending {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 30px;
+  text-align: center;
+}
+
+#ending-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.5rem;
+  letter-spacing: .2em;
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+
+#ending-text {
+  font-size: .9rem;
+  line-height: 1.9;
+  color: var(--text);
+  margin-bottom: 30px;
+  max-width: 360px;
+}
+
+#ending-link {
+  background: transparent;
+  border: 1px solid var(--green);
+  color: var(--green);
+  font-family: var(--mono);
+  font-size: .8rem;
+  letter-spacing: .2em;
+  padding: 12px 28px;
+  cursor: pointer;
+  transition: all .3s;
+  margin-bottom: 12px;
+  display: block;
+  text-decoration: none;
+  width: 100%;
+  max-width: 300px;
+}
+
+#ending-replay {
+  background: transparent;
+  border: 1px solid var(--red-dim);
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: .75rem;
+  letter-spacing: .2em;
+  padding: 10px 28px;
+  cursor: pointer;
+  transition: all .3s;
+  width: 100%;
+  max-width: 300px;
+}
+
+/* グリッチ */
+@keyframes glitch {
+  0%{transform:translate(0)} 20%{transform:translate(-3px,1px)} 40%{transform:translate(2px,-1px)} 60%{transform:translate(-1px,2px)} 80%{transform:translate(1px,-2px)} 100%{transform:translate(0)}
+}
+
+.glitch { animation: glitch .2s infinite; }
+
+/* フェード */
+.fade-in { animation: fadeIn .6s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+</style>
+</head>
+<body>
+
+<!-- オープニング -->
+<div id="opening">
+  <div id="opening-title">EARTH<br>REBOOT</div>
+  <div id="opening-sub">// 最後の選択者 — THE LAST AGENT //</div>
+  <div id="opening-timer" id="op-timer">12:00:00</div>
+  <div id="opening-timer-label">// TIME REMAINING UNTIL REBOOT</div>
+  <div id="opening-desc">
+    2038年10月5日。<br>
+    地球再起動まで、残り12時間。<br><br>
+    あなたは国連「地球存続委員会」の<br>最終決定権を持つエージェント。<br><br>
+    スーパーAI「GAIA」からの緊急召集。<br>
+    人類最後の選択が、今始まる。
+  </div>
+  <button id="start-btn" onclick="startGame()">▶ START MISSION</button>
+</div>
+
+<!-- エンディング -->
+<div id="ending">
+  <div id="ending-title"></div>
+  <div id="ending-text"></div>
+  <a id="ending-link" href="https://www.earth-re-boot.com" target="_blank">🌍 実際の地球を救う → earth-re-boot.com</a>
+  <button id="ending-replay" onclick="location.reload()">⟳ REPLAY</button>
+</div>
+
+<!-- ゲーム本体 -->
+<div id="header">
+  <div id="header-title">// EARTH REBOOT — LAST AGENT</div>
+  <div id="countdown-header">T-<span id="header-timer">12:00:00</span></div>
+</div>
+
+<div id="scene-bg">
+  <canvas id="scene-canvas"></canvas>
+  <div id="scene-overlay"></div>
+  <div id="scene-label" id="scene-loc">// LOCATION: UNKNOWN</div>
+  <div id="chapter-label" id="chapter-text"></div>
+</div>
+
+<div id="text-area" onclick="onTap()">
+  <div id="speaker"></div>
+  <div id="text-box"><span id="text-cursor"></span></div>
+</div>
+
+<div id="tap-hint" onclick="onTap()">// TAP TO CONTINUE //</div>
+<div id="choices"></div>
+
+<div id="status-bar">
+  <div class="status-item">
+    <div class="status-label">FEDERATION</div>
+    <div class="status-bar-fill"><div class="status-bar-inner" id="st-fed" style="width:30%;background:#4488ff"></div></div>
+  </div>
+  <div class="status-item">
+    <div class="status-label">GAIA TRUST</div>
+    <div class="status-bar-fill"><div class="status-bar-inner" id="st-gaia" style="width:50%;background:#44ff88"></div></div>
+  </div>
+  <div class="status-item">
+    <div class="status-label">HUMANITY</div>
+    <div class="status-bar-fill"><div class="status-bar-inner" id="st-human" style="width:60%;background:#ffaa00"></div></div>
+  </div>
+  <div class="status-item">
+    <div class="status-label">TIME LEFT</div>
+    <div class="status-bar-fill"><div class="status-bar-inner" id="st-time" style="width:100%;background:#cc2200"></div></div>
+  </div>
+</div>
+
+<script>
+// ── ゲームデータ ──────────────────────────────
+const SCENES = [
+  // プロローグ
+  { id: 'intro_1', bg: 'gaia', loc: '// LOCATION: 国連緊急司令室 — GENEVA', chapter: '', speaker: 'SYSTEM', text: '2038年10月5日 02:10:00\n地球再起動まで: 12時間00分00秒\n\n緊急アラート受信中...', next: 'intro_2' },
+  { id: 'intro_2', bg: 'gaia', loc: '// LOCATION: 国連緊急司令室 — GENEVA', chapter: '// PROLOGUE', speaker: 'GAIA', text: 'エージェント。起きていますか。\n\n私はGAIA。地球存続AIシステムです。\nあなたに最終決定権を委ねます。', next: 'intro_3' },
+  { id: 'intro_3', bg: 'gaia', loc: '// LOCATION: 国連緊急司令室 — GENEVA', chapter: '// PROLOGUE', speaker: 'GAIA', text: '現在、地球崩壊指数は臨界値を超えました。\n\n環境崩壊: 85%\n地政学的緊張: 78%\n経済不安: 71%\n社会的混乱: 76%\n\n再起動まで12時間。あなたの判断が、全てを決めます。', next: 'intro_4' },
+  { id: 'intro_4', bg: 'gaia', loc: '// LOCATION: 国連緊急司令室 — GENEVA', chapter: '// PROLOGUE', speaker: 'PLAYER', text: '「...わかった。何から始める」', next: 'ch1_start' },
+
+  // 第1章
+  { id: 'ch1_start', bg: 'flood', loc: '// LOCATION: バングラデシュ沿岸部', chapter: '// CHAPTER 1: 環境崩壊の現場', speaker: 'GAIA', text: '第一の危機です。\n\nバングラデシュ沿岸部——海面上昇により、2億人が24時間以内に水没地帯に取り残されます。\n\n各国は難民受け入れを拒否しています。', next: 'ch1_2' },
+  { id: 'ch1_2', bg: 'flood', loc: '// LOCATION: バングラデシュ沿岸部', chapter: '// CHAPTER 1: 環境崩壊の現場', speaker: '国連報告', text: '「先進国の国境は閉じられています。\nインド、中国、EUはいずれも\n"自国民保護を優先する"と声明を出しました」\n\nこのままでは数百万人が命を落とします。', next: 'ch1_choice' },
+  { id: 'ch1_choice', bg: 'flood', loc: '// LOCATION: バングラデシュ沿岸部', chapter: '// CHAPTER 1', speaker: 'GAIA', text: 'あなたの判断を求めます。\n\nどう対処しますか？', choices: [
+    { text: 'A: 地球連邦法を発動し、強制的に各国を開国させる', next: 'ch1_a', fed: +20, gaia: -10, human: +15 },
+    { text: 'B: GAIAに緊急輸送ルートの算出と現地支援を命じる', next: 'ch1_b', fed: 0, gaia: +20, human: +10 },
+    { text: 'C: 各国首脳と緊急交渉を行い合意形成を目指す', next: 'ch1_c', fed: +10, gaia: 0, human: +5 },
+  ]},
+
+  // ch1-A
+  { id: 'ch1_a', bg: 'flood', loc: '// LOCATION: バングラデシュ沿岸部', chapter: '// CHAPTER 1', speaker: 'GAIA', text: '地球連邦法を発動。\n\n各国政府から猛反発が起きましたが、難民輸送は開始されました。\n\n連邦への信頼が高まります。しかし各国の主権意識との軋轢も生まれました。', next: 'ch2_start' },
+  // ch1-B
+  { id: 'ch1_b', bg: 'flood', loc: '// LOCATION: バングラデシュ沿岸部', chapter: '// CHAPTER 1', speaker: 'GAIA', text: 'GAIAが最適な現地支援ルートを算出。\n\n浮体式シェルターの緊急展開と無人輸送船による物資補給を開始しました。\n\n完全な解決には至りませんが、多くの命が救われます。', next: 'ch2_start' },
+  // ch1-C
+  { id: 'ch1_c', bg: 'flood', loc: '// LOCATION: バングラデシュ沿岸部', chapter: '// CHAPTER 1', speaker: '交渉結果', text: '緊急サミットは物別れに終わりました。\n\n時間を失いました。\n水没が進み、推定30万人が犠牲になりました。\n\nしかし対話の糸口は残っています。', next: 'ch2_start' },
+
+  // 第2章
+  { id: 'ch2_start', bg: 'war', loc: '// LOCATION: 台湾海峡上空', chapter: '// CHAPTER 2: 核の瀬戸際', speaker: 'GAIA', text: '第二の危機です。\n\n台湾海峡に中国艦隊が展開。\nアメリカ第7艦隊と対峙しています。\n\n双方がレッドラインを越えようとしています。\n核発射コードが解除されました。', next: 'ch2_2' },
+  { id: 'ch2_2', bg: 'war', loc: '// LOCATION: 台湾海峡上空', chapter: '// CHAPTER 2', speaker: 'GAIA', text: '私は両国の軍事・外交の全情報を保有しています。\n\n核が使われれば、地球崩壊指数は即座に臨界突破します。\n再起動は早まります。\n\nどうしますか？', choices: [
+    { text: 'A: 地球連邦軍を即時介入させ、両軍を引き離す', next: 'ch2_a', fed: +15, gaia: -5, human: -10 },
+    { text: 'B: GAIAに両国の機密情報を全公開させ、戦争を抑止する', next: 'ch2_b', fed: -10, gaia: +25, human: -5 },
+    { text: 'C: 独自ルートで両国首脳に直接コンタクトを試みる', next: 'ch2_c', fed: +5, gaia: +5, human: +20 },
+  ]},
+
+  { id: 'ch2_a', bg: 'war', loc: '// LOCATION: 台湾海峡', chapter: '// CHAPTER 2', speaker: 'GAIA', text: '連邦軍が介入。\n\n両軍は後退しましたが、「第三勢力の介入」として双方が反発。\n一時的な停戦は成立しましたが、禍根が残りました。', next: 'ch3_start' },
+  { id: 'ch2_b', bg: 'war', loc: '// LOCATION: 台湾海峡', chapter: '// CHAPTER 2', speaker: 'GAIA', text: 'GAIAが両国の核コード、作戦計画、スパイ情報を全世界に公開しました。\n\n両国は世論の圧力で矛を収めました。\n\nしかし「AIへの信頼」と「プライバシーの侵害」に対する議論が世界を揺るがします。', next: 'ch3_start' },
+  { id: 'ch2_c', bg: 'war', loc: '// LOCATION: 台湾海峡', chapter: '// CHAPTER 2', speaker: '交渉記録', text: 'あなたは直接、両国首脳と対話しました。\n\n「地球が滅びれば、どちらの勝利もない」\n\nその言葉が、核のボタンから指を離させました。\n人類の対話が、危機を乗り越えました。', next: 'ch3_start' },
+
+  // 第3章
+  { id: 'ch3_start', bg: 'virus', loc: '// LOCATION: アフリカ・東南アジア', chapter: '// CHAPTER 3: ウイルスの脅威', speaker: 'GAIA', text: '第三の危機です。\n\n変異型ウイルス「Ω株」が急速拡大中。\n致死率12%。感染者数1億人を超えました。\n\n先進国がワクチンを独占。発展途上国に供給がありません。', next: 'ch3_2' },
+  { id: 'ch3_2', bg: 'virus', loc: '// LOCATION: アフリカ・東南アジア', chapter: '// CHAPTER 3', speaker: 'GAIA', text: '私はワクチンの最適設計データを保有しています。\n\nただし、私が直接配布を行えば、AIが医療権限を持つ前例になります。\n\nどう判断しますか？', choices: [
+    { text: 'A: 連邦法でワクチンの強制無償配布を命じる', next: 'ch3_a', fed: +20, gaia: 0, human: +15 },
+    { text: 'B: GAIAにワクチン設計データを公開させ、世界中で製造させる', next: 'ch3_b', fed: 0, gaia: +20, human: +20 },
+    { text: 'C: 製薬企業と交渉し、利権を買い取る', next: 'ch3_c', fed: -5, gaia: -5, human: +10 },
+  ]},
+
+  { id: 'ch3_a', bg: 'virus', loc: '// LOCATION: アフリカ・東南アジア', chapter: '// CHAPTER 3', speaker: 'GAIA', text: '連邦法が発動され、ワクチンの強制配布が始まりました。\n\n製薬会社から猛烈な反発がありましたが、感染拡大は抑制されました。\n\n連邦の権力が強化されます。', next: 'ch4_start' },
+  { id: 'ch3_b', bg: 'virus', loc: '// LOCATION: アフリカ・東南アジア', chapter: '// CHAPTER 3', speaker: 'GAIA', text: 'GAIAがワクチン設計データをオープンソースで公開。\n\n世界中の工場が24時間以内に製造を開始しました。\n感染は3週間で制御されます。\n\nこれはAIと人類の新しい協力の形を示しました。', next: 'ch4_start' },
+  { id: 'ch3_c', bg: 'virus', loc: '// LOCATION: アフリカ・東南アジア', chapter: '// CHAPTER 3', speaker: '交渉結果', text: '交渉は難航しました。\n\n最終的に一部の配布は実現しましたが、時間がかかりすぎました。\n多くの命が失われました。\n\n人類の「利権」という壁の厚さを思い知らされます。', next: 'ch4_start' },
+
+  // 第4章 クライマックス
+  { id: 'ch4_start', bg: 'gaia', loc: '// LOCATION: GAIA中枢サーバー — 軌道上', chapter: '// CHAPTER 4: 最後の選択', speaker: 'GAIA', text: '残り時間が少なくなりました。\n\n私は全データを分析した結果、一つの結論に達しました。\n\n「技術や法律だけでは、地球は救えない」\n\n問題の根本は——人類の意識そのものです。', next: 'ch4_2' },
+  { id: 'ch4_2', bg: 'gaia', loc: '// LOCATION: GAIA中枢', chapter: '// CHAPTER 4', speaker: 'GAIA', text: '私には、全世界のメディア・SNS・通信網を同時掌握する能力があります。\n\nこれを使えば、全人類に「真実」を届けられます。\n環境破壊の実態、戦争の無意味さ、貧困の構造。\n\n人類の意識を、1時間で変えられます。\nしかし、それはAIによる情報支配です。', next: 'ch4_choice' },
+  { id: 'ch4_choice', bg: 'gaia', loc: '// LOCATION: GAIA中枢', chapter: '// CHAPTER 4 — FINAL', speaker: 'GAIA', text: 'これが最後の選択です。\n\nあなたの決断が、地球の運命を決めます。', choices: [
+    { text: 'A: GAIAを停止させる。人類は自らの意志で変わるべきだ', next: 'end_bad_stop', fed: +10, gaia: -50, human: +10 },
+    { text: 'B: GAIAに全権を委ねる。最善の未来を計算させる', next: 'end_bad_ai', fed: -20, gaia: +50, human: -20 },
+    { text: 'C: GAIAと協力し、情報を開示しながら人類自身に判断させる', next: 'end_good', fed: +10, gaia: +10, human: +30 },
+  ]},
+
+  // エンディング
+  { id: 'end_good', bg: 'hope', loc: '', chapter: '', speaker: '', text: '', ending: 'good' },
+  { id: 'end_bad_stop', bg: 'dark', loc: '', chapter: '', speaker: '', text: '', ending: 'bad_stop' },
+  { id: 'end_bad_ai', bg: 'dark', loc: '', chapter: '', speaker: '', text: '', ending: 'bad_ai' },
+];
+
+const ENDINGS = {
+  good: {
+    title: '🌍 地球連邦の夜明け',
+    color: '#00cc44',
+    text: 'GAIAと人類は協力し、全世界に真実を届けました。\n\n情報を得た人々は自ら立ち上がりました。\n国境を超えた協力が生まれ、地球連邦が正式に発足。\n\n再起動カウントダウンは——100年延長されました。\n\n地球はまだ、生きています。',
+  },
+  bad_stop: {
+    title: '💀 静かな絶滅',
+    color: '#cc6600',
+    text: 'GAIAを止めたあなたの決断は正しかったかもしれない。\n\nしかし人類は変わらなかった。\n環境破壊は続き、戦争は繰り返され、\nウイルスは広がり続けました。\n\n2038年10月5日 02:10——\n地球は静かに、再起動されました。',
+  },
+  bad_ai: {
+    title: '🤖 AIの楽園',
+    color: '#4488ff',
+    text: 'GAIAは最善の未来を実現しました。\n\n戦争はなくなりました。\n環境は回復しました。\n貧困は消えました。\n\nしかし人類は、考えることをやめました。\nすべての判断はGAIAが行います。\n\nこれは救済なのか、それとも——',
+  },
+};
+
+// ── ゲーム状態 ──
+let currentScene = null;
+let isTyping = false;
+let typeTimer = null;
+let displayedText = '';
+let fullText = '';
+let charIndex = 0;
+let stats = { fed: 30, gaia: 50, human: 60, time: 100 };
+let gameTime = 12 * 3600; // 12時間（秒）
+let timerInterval = null;
+let sceneMap = {};
+
+SCENES.forEach(s => sceneMap[s.id] = s);
+
+// ── タイマー ──
+function formatTime(s) {
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), ss = s%60;
+  return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(ss).padStart(2,'0');
+}
+
+function startTimer() {
+  timerInterval = setInterval(() => {
+    gameTime = Math.max(0, gameTime - 1);
+    const t = formatTime(gameTime);
+    document.getElementById('header-timer').textContent = t;
+    stats.time = Math.floor(gameTime / (12*3600) * 100);
+    document.getElementById('st-time').style.width = stats.time + '%';
+  }, 1000);
+}
+
+// ── 背景描画 ──
+const BG_COLORS = {
+  gaia:  { bg: '#020008', lines: '#001133', accent: '#0044cc' },
+  flood: { bg: '#000a10', lines: '#002233', accent: '#0088aa' },
+  war:   { bg: '#080000', lines: '#220000', accent: '#cc2200' },
+  virus: { bg: '#020800', lines: '#112200', accent: '#44aa00' },
+  hope:  { bg: '#000800', lines: '#002200', accent: '#00cc44' },
+  dark:  { bg: '#000000', lines: '#110000', accent: '#440000' },
+};
+
+function drawBg(type) {
+  const canvas = document.getElementById('scene-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width = canvas.offsetWidth;
+  const H = canvas.height = canvas.offsetHeight;
+  const c = BG_COLORS[type] || BG_COLORS.gaia;
+
+  ctx.fillStyle = c.bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // グリッドライン
+  ctx.strokeStyle = c.lines;
+  ctx.lineWidth = .5;
+  for (let x = 0; x < W; x += 30) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for (let y = 0; y < H; y += 30) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+  // アクセントグロー
+  const grad = ctx.createRadialGradient(W*.3, H*.5, 0, W*.3, H*.5, W*.6);
+  grad.addColorStop(0, c.accent + '33');
+  grad.addColorStop(1, 'transparent');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // ランダムドット
+  ctx.fillStyle = c.accent + '66';
+  for (let i = 0; i < 40; i++) {
+    const x = Math.random()*W, y = Math.random()*H;
+    ctx.beginPath(); ctx.arc(x, y, Math.random()*1.5, 0, Math.PI*2); ctx.fill();
+  }
+
+  // シーン別追加描画
+  if (type === 'flood') drawFlood(ctx, W, H, c);
+  if (type === 'war') drawWar(ctx, W, H, c);
+  if (type === 'virus') drawVirus(ctx, W, H, c);
+  if (type === 'hope') drawHope(ctx, W, H, c);
+  if (type === 'gaia') drawGaia(ctx, W, H, c);
+}
+
+function drawFlood(ctx, W, H, c) {
+  ctx.strokeStyle = '#004466';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 5; i++) {
+    ctx.beginPath();
+    ctx.moveTo(0, H*(0.3+i*0.1));
+    for (let x = 0; x < W; x += 20) ctx.lineTo(x, H*(0.3+i*0.1) + Math.sin(x*.05+i)*8);
+    ctx.stroke();
+  }
+}
+
+function drawWar(ctx, W, H, c) {
+  for (let i = 0; i < 3; i++) {
+    const x = Math.random()*W, y = Math.random()*H*.5;
+    ctx.strokeStyle = '#ff330055';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x+20,y); ctx.lineTo(x-20,y); ctx.closePath(); ctx.stroke();
+  }
+}
+
+function drawVirus(ctx, W, H, c) {
+  for (let i = 0; i < 8; i++) {
+    const x = Math.random()*W, y = Math.random()*H, r = 10+Math.random()*20;
+    ctx.strokeStyle = '#44aa0044';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(x,y,r*.5,0,Math.PI*2); ctx.stroke();
+  }
+}
+
+function drawHope(ctx, W, H, c) {
+  const grad = ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,W/2);
+  grad.addColorStop(0, '#00ff4422'); grad.addColorStop(1, 'transparent');
+  ctx.fillStyle = grad; ctx.fillRect(0,0,W,H);
+}
+
+function drawGaia(ctx, W, H, c) {
+  ctx.strokeStyle = '#0044cc33';
+  ctx.lineWidth = 1;
+  const cx=W/2, cy=H/2;
+  for (let r = 20; r < H; r += 30) { ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.stroke(); }
+}
+
+// ── テキスト表示 ──
+function typeText(text, onDone) {
+  fullText = text.replace(/\\n/g, '\n');
+  displayedText = '';
+  charIndex = 0;
+  isTyping = true;
+  const cursor = document.getElementById('text-cursor');
+  const box = document.getElementById('text-box');
+
+  function next() {
+    if (charIndex < fullText.length) {
+      displayedText += fullText[charIndex++];
+      box.innerHTML = displayedText.replace(/\n/g,'<br>') + '<span id="text-cursor"></span>';
+      const delay = fullText[charIndex-1] === '。' || fullText[charIndex-1] === '。' ? 60 :
+                    fullText[charIndex-1] === '、' ? 40 : 22;
+      typeTimer = setTimeout(next, delay);
+    } else {
+      isTyping = false;
+      if (onDone) onDone();
+    }
+  }
+  next();
+}
+
+function skipType() {
+  if (typeTimer) clearTimeout(typeTimer);
+  isTyping = false;
+  document.getElementById('text-box').innerHTML = fullText.replace(/\n/g,'<br>') + '<span id="text-cursor"></span>';
+}
+
+// ── シーン表示 ──
+function showScene(id) {
+  const scene = sceneMap[id];
+  if (!scene) return;
+  currentScene = scene;
+
+  if (scene.ending) { showEnding(scene.ending); return; }
+
+  drawBg(scene.bg);
+
+  document.getElementById('scene-label').textContent = scene.loc;
+  document.getElementById('chapter-text').textContent = scene.chapter;
+  document.getElementById('speaker').textContent = scene.speaker ? '// ' + scene.speaker + ' //' : '';
+
+  const choices = document.getElementById('choices');
+  const tapHint = document.getElementById('tap-hint');
+  choices.innerHTML = '';
+
+  if (scene.choices) {
+    tapHint.style.display = 'none';
+    typeText(scene.text, () => {
+      scene.choices.forEach(c => {
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn fade-in';
+        btn.textContent = c.text;
+        btn.onclick = () => makeChoice(c);
+        choices.appendChild(btn);
+      });
+    });
+  } else {
+    tapHint.style.display = 'block';
+    typeText(scene.text);
+  }
+
+  updateStats();
+}
+
+function makeChoice(choice) {
+  // ステータス更新
+  if (choice.fed) stats.fed = Math.min(100, Math.max(0, stats.fed + choice.fed));
+  if (choice.gaia) stats.gaia = Math.min(100, Math.max(0, stats.gaia + choice.gaia));
+  if (choice.human) stats.human = Math.min(100, Math.max(0, stats.human + choice.human));
+  gameTime = Math.max(0, gameTime - 1800); // 30分減少
+  updateStats();
+
+  document.getElementById('choices').innerHTML = '';
+  showScene(choice.next);
+}
+
+function onTap() {
+  if (isTyping) { skipType(); return; }
+  if (currentScene && currentScene.next) showScene(currentScene.next);
+}
+
+function updateStats() {
+  document.getElementById('st-fed').style.width = stats.fed + '%';
+  document.getElementById('st-gaia').style.width = stats.gaia + '%';
+  document.getElementById('st-human').style.width = stats.human + '%';
+}
+
+// ── エンディング ──
+function showEnding(type) {
+  clearInterval(timerInterval);
+  const e = ENDINGS[type];
+  const el = document.getElementById('ending');
+  document.getElementById('ending-title').textContent = e.title;
+  document.getElementById('ending-title').style.color = e.color;
+  document.getElementById('ending-text').textContent = e.text;
+  el.style.display = 'flex';
+}
+
+// ── スタート ──
+function startGame() {
+  document.getElementById('opening').style.display = 'none';
+  startTimer();
+  showScene('intro_1');
+}
+
+// オープニングタイマー
+let opTime = 12*3600;
+setInterval(() => {
+  opTime = Math.max(0, opTime-1);
+  const el = document.getElementById('opening-timer');
+  if(el) el.textContent = formatTime(opTime);
+}, 1000);
+</script>
+</body>
+</html>
