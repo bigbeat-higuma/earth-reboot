@@ -92,9 +92,10 @@ body::after {
 }
 
 #scene-canvas {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
   transition: opacity .8s;
 }
 
@@ -440,7 +441,8 @@ body::after {
 </div>
 
 <div id="scene-bg">
-  <canvas id="scene-canvas"></canvas>
+  <img id="scene-img" src="" alt="" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:0;transition:opacity .8s;">
+<canvas id="scene-canvas" style="width:100%;height:100%;position:absolute;inset:0;opacity:1;transition:opacity .8s;"></canvas>
   <div id="scene-overlay"></div>
   <div id="scene-label">// LOCATION: UNKNOWN</div>
   <div id="chapter-text"></div>
@@ -586,6 +588,14 @@ function startTimer() {
 }
 
 // ── 背景描画 ──
+const BG_IMAGES = {
+  gaia:  '/images/gaia.jpg',
+  flood: '/images/flood.jpg',
+  war:   '/images/war.jpg',
+  virus: '/images/virus.jpg',
+  hope:  '/images/hope.jpg',
+};
+
 const BG_COLORS = {
   gaia:  { bg: '#020008', lines: '#001133', accent: '#0044cc' },
   flood: { bg: '#000a10', lines: '#002233', accent: '#0088aa' },
@@ -595,7 +605,50 @@ const BG_COLORS = {
   dark:  { bg: '#000000', lines: '#110000', accent: '#440000' },
 };
 
+// 画像をプリロードしてキャッシュ
+const imgCache = {};
+Object.entries(BG_IMAGES).forEach(([key, src]) => {
+  const img = new Image();
+  img.src = src;
+  imgCache[key] = img;
+});
+
+let currentBg = null;
+
 function drawBg(type) {
+  const sceneImg = document.getElementById('scene-img');
+  const canvas   = document.getElementById('scene-canvas');
+
+  if (type === currentBg) return;
+  currentBg = type;
+
+  if (BG_IMAGES[type]) {
+    // 画像あり → imgタグで表示、canvasをフェードアウト
+    const src = BG_IMAGES[type];
+    sceneImg.style.opacity = '0';
+
+    const loader = new Image();
+    loader.onload = () => {
+      sceneImg.src = src;
+      sceneImg.style.opacity = '1';
+      canvas.style.opacity = '0';
+    };
+    loader.onerror = () => {
+      // 画像が見つからなければcanvasフォールバック
+      canvas.style.opacity = '1';
+      sceneImg.style.opacity = '0';
+      drawCanvasBg(type);
+    };
+    loader.src = src;
+  } else {
+    // 画像なし（dark等）→ canvasフォールバック
+    sceneImg.style.opacity = '0';
+    canvas.style.opacity = '1';
+    drawCanvasBg(type);
+  }
+}
+
+function drawCanvasBg(type) {
   const canvas = document.getElementById('scene-canvas');
   const ctx = canvas.getContext('2d');
   const W = canvas.width = canvas.offsetWidth;
@@ -625,12 +678,11 @@ function drawBg(type) {
     ctx.beginPath(); ctx.arc(x, y, Math.random()*1.5, 0, Math.PI*2); ctx.fill();
   }
 
-  // シーン別追加描画
   if (type === 'flood') drawFlood(ctx, W, H, c);
-  if (type === 'war') drawWar(ctx, W, H, c);
+  if (type === 'war')   drawWar(ctx, W, H, c);
   if (type === 'virus') drawVirus(ctx, W, H, c);
-  if (type === 'hope') drawHope(ctx, W, H, c);
-  if (type === 'gaia') drawGaia(ctx, W, H, c);
+  if (type === 'hope')  drawHope(ctx, W, H, c);
+  if (type === 'gaia')  drawGaia(ctx, W, H, c);
 }
 
 function drawFlood(ctx, W, H, c) {
