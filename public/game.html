@@ -535,8 +535,8 @@ const SCENES = [
 
   // エンディング
   { id: 'end_good', bg: 'hope', loc: '', chapter: '', speaker: '', text: '', ending: 'good' },
-  { id: 'end_bad_stop', bg: 'dark', loc: '', chapter: '', speaker: '', text: '', ending: 'bad_stop' },
-  { id: 'end_bad_ai', bg: 'dark', loc: '', chapter: '', speaker: '', text: '', ending: 'bad_ai' },
+  { id: 'end_bad_stop', bg: 'bad_stop', loc: '', chapter: '', speaker: '', text: '', ending: 'bad_stop' },
+  { id: 'end_bad_ai', bg: 'bad_ai', loc: '', chapter: '', speaker: '', text: '', ending: 'bad_ai' },
 ];
 
 const ENDINGS = {
@@ -589,11 +589,13 @@ function startTimer() {
 
 // ── 背景描画 ──
 const BG_IMAGES = {
-  gaia:  '/images/gaia.jpg',
-  flood: '/images/flood.jpg',
-  war:   '/images/war.jpg',
-  virus: '/images/virus.jpg',
-  hope:  '/images/hope.jpg',
+  gaia:     '/images/gaia.jpg',
+  flood:    '/images/flood.jpg',
+  war:      '/images/war.jpg',
+  virus:    '/images/virus.jpg',
+  hope:     '/images/hope.jpg',
+  bad_stop: '/images/bad_stop.jpg',
+  bad_ai:   '/images/bad_ai.jpg',
 };
 
 const BG_COLORS = {
