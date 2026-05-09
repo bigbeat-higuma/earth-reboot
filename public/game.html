@@ -571,6 +571,7 @@ const ENDINGS = {
 let currentScene = null;
 let isTyping = false;
 let typeTimer = null;
+let onDoneCallback = null;
 let displayedText = '';
 let fullText = '';
 let charIndex = 0;
@@ -742,6 +743,7 @@ function drawGaia(ctx, W, H, c) {
 
 // ── テキスト表示 ──
 function typeText(text, onDone) {
+  onDoneCallback = onDone || null;
   fullText = text.replace(/\\n/g, '\n');
   displayedText = '';
   charIndex = 0;
