@@ -86,15 +86,16 @@ body::after {
 #scene-bg {
   position: relative;
   flex-shrink: 0;
-  height: 38dvh;
+  height: min(38dvh, 220px);
   overflow: hidden;
   background: #050000;
 }
 
 #scene-canvas {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
   transition: opacity .8s;
 }
 
@@ -117,7 +118,7 @@ body::after {
   background: rgba(2,0,0,.7);
 }
 
-#chapter-label {
+#chapter-text {
   position: absolute;
   bottom: 30px;
   left: 14px;
@@ -131,29 +132,33 @@ body::after {
 #text-area {
   flex: 1;
   overflow-y: auto;
-  padding: 14px 16px 8px;
+  padding: 16px 20px 8px;
   position: relative;
   z-index: 10;
   scrollbar-width: none;
+  min-height: 150px;
+  background: #0a0000;
+  border-top: 1px solid #440000;
 }
 
 #text-area::-webkit-scrollbar { display: none; }
 
 #speaker {
   font-family: var(--mono);
-  font-size: .7rem;
-  color: var(--amber);
+  font-size: .75rem;
+  color: #cc6600;
   letter-spacing: .2em;
-  margin-bottom: 6px;
-  min-height: 1em;
+  margin-bottom: 8px;
+  min-height: 1.2em;
 }
 
 #text-box {
-  font-size: .95rem;
+  font-size: 1rem;
   line-height: 1.9;
-  color: var(--white);
+  color: #ffeeee;
   letter-spacing: .05em;
   min-height: 4em;
+  text-shadow: 0 0 8px rgba(255,100,100,.5);
 }
 
 #text-cursor {
@@ -409,7 +414,7 @@ body::after {
 <div id="opening">
   <div id="opening-title">EARTH<br>REBOOT</div>
   <div id="opening-sub">// 最後の選択者 — THE LAST AGENT //</div>
-  <div id="opening-timer" id="op-timer">12:00:00</div>
+  <div id="opening-timer">12:00:00</div>
   <div id="opening-timer-label">// TIME REMAINING UNTIL REBOOT</div>
   <div id="opening-desc">
     2038年10月5日。<br>
@@ -419,6 +424,13 @@ body::after {
     人類最後の選択が、今始まる。
   </div>
   <button id="start-btn" onclick="startGame()">▶ START MISSION</button>
+  <button id="load-btn" onclick="loadGame()" style="
+    display:none;margin-top:12px;background:transparent;
+    border:1px solid var(--red-dim);color:var(--text-dim);
+    font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;
+    padding:10px 30px;cursor:pointer;transition:all .3s;
+  ">⟳ CONTINUE</button>
+  <div id="save-info" style="margin-top:8px;font-family:var(--mono);font-size:.55rem;color:var(--text-dim);letter-spacing:.1em;"></div>
 </div>
 
 <!-- エンディング -->
@@ -432,14 +444,18 @@ body::after {
 <!-- ゲーム本体 -->
 <div id="header">
   <div id="header-title">// EARTH REBOOT — LAST AGENT</div>
-  <div id="countdown-header">T-<span id="header-timer">12:00:00</span></div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button id="save-btn" onclick="manualSave()" style="background:transparent;border:1px solid var(--red-dim);color:var(--red-dim);font-family:var(--mono);font-size:.55rem;letter-spacing:.15em;padding:3px 8px;cursor:pointer;transition:all .2s;">[ SAVE ]</button>
+    <div id="countdown-header">T-<span id="header-timer">12:00:00</span></div>
+  </div>
 </div>
 
 <div id="scene-bg">
-  <canvas id="scene-canvas"></canvas>
+  <img id="scene-img" src="" alt="" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:0;transition:opacity .8s;">
+<canvas id="scene-canvas" style="width:100%;height:100%;position:absolute;inset:0;opacity:1;transition:opacity .8s;"></canvas>
   <div id="scene-overlay"></div>
-  <div id="scene-label" id="scene-loc">// LOCATION: UNKNOWN</div>
-  <div id="chapter-label" id="chapter-text"></div>
+  <div id="scene-label">// LOCATION: UNKNOWN</div>
+  <div id="chapter-text"></div>
 </div>
 
 <div id="text-area" onclick="onTap()">
@@ -529,8 +545,8 @@ const SCENES = [
 
   // エンディング
   { id: 'end_good', bg: 'hope', loc: '', chapter: '', speaker: '', text: '', ending: 'good' },
-  { id: 'end_bad_stop', bg: 'dark', loc: '', chapter: '', speaker: '', text: '', ending: 'bad_stop' },
-  { id: 'end_bad_ai', bg: 'dark', loc: '', chapter: '', speaker: '', text: '', ending: 'bad_ai' },
+  { id: 'end_bad_stop', bg: 'bad_stop', loc: '', chapter: '', speaker: '', text: '', ending: 'bad_stop' },
+  { id: 'end_bad_ai', bg: 'bad_ai', loc: '', chapter: '', speaker: '', text: '', ending: 'bad_ai' },
 ];
 
 const ENDINGS = {
@@ -582,6 +598,16 @@ function startTimer() {
 }
 
 // ── 背景描画 ──
+const BG_IMAGES = {
+  gaia:     '/images/gaia.jpg',
+  flood:    '/images/flood.jpg',
+  war:      '/images/war.jpg',
+  virus:    '/images/virus.jpg',
+  hope:     '/images/hope.jpg',
+  bad_stop: '/images/bad_stop.jpg',
+  bad_ai:   '/images/bad_ai.jpg',
+};
+
 const BG_COLORS = {
   gaia:  { bg: '#020008', lines: '#001133', accent: '#0044cc' },
   flood: { bg: '#000a10', lines: '#002233', accent: '#0088aa' },
@@ -591,7 +617,50 @@ const BG_COLORS = {
   dark:  { bg: '#000000', lines: '#110000', accent: '#440000' },
 };
 
+// 画像をプリロードしてキャッシュ
+const imgCache = {};
+Object.entries(BG_IMAGES).forEach(([key, src]) => {
+  const img = new Image();
+  img.src = src;
+  imgCache[key] = img;
+});
+
+let currentBg = null;
+
 function drawBg(type) {
+  const sceneImg = document.getElementById('scene-img');
+  const canvas   = document.getElementById('scene-canvas');
+
+  if (type === currentBg) return;
+  currentBg = type;
+
+  if (BG_IMAGES[type]) {
+    // 画像あり → imgタグで表示、canvasをフェードアウト
+    const src = BG_IMAGES[type];
+    sceneImg.style.opacity = '0';
+
+    const loader = new Image();
+    loader.onload = () => {
+      sceneImg.src = src;
+      sceneImg.style.opacity = '1';
+      canvas.style.opacity = '0';
+    };
+    loader.onerror = () => {
+      // 画像が見つからなければcanvasフォールバック
+      canvas.style.opacity = '1';
+      sceneImg.style.opacity = '0';
+      drawCanvasBg(type);
+    };
+    loader.src = src;
+  } else {
+    // 画像なし（dark等）→ canvasフォールバック
+    sceneImg.style.opacity = '0';
+    canvas.style.opacity = '1';
+    drawCanvasBg(type);
+  }
+}
+
+function drawCanvasBg(type) {
   const canvas = document.getElementById('scene-canvas');
   const ctx = canvas.getContext('2d');
   const W = canvas.width = canvas.offsetWidth;
@@ -621,12 +690,11 @@ function drawBg(type) {
     ctx.beginPath(); ctx.arc(x, y, Math.random()*1.5, 0, Math.PI*2); ctx.fill();
   }
 
-  // シーン別追加描画
   if (type === 'flood') drawFlood(ctx, W, H, c);
-  if (type === 'war') drawWar(ctx, W, H, c);
+  if (type === 'war')   drawWar(ctx, W, H, c);
   if (type === 'virus') drawVirus(ctx, W, H, c);
-  if (type === 'hope') drawHope(ctx, W, H, c);
-  if (type === 'gaia') drawGaia(ctx, W, H, c);
+  if (type === 'hope')  drawHope(ctx, W, H, c);
+  if (type === 'gaia')  drawGaia(ctx, W, H, c);
 }
 
 function drawFlood(ctx, W, H, c) {
@@ -712,9 +780,12 @@ function showScene(id) {
 
   drawBg(scene.bg);
 
-  document.getElementById('scene-label').textContent = scene.loc;
-  document.getElementById('chapter-text').textContent = scene.chapter;
-  document.getElementById('speaker').textContent = scene.speaker ? '// ' + scene.speaker + ' //' : '';
+  const elLabel   = document.getElementById('scene-label');
+  const elChapter = document.getElementById('chapter-text');
+  const elSpeaker = document.getElementById('speaker');
+  if (elLabel)   elLabel.textContent   = scene.loc;
+  if (elChapter) elChapter.textContent = scene.chapter;
+  if (elSpeaker) elSpeaker.textContent = scene.speaker ? '// ' + scene.speaker + ' //' : '';
 
   const choices = document.getElementById('choices');
   const tapHint = document.getElementById('tap-hint');
@@ -737,6 +808,7 @@ function showScene(id) {
   }
 
   updateStats();
+  saveGame(true); // 自動セーブ
 }
 
 function makeChoice(choice) {
@@ -767,10 +839,107 @@ function showEnding(type) {
   clearInterval(timerInterval);
   const e = ENDINGS[type];
   const el = document.getElementById('ending');
-  document.getElementById('ending-title').textContent = e.title;
-  document.getElementById('ending-title').style.color = e.color;
-  document.getElementById('ending-text').textContent = e.text;
+  const elTitle = document.getElementById('ending-title');
+  const elText  = document.getElementById('ending-text');
+  if (elTitle) { elTitle.textContent = e.title; elTitle.style.color = e.color; }
+  if (elText)  elText.textContent = e.text;
   el.style.display = 'flex';
+}
+
+// ── セーブ・ロード ──────────────────────────────
+
+// ユーザーID取得（なければ生成してlocalStorageに保存）
+function getUserId() {
+  let id = localStorage.getItem('earth_reboot_uid');
+  if (!id) {
+    id = 'u_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+    localStorage.setItem('earth_reboot_uid', id);
+  }
+  return id;
+}
+
+// セーブ通知表示
+function showSaveNotice(msg, color) {
+  const btn = document.getElementById('save-btn');
+  if (!btn) return;
+  const orig = btn.textContent;
+  btn.textContent = msg;
+  btn.style.color = color || 'var(--green)';
+  btn.style.borderColor = color || 'var(--green)';
+  setTimeout(() => {
+    btn.textContent = orig;
+    btn.style.color = 'var(--red-dim)';
+    btn.style.borderColor = 'var(--red-dim)';
+  }, 2000);
+}
+
+// セーブ実行（自動・手動共通）
+async function saveGame(auto = false) {
+  if (!currentScene || currentScene.ending) return;
+  const userId = getUserId();
+  try {
+    const res = await fetch('/api/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId,
+        sceneId: currentScene.id,
+        stats: { ...stats },
+        gameTime,
+      }),
+    });
+    if (res.ok) {
+      if (!auto) showSaveNotice('SAVED ✓', 'var(--green)');
+    } else {
+      if (!auto) showSaveNotice('ERROR', 'var(--red-bright)');
+    }
+  } catch (e) {
+    console.error('Save error:', e);
+    if (!auto) showSaveNotice('ERROR', 'var(--red-bright)');
+  }
+}
+
+// 手動セーブ
+function manualSave() { saveGame(false); }
+
+// ロード実行
+async function loadGame() {
+  const userId = getUserId();
+  try {
+    const res = await fetch('/api/load?userId=' + encodeURIComponent(userId));
+    const data = await res.json();
+    if (!data.save) return;
+
+    // 状態を復元
+    stats = data.save.stats;
+    gameTime = data.save.gameTime;
+
+    document.getElementById('opening').style.display = 'none';
+    startTimer();
+    showScene(data.save.sceneId);
+  } catch (e) {
+    console.error('Load error:', e);
+  }
+}
+
+// 起動時にセーブデータを確認してCONTINUEボタンを表示
+async function checkSaveOnBoot() {
+  const userId = getUserId();
+  try {
+    const res = await fetch('/api/load?userId=' + encodeURIComponent(userId));
+    const data = await res.json();
+    if (data.save) {
+      const loadBtn = document.getElementById('load-btn');
+      const saveInfo = document.getElementById('save-info');
+      if (loadBtn) loadBtn.style.display = 'inline-block';
+      if (saveInfo) {
+        const d = new Date(data.save.savedAt);
+        saveInfo.textContent = '// LAST SAVE: ' + d.toLocaleString('ja-JP', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
+      }
+    }
+  } catch (e) {
+    console.error('Boot check error:', e);
+  }
 }
 
 // ── スタート ──
@@ -779,6 +948,9 @@ function startGame() {
   startTimer();
   showScene('intro_1');
 }
+
+// 起動時セーブチェック
+checkSaveOnBoot();
 
 // オープニングタイマー
 let opTime = 12*3600;
