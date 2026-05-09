@@ -86,16 +86,15 @@ body::after {
 #scene-bg {
   position: relative;
   flex-shrink: 0;
-  height: min(38dvh, 220px);
+  height: 38dvh;
   overflow: hidden;
   background: #050000;
 }
 
 #scene-canvas {
-  position: absolute;
-  inset: 0;
   width: 100%;
   height: 100%;
+  object-fit: cover;
   transition: opacity .8s;
 }
 
@@ -118,7 +117,7 @@ body::after {
   background: rgba(2,0,0,.7);
 }
 
-#chapter-text {
+#chapter-label {
   position: absolute;
   bottom: 30px;
   left: 14px;
@@ -132,33 +131,29 @@ body::after {
 #text-area {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 20px 8px;
+  padding: 14px 16px 8px;
   position: relative;
   z-index: 10;
   scrollbar-width: none;
-  min-height: 150px;
-  background: #0a0000;
-  border-top: 1px solid #440000;
 }
 
 #text-area::-webkit-scrollbar { display: none; }
 
 #speaker {
   font-family: var(--mono);
-  font-size: .75rem;
-  color: #cc6600;
+  font-size: .7rem;
+  color: var(--amber);
   letter-spacing: .2em;
-  margin-bottom: 8px;
-  min-height: 1.2em;
+  margin-bottom: 6px;
+  min-height: 1em;
 }
 
 #text-box {
-  font-size: 1rem;
+  font-size: .95rem;
   line-height: 1.9;
-  color: #ffeeee;
+  color: var(--white);
   letter-spacing: .05em;
   min-height: 4em;
-  text-shadow: 0 0 8px rgba(255,100,100,.5);
 }
 
 #text-cursor {
@@ -414,7 +409,7 @@ body::after {
 <div id="opening">
   <div id="opening-title">EARTH<br>REBOOT</div>
   <div id="opening-sub">// 最後の選択者 — THE LAST AGENT //</div>
-  <div id="opening-timer">12:00:00</div>
+  <div id="opening-timer" id="op-timer">12:00:00</div>
   <div id="opening-timer-label">// TIME REMAINING UNTIL REBOOT</div>
   <div id="opening-desc">
     2038年10月5日。<br>
@@ -441,11 +436,10 @@ body::after {
 </div>
 
 <div id="scene-bg">
-  <img id="scene-img" src="" alt="" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:0;transition:opacity .8s;">
-<canvas id="scene-canvas" style="width:100%;height:100%;position:absolute;inset:0;opacity:1;transition:opacity .8s;"></canvas>
+  <canvas id="scene-canvas"></canvas>
   <div id="scene-overlay"></div>
-  <div id="scene-label">// LOCATION: UNKNOWN</div>
-  <div id="chapter-text"></div>
+  <div id="scene-label" id="scene-loc">// LOCATION: UNKNOWN</div>
+  <div id="chapter-label" id="chapter-text"></div>
 </div>
 
 <div id="text-area" onclick="onTap()">
@@ -535,8 +529,8 @@ const SCENES = [
 
   // エンディング
   { id: 'end_good', bg: 'hope', loc: '', chapter: '', speaker: '', text: '', ending: 'good' },
-  { id: 'end_bad_stop', bg: 'bad_stop', loc: '', chapter: '', speaker: '', text: '', ending: 'bad_stop' },
-  { id: 'end_bad_ai', bg: 'bad_ai', loc: '', chapter: '', speaker: '', text: '', ending: 'bad_ai' },
+  { id: 'end_bad_stop', bg: 'dark', loc: '', chapter: '', speaker: '', text: '', ending: 'bad_stop' },
+  { id: 'end_bad_ai', bg: 'dark', loc: '', chapter: '', speaker: '', text: '', ending: 'bad_ai' },
 ];
 
 const ENDINGS = {
@@ -588,16 +582,6 @@ function startTimer() {
 }
 
 // ── 背景描画 ──
-const BG_IMAGES = {
-  gaia:     '/images/gaia.jpg',
-  flood:    '/images/flood.jpg',
-  war:      '/images/war.jpg',
-  virus:    '/images/virus.jpg',
-  hope:     '/images/hope.jpg',
-  bad_stop: '/images/bad_stop.jpg',
-  bad_ai:   '/images/bad_ai.jpg',
-};
-
 const BG_COLORS = {
   gaia:  { bg: '#020008', lines: '#001133', accent: '#0044cc' },
   flood: { bg: '#000a10', lines: '#002233', accent: '#0088aa' },
@@ -607,50 +591,7 @@ const BG_COLORS = {
   dark:  { bg: '#000000', lines: '#110000', accent: '#440000' },
 };
 
-// 画像をプリロードしてキャッシュ
-const imgCache = {};
-Object.entries(BG_IMAGES).forEach(([key, src]) => {
-  const img = new Image();
-  img.src = src;
-  imgCache[key] = img;
-});
-
-let currentBg = null;
-
 function drawBg(type) {
-  const sceneImg = document.getElementById('scene-img');
-  const canvas   = document.getElementById('scene-canvas');
-
-  if (type === currentBg) return;
-  currentBg = type;
-
-  if (BG_IMAGES[type]) {
-    // 画像あり → imgタグで表示、canvasをフェードアウト
-    const src = BG_IMAGES[type];
-    sceneImg.style.opacity = '0';
-
-    const loader = new Image();
-    loader.onload = () => {
-      sceneImg.src = src;
-      sceneImg.style.opacity = '1';
-      canvas.style.opacity = '0';
-    };
-    loader.onerror = () => {
-      // 画像が見つからなければcanvasフォールバック
-      canvas.style.opacity = '1';
-      sceneImg.style.opacity = '0';
-      drawCanvasBg(type);
-    };
-    loader.src = src;
-  } else {
-    // 画像なし（dark等）→ canvasフォールバック
-    sceneImg.style.opacity = '0';
-    canvas.style.opacity = '1';
-    drawCanvasBg(type);
-  }
-}
-
-function drawCanvasBg(type) {
   const canvas = document.getElementById('scene-canvas');
   const ctx = canvas.getContext('2d');
   const W = canvas.width = canvas.offsetWidth;
@@ -680,11 +621,12 @@ function drawCanvasBg(type) {
     ctx.beginPath(); ctx.arc(x, y, Math.random()*1.5, 0, Math.PI*2); ctx.fill();
   }
 
+  // シーン別追加描画
   if (type === 'flood') drawFlood(ctx, W, H, c);
-  if (type === 'war')   drawWar(ctx, W, H, c);
+  if (type === 'war') drawWar(ctx, W, H, c);
   if (type === 'virus') drawVirus(ctx, W, H, c);
-  if (type === 'hope')  drawHope(ctx, W, H, c);
-  if (type === 'gaia')  drawGaia(ctx, W, H, c);
+  if (type === 'hope') drawHope(ctx, W, H, c);
+  if (type === 'gaia') drawGaia(ctx, W, H, c);
 }
 
 function drawFlood(ctx, W, H, c) {
