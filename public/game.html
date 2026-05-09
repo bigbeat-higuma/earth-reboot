@@ -768,6 +768,7 @@ function skipType() {
   if (typeTimer) clearTimeout(typeTimer);
   isTyping = false;
   document.getElementById('text-box').innerHTML = fullText.replace(/\n/g,'<br>') + '<span id="text-cursor"></span>';
+  if (onDoneCallback) { const cb = onDoneCallback; onDoneCallback = null; cb(); }
 }
 
 // ── シーン表示 ──
