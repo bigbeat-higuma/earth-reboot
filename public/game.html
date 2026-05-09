@@ -836,6 +836,12 @@ function updateStats() {
 }
 
 // ── エンディング ──
+const ENDING_BG = {
+  good:     'hope',
+  bad_stop: 'bad_stop',
+  bad_ai:   'bad_ai',
+};
+
 function showEnding(type) {
   clearInterval(timerInterval);
   const e = ENDINGS[type];
@@ -844,6 +850,11 @@ function showEnding(type) {
   const elText  = document.getElementById('ending-text');
   if (elTitle) { elTitle.textContent = e.title; elTitle.style.color = e.color; }
   if (elText)  elText.textContent = e.text;
+
+  // エンディング背景画像を表示
+  const bgKey = ENDING_BG[type];
+  if (bgKey) drawBg(bgKey);
+
   el.style.display = 'flex';
 }
 
