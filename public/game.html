@@ -853,9 +853,16 @@ function showEnding(type) {
   if (elTitle) { elTitle.textContent = e.title; elTitle.style.color = e.color; }
   if (elText)  elText.textContent = e.text;
 
-  // エンディング背景画像を表示
+  // エンディングdivの背景に直接画像をセット
   const bgKey = ENDING_BG[type];
-  if (bgKey) drawBg(bgKey);
+  if (bgKey && BG_IMAGES[bgKey]) {
+    el.style.backgroundImage = `url(${BG_IMAGES[bgKey]})`;
+    el.style.backgroundSize = 'cover';
+    el.style.backgroundPosition = 'center';
+    el.style.backgroundColor = 'transparent';
+    // 暗めのオーバーレイで文字を読みやすく
+    el.style.background = `linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.55)), url(${BG_IMAGES[bgKey]}) center/cover`;
+  }
 
   el.style.display = 'flex';
 }
@@ -924,9 +931,10 @@ async function loadGame() {
     const data = await res.json();
     if (!data.save) return;
 
-    // 状態を復元
-    stats = data.save.stats;
-    gameTime = data.save.gameTime;
+    // 状態を復元（古いセーブデータへのフォールバック付き）
+    const defaultStats = { fed: 30, gaia: 50, human: 60, time: 100 };
+    stats = Object.assign({}, defaultStats, data.save.stats || {});
+    gameTime = typeof data.save.gameTime === 'number' ? data.save.gameTime : 12 * 3600;
 
     document.getElementById('opening').style.display = 'none';
     startTimer();
