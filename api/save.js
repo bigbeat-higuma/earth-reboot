@@ -1,4 +1,4 @@
-// api/save.js — ゲームの進行状況をUpstash Redisに保存する
+// api/save.js — ゲームの進行状況をVercel KVに保存する
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -26,15 +26,17 @@ export default async function handler(req, res) {
   });
 
   try {
-    // Upstash Redis REST API: SET key value EX 秒（30日間保持）
-    const response = await fetch(`${redisUrl}/set/${encodeURIComponent(key)}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${redisToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify([data, "EX", 60 * 60 * 24 * 30]),
-    });
+    // Vercel KV REST API: 正しい形式 /set/key/value?ex=秒
+    const ttl = 60 * 60 * 24 * 30;
+    const response = await fetch(
+      `${redisUrl}/set/${encodeURIComponent(key)}/${encodeURIComponent(data)}?ex=${ttl}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${redisToken}`,
+        },
+      }
+    );
 
     if (!response.ok) {
       const err = await response.json();

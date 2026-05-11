@@ -1,4 +1,4 @@
-// api/load.js — Upstash RedisからゲームのセーブデータをロードするS
+// api/load.js — Vercel KVからゲームのセーブデータをロードする
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
@@ -20,27 +20,34 @@ export default async function handler(req, res) {
   const key = `save:${userId}`;
 
   try {
-    // Upstash Redis REST API: GET key
     const response = await fetch(`${redisUrl}/get/${encodeURIComponent(key)}`, {
-      headers: {
-        Authorization: `Bearer ${redisToken}`,
-      },
+      headers: { Authorization: `Bearer ${redisToken}` },
     });
 
     if (!response.ok) {
       const err = await response.json();
-      console.error("Redis load error:", err);
       return res.status(502).json({ error: "Redis error", detail: err });
     }
 
     const result = await response.json();
-
-    // セーブデータなし
-    if (result.result === null) {
+    if (result.result === null || result.result === undefined) {
       return res.status(200).json({ save: null });
     }
 
-    const save = JSON.parse(result.result);
+    // result.result が配列の場合（古い形式）→ 先頭要素を使う
+    let raw = result.result;
+    if (Array.isArray(raw)) {
+      raw = raw[0];
+    }
+
+    // 文字列の場合はJSONパース
+    const save = typeof raw === 'string' ? JSON.parse(raw) : raw;
+
+    // saveがsceneIdを持っていない場合は無効データとして扱う
+    if (!save || !save.sceneId) {
+      return res.status(200).json({ save: null });
+    }
+
     return res.status(200).json({ save });
   } catch (err) {
     console.error("Load handler error:", err);
