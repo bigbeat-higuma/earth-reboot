@@ -258,9 +258,12 @@ function donatePayPal() {
   window.open(url, '_blank');
 }
 
-// PayPay寄付
+// PayPay寄付（QRコードをモーダル表示）
 function donatePayPay() {
-  window.open('https://qr.paypay.ne.jp/p2p01_RSjBVRVP0Ggdz8mT', '_blank');
+  document.getElementById('paypay-modal').style.display = 'flex';
+}
+function closePayPayModal() {
+  document.getElementById('paypay-modal').style.display = 'none';
 }
 
 
@@ -1388,5 +1391,17 @@ window.addEventListener('load', () => {
 });
 
 </script>
+
+<!-- PayPay QRコードモーダル -->
+<div id="paypay-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;padding:20px;" onclick="closePayPayModal()">
+  <div style="background:#111;border:1px solid rgba(255,0,51,.4);border-radius:8px;padding:28px 24px;text-align:center;max-width:320px;width:100%;" onclick="event.stopPropagation()">
+    <div style="font-family:monospace;color:#ff6478;letter-spacing:.2em;font-size:.8rem;margin-bottom:18px;">// PAYPAY で支援する //</div>
+    <div style="background:#fff;border-radius:6px;padding:12px;display:inline-block;">
+      <img src="/images/paypay-qr.png" alt="PayPay QR" style="width:200px;height:200px;display:block;">
+    </div>
+    <div style="font-family:monospace;color:#bbb;font-size:.7rem;margin-top:16px;letter-spacing:.05em;line-height:1.6;">PayPayアプリの「スキャン」で<br>このQRコードを読み取って<br>支援できます</div>
+    <button onclick="closePayPayModal()" style="margin-top:18px;background:transparent;border:1px solid #444;color:#999;font-family:monospace;font-size:.7rem;padding:7px 24px;cursor:pointer;letter-spacing:.15em;border-radius:4px;">CLOSE</button>
+  </div>
+</div>
 </body>
 </html>
