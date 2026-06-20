@@ -12,15 +12,18 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Redis not configured" });
   }
 
-  const { userId, sceneId, stats, gameTime } = req.body;
+  const { userId, sceneId, stats, gameTime, version, flags, choiceHistory } = req.body;
   if (!userId || !sceneId) {
     return res.status(400).json({ error: "userId と sceneId は必須です" });
   }
 
   const key  = `save:${userId}`;
   const data = JSON.stringify({
+    version: typeof version === "number" ? version : 1,
     sceneId,
     stats,
+    flags: flags && typeof flags === "object" ? flags : {},
+    choiceHistory: Array.isArray(choiceHistory) ? choiceHistory : [],
     gameTime,
     savedAt: new Date().toISOString(),
   });

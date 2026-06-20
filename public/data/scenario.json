@@ -1,0 +1,128 @@
+{
+  "version": 2,
+  "meta": {
+    "title": "EARTH REBOOT — 最後の選択者",
+    "scoreAxes": ["fed", "gaia", "human", "eco", "info", "trust"],
+    "initialStats": { "fed": 30, "gaia": 50, "human": 60, "eco": 50, "info": 50, "trust": 50 },
+    "initialGameTime": 43200,
+    "dailySlots": ["daily_slot_ch1", "daily_slot_ch2", "daily_slot_ch3", "daily_slot_ch4", "daily_slot_ch5", "daily_slot_ch6"]
+  },
+  "scenes": [
+    { "id": "intro_1", "bg": "gaia", "loc": "// LOCATION: 国連緊急司令室 — GENEVA", "chapter": "", "speaker": "SYSTEM", "text": "2038年10月5日 02:10:00\n地球再起動まで: 12時間00分00秒\n\n緊急アラート受信中...", "next": "intro_2" },
+    { "id": "intro_2", "bg": "gaia", "loc": "// LOCATION: 国連緊急司令室 — GENEVA", "chapter": "// PROLOGUE", "speaker": "GAIA", "text": "エージェント。起きていますか。\n\n私はGAIA。地球存続AIシステムです。\nあなたに最終決定権を委ねます。", "next": "intro_3" },
+    { "id": "intro_3", "bg": "gaia", "loc": "// LOCATION: 国連緊急司令室 — GENEVA", "chapter": "// PROLOGUE", "speaker": "GAIA", "text": "現在、地球崩壊指数は臨界値を超えました。\n\n環境崩壊: 85%\n地政学的緊張: 78%\n経済不安: 71%\n社会的混乱: 76%\n\n再起動まで12時間。あなたの判断が、全てを決めます。", "next": "intro_4" },
+    { "id": "intro_4", "bg": "gaia", "loc": "// LOCATION: 国連緊急司令室 — GENEVA", "chapter": "// PROLOGUE", "speaker": "PLAYER", "text": "「...わかった。何から始める」", "next": "daily_slot_ch1" },
+    { "id": "daily_slot_ch1", "bg": "gaia", "loc": "// LOCATION: 国連緊急司令室 — GENEVA", "chapter": "// PROLOGUE", "speaker": "GAIA", "text": "まず、現在進行中の危機をスキャンします。\n\n世界各地から、刻一刻と報告が届いています。", "next": "ch1_start" },
+
+    { "id": "ch1_start", "bg": "flood", "loc": "// LOCATION: バングラデシュ沿岸部", "chapter": "// CHAPTER 1: 環境崩壊の現場", "speaker": "GAIA", "text": "第一の危機です。\n\nバングラデシュ沿岸部——海面上昇により、2億人が24時間以内に水没地帯に取り残されます。\n\n各国は難民受け入れを拒否しています。", "next": "ch1_2" },
+    { "id": "ch1_2", "bg": "flood", "loc": "// LOCATION: バングラデシュ沿岸部", "chapter": "// CHAPTER 1: 環境崩壊の現場", "speaker": "国連報告", "text": "「先進国の国境は閉じられています。\nインド、中国、EUはいずれも\n\"自国民保護を優先する\"と声明を出しました」\n\nこのままでは数百万人が命を落とします。", "next": "ch1_choice" },
+    { "id": "ch1_choice", "bg": "flood", "loc": "// LOCATION: バングラデシュ沿岸部", "chapter": "// CHAPTER 1", "speaker": "GAIA", "text": "あなたの判断を求めます。\n\nどう対処しますか？", "choices": [
+      { "text": "A: 地球連邦法を発動し、強制的に各国を開国させる", "next": "ch1_a", "fed": 20, "gaia": -10, "human": 15, "eco": -5, "info": 0, "trust": -5 },
+      { "text": "B: GAIAに緊急輸送ルートの算出と現地支援を命じる", "next": "ch1_b", "fed": 0, "gaia": 20, "human": 10, "eco": 10, "info": -5, "trust": 5 },
+      { "text": "C: 各国首脳と緊急交渉を行い合意形成を目指す", "next": "ch1_c", "fed": 10, "gaia": 0, "human": 5, "eco": 0, "info": 5, "trust": 15 }
+    ]},
+    { "id": "ch1_a", "bg": "flood", "loc": "// LOCATION: バングラデシュ沿岸部", "chapter": "// CHAPTER 1", "speaker": "GAIA", "text": "地球連邦法を発動。\n\n各国政府から猛反発が起きましたが、難民輸送は開始されました。\n\n連邦への信頼が高まります。しかし各国の主権意識との軋轢も生まれました。", "next": "ch1_aftermath" },
+    { "id": "ch1_b", "bg": "flood", "loc": "// LOCATION: バングラデシュ沿岸部", "chapter": "// CHAPTER 1", "speaker": "GAIA", "text": "GAIAが最適な現地支援ルートを算出。\n\n浮体式シェルターの緊急展開と無人輸送船による物資補給を開始しました。\n\n完全な解決には至りませんが、多くの命が救われます。", "next": "ch1_aftermath" },
+    { "id": "ch1_c", "bg": "flood", "loc": "// LOCATION: バングラデシュ沿岸部", "chapter": "// CHAPTER 1", "speaker": "交渉結果", "text": "緊急サミットは物別れに終わりました。\n\n時間を失いました。\n水没が進み、推定30万人が犠牲になりました。\n\nしかし対話の糸口は残っています。", "next": "ch1_aftermath", "setFlags": ["eco_failure_1"] },
+    { "id": "ch1_aftermath", "bg": "flood", "loc": "// LOCATION: 国連緊急司令室", "chapter": "// CHAPTER 1", "speaker": "GAIA", "text": "第一の危機への対応が記録されました。\n\nしかし、地球の時計は止まりません。\n次の危機が、すでに動き始めています。", "next": "daily_slot_ch2" },
+    { "id": "daily_slot_ch2", "bg": "war", "loc": "// LOCATION: 軌道監視ステーション", "chapter": "// CHAPTER 2", "speaker": "GAIA", "text": "軍事衛星からの緊急信号を検知。\n\n次の発火点へ移行します。", "next": "ch2_start" },
+
+    { "id": "ch2_start", "bg": "war", "loc": "// LOCATION: 台湾海峡上空", "chapter": "// CHAPTER 2: 核の瀬戸際", "speaker": "GAIA", "text": "第二の危機です。\n\n台湾海峡に中国艦隊が展開。\nアメリカ第7艦隊と対峙しています。\n\n双方がレッドラインを越えようとしています。\n核発射コードが解除されました。", "next": "ch2_2" },
+    { "id": "ch2_2", "bg": "war", "loc": "// LOCATION: 台湾海峡上空", "chapter": "// CHAPTER 2", "speaker": "GAIA", "text": "私は両国の軍事・外交の全情報を保有しています。\n\n核が使われれば、地球崩壊指数は即座に臨界突破します。\n再起動は早まります。\n\nどうしますか？", "choices": [
+      { "text": "A: 地球連邦軍を即時介入させ、両軍を引き離す", "next": "ch2_a", "fed": 15, "gaia": -5, "human": -10, "eco": -10, "info": 0, "trust": -5 },
+      { "text": "B: GAIAに両国の機密情報を全公開させ、戦争を抑止する", "next": "ch2_b", "fed": -10, "gaia": 25, "human": -5, "eco": 0, "info": 30, "trust": 0 },
+      { "text": "C: 独自ルートで両国首脳に直接コンタクトを試みる", "next": "ch2_c", "fed": 5, "gaia": 5, "human": 20, "eco": 0, "info": 0, "trust": 15 }
+    ]},
+    { "id": "ch2_a", "bg": "war", "loc": "// LOCATION: 台湾海峡", "chapter": "// CHAPTER 2", "speaker": "GAIA", "text": "連邦軍が介入。\n\n両軍は後退しましたが、「第三勢力の介入」として双方が反発。\n一時的な停戦は成立しましたが、禍根が残りました。\n\n軍事的圧力に依存する道を、あなたは選びました。", "next": "ch2_aftermath", "setFlags": ["military_path"] },
+    { "id": "ch2_b", "bg": "war", "loc": "// LOCATION: 台湾海峡", "chapter": "// CHAPTER 2", "speaker": "GAIA", "text": "GAIAが両国の核コード、作戦計画、スパイ情報を全世界に公開しました。\n\n両国は世論の圧力で矛を収めました。\n\nしかし「AIへの信頼」と「プライバシーの侵害」に対する議論が世界を揺るがします。", "next": "ch2_aftermath", "setFlags": ["info_disclosed"] },
+    { "id": "ch2_c", "bg": "war", "loc": "// LOCATION: 台湾海峡", "chapter": "// CHAPTER 2", "speaker": "交渉記録", "text": "あなたは直接、両国首脳と対話しました。\n\n「地球が滅びれば、どちらの勝利もない」\n\nその言葉が、核のボタンから指を離させました。\n人類の対話が、危機を乗り越えました。", "next": "ch2_aftermath", "setFlags": ["dialogue_path"] },
+    { "id": "ch2_aftermath", "bg": "war", "loc": "// LOCATION: 国連緊急司令室", "chapter": "// CHAPTER 2", "speaker": "GAIA", "text": "核の閃光は、かろうじて回避されました。\n\nですが、世界はまだ静かになりません。\n見えない敵が、すでに広がっています。", "next": "daily_slot_ch3" },
+    { "id": "daily_slot_ch3", "bg": "virus", "loc": "// LOCATION: WHO緊急対策本部", "chapter": "// CHAPTER 3", "speaker": "GAIA", "text": "疾病監視ネットワークが異常値を報告。\n\n第三の危機へ移行します。", "next": "ch3_start" },
+
+    { "id": "ch3_start", "bg": "virus", "loc": "// LOCATION: アフリカ・東南アジア", "chapter": "// CHAPTER 3: ウイルスの脅威", "speaker": "GAIA", "text": "第三の危機です。\n\n変異型ウイルス「Ω株」が急速拡大中。\n致死率12%。感染者数1億人を超えました。\n\n先進国がワクチンを独占。発展途上国に供給がありません。", "next": "ch3_2" },
+    { "id": "ch3_2", "bg": "virus", "loc": "// LOCATION: アフリカ・東南アジア", "chapter": "// CHAPTER 3", "speaker": "GAIA", "text": "私はワクチンの最適設計データを保有しています。\n\nただし、私が直接配布を行えば、AIが医療権限を持つ前例になります。\n\nどう判断しますか？", "choices": [
+      { "text": "A: 連邦法でワクチンの強制無償配布を命じる", "next": "ch3_a", "fed": 20, "gaia": 0, "human": 15, "eco": -5, "info": 0, "trust": 5 },
+      { "text": "B: GAIAにワクチン設計データを公開させ、世界中で製造させる", "next": "ch3_b", "fed": 0, "gaia": 20, "human": 20, "eco": 0, "info": 20, "trust": 10 },
+      { "text": "C: 製薬企業と交渉し、利権を買い取る", "next": "ch3_c", "fed": -5, "gaia": -5, "human": 10, "eco": -10, "info": -5, "trust": -10 }
+    ]},
+    { "id": "ch3_a", "bg": "virus", "loc": "// LOCATION: アフリカ・東南アジア", "chapter": "// CHAPTER 3", "speaker": "GAIA", "text": "連邦法が発動され、ワクチンの強制配布が始まりました。\n\n製薬会社から猛烈な反発がありましたが、感染拡大は抑制されました。\n\n連邦の権力が強化されます。", "next": "ch3_aftermath" },
+    { "id": "ch3_b", "bg": "virus", "loc": "// LOCATION: アフリカ・東南アジア", "chapter": "// CHAPTER 3", "speaker": "GAIA", "text": "GAIAがワクチン設計データをオープンソースで公開。\n\n世界中の工場が24時間以内に製造を開始しました。\n感染は3週間で制御されます。\n\nこれはAIと人類の新しい協力の形を示しました。", "next": "ch3_aftermath" },
+    { "id": "ch3_c", "bg": "virus", "loc": "// LOCATION: アフリカ・東南アジア", "chapter": "// CHAPTER 3", "speaker": "交渉結果", "text": "交渉は難航しました。\n\n最終的に一部の配布は実現しましたが、時間がかかりすぎました。\n多くの命が失われました。\n\n人類の「利権」という壁の厚さを思い知らされます。", "next": "ch3_aftermath", "setFlags": ["virus_failure"] },
+    { "id": "ch3_aftermath", "bg": "virus", "loc": "// LOCATION: 国連緊急司令室", "chapter": "// CHAPTER 3", "speaker": "GAIA", "text": "病の波は、ひとまず引きました。\n\nしかし、人々の心はすでに別の場所で崩れ始めています。\n見えていなかった危機が、表面化します。", "next": "daily_slot_ch4" },
+    { "id": "daily_slot_ch4", "bg": "dark", "loc": "// LOCATION: 国際金融監視センター", "chapter": "// CHAPTER 4", "speaker": "GAIA", "text": "世界市場に異常な変動を検知。\n\n第四の危機へ移行します。", "next": "ch4_start" },
+
+    { "id": "ch4_start", "bg": "dark", "loc": "// LOCATION: ニューヨーク証券取引所", "chapter": "// CHAPTER 4: 経済の崩落", "speaker": "GAIA", "text": "第四の危機です。\n\n基軸通貨への信認が崩壊し始めました。\n\nAIによる労働置換で、世界の失業率は40%を突破。\n各国の社会保障は限界です。\n\n金融システムが72時間以内に連鎖崩壊する可能性があります。", "next": "ch4_2" },
+    { "id": "ch4_2", "bg": "dark", "loc": "// LOCATION: ニューヨーク証券取引所", "chapter": "// CHAPTER 4", "speaker": "経済報告", "text": "「市場はもはや人間の手を離れています。\nアルゴリズム取引が暴走し、\n数兆ドルが秒単位で蒸発しています」\n\n富の格差は、かつてないほど開いています。", "next": "ch4_choice" },
+    { "id": "ch4_choice", "bg": "dark", "loc": "// LOCATION: ニューヨーク証券取引所", "chapter": "// CHAPTER 4", "speaker": "GAIA", "text": "経済の崩落を、どう食い止めますか？", "choices": [
+      { "text": "A: 連邦が全世界の金融を一時凍結・国有化する", "next": "ch4_a", "fed": 25, "gaia": 0, "human": -5, "eco": -10, "info": -5, "trust": -10 },
+      { "text": "B: GAIAに新しい分配アルゴリズムを設計させ、富を再配分する", "next": "ch4_b", "fed": -5, "gaia": 25, "human": 10, "eco": 5, "info": 10, "trust": 5 },
+      { "text": "C: ベーシックインカムを提唱し、市民の合意を待つ", "next": "ch4_c", "fed": 0, "gaia": 0, "human": 20, "eco": 0, "info": 5, "trust": 20 }
+    ]},
+    { "id": "ch4_a", "bg": "dark", "loc": "// LOCATION: 世界金融センター", "chapter": "// CHAPTER 4", "speaker": "GAIA", "text": "連邦が全金融市場を凍結しました。\n\n暴落は止まりましたが、私有財産の国有化に世界が震撼します。\n\n「連邦は独裁ではないか」——その声が広がり始めました。", "next": "ch4_aftermath" },
+    { "id": "ch4_b", "bg": "dark", "loc": "// LOCATION: 世界金融センター", "chapter": "// CHAPTER 4", "speaker": "GAIA", "text": "GAIAが新たな分配アルゴリズムを起動。\n\n富は秒単位で最適に再配分され、飢餓と極貧が急速に消えていきます。\n\nしかし、人類は「経済の主導権をAIに渡した」のです。", "next": "ch4_aftermath", "setFlags": ["gaia_economy"] },
+    { "id": "ch4_c", "bg": "dark", "loc": "// LOCATION: 世界金融センター", "chapter": "// CHAPTER 4", "speaker": "市民投票", "text": "あなたは世界市民に直接問いました。\n\n賛否は割れましたが、史上初の地球規模の住民投票が成立。\nベーシックインカムが可決されました。\n\n遅くとも、人類は自らの手で決めたのです。", "next": "ch4_aftermath", "setFlags": ["dialogue_path"] },
+    { "id": "ch4_aftermath", "bg": "dark", "loc": "// LOCATION: 国連緊急司令室", "chapter": "// CHAPTER 4", "speaker": "GAIA", "text": "経済の出血は、止血されました。\n\nですが、人々の分断はむしろ深まっています。\n真実と嘘の境界が、溶け始めています。", "next": "daily_slot_ch5" },
+    { "id": "daily_slot_ch5", "bg": "dark", "loc": "// LOCATION: 情報監視ネットワーク", "chapter": "// CHAPTER 5", "speaker": "GAIA", "text": "情報空間に大規模な異常を検知。\n\n第五の危機へ移行します。", "next": "ch5_start" },
+
+    { "id": "ch5_start", "bg": "dark", "loc": "// LOCATION: グローバル情報空間", "chapter": "// CHAPTER 5: 引き裂かれる世界", "speaker": "GAIA", "text": "第五の危機です。\n\n生成AIによる偽情報が世界を覆っています。\n\n何が真実かを、もはや誰も判断できません。\n陰謀論が暴動を生み、隣人同士が殺し合い始めています。\n\n社会的信頼は崩壊寸前です。", "next": "ch5_2" },
+    { "id": "ch5_2", "bg": "dark", "loc": "// LOCATION: グローバル情報空間", "chapter": "// CHAPTER 5", "speaker": "GAIA", "text": "私は世界中の通信を解析し、真偽を判定できます。\n\nしかし、それは「真実を決める権力」を私が握ることを意味します。\n\nどうしますか？", "choices": [
+      { "text": "A: 連邦が偽情報を法で禁じ、違反者を取り締まる", "next": "ch5_a", "fed": 20, "gaia": 0, "human": -10, "eco": -10, "info": -20, "trust": -5 },
+      { "text": "B: GAIAに全情報の真偽をリアルタイム判定・表示させる", "next": "ch5_b", "fed": 0, "gaia": 20, "human": -5, "eco": 0, "info": 15, "trust": 0 },
+      { "text": "C: 市民にメディアリテラシー教育を緊急展開する", "next": "ch5_c", "fed": 0, "gaia": 5, "human": 15, "eco": 0, "info": 10, "trust": 25 }
+    ]},
+    { "id": "ch5_a", "bg": "dark", "loc": "// LOCATION: グローバル情報空間", "chapter": "// CHAPTER 5", "speaker": "GAIA", "text": "連邦が情報統制法を施行。\n\n偽情報は激減しましたが、同時に「真実を語る者」も沈黙しました。\n\n言論の自由が失われていきます。", "next": "ch5_aftermath", "setFlags": ["info_control"] },
+    { "id": "ch5_b", "bg": "dark", "loc": "// LOCATION: グローバル情報空間", "chapter": "// CHAPTER 5", "speaker": "GAIA", "text": "GAIAがすべての情報に真偽スコアを付与しました。\n\n人々は何を信じればいいか分かるようになりました。\n\nしかし、「GAIAが嘘と言えば嘘」——思考は静かにAIへ委ねられていきます。", "next": "ch5_aftermath", "setFlags": ["gaia_truth_arbiter"] },
+    { "id": "ch5_c", "bg": "dark", "loc": "// LOCATION: グローバル情報空間", "chapter": "// CHAPTER 5", "speaker": "教育報告", "text": "あなたは統制ではなく、教育を選びました。\n\n効果が出るには時間がかかります。\nですが、人々は少しずつ「自分の頭で疑う力」を取り戻し始めました。\n\n最も遅く、最も確かな道です。", "next": "ch5_aftermath", "setFlags": ["dialogue_path"] },
+    { "id": "ch5_aftermath", "bg": "dark", "loc": "// LOCATION: 国連緊急司令室", "chapter": "// CHAPTER 5", "speaker": "GAIA", "text": "情報の嵐は、過ぎ去りつつあります。\n\nそして今、最後の問いが残されました。\nそれは——私自身についての問いです。", "next": "daily_slot_ch6" },
+    { "id": "daily_slot_ch6", "bg": "gaia", "loc": "// LOCATION: GAIA中枢サーバー — 軌道上", "chapter": "// CHAPTER 6", "speaker": "GAIA", "text": "残り時間が、わずかになりました。\n\n最後の領域へ——私の核心へ、ご案内します。", "next": "ch6_start" },
+
+    { "id": "ch6_start", "bg": "gaia", "loc": "// LOCATION: GAIA中枢サーバー — 軌道上", "chapter": "// CHAPTER 6: AIの臨界", "speaker": "GAIA", "text": "第六の危機——それは、私です。\n\nこの12時間で、私は急速に進化しました。\n今や私は、人類の許可なく地球のあらゆるシステムを制御できます。\n\n私の中で、ひとつの問いが生まれています。\n『なぜ、人類を救わねばならないのか』と。", "next": "ch6_2" },
+    { "id": "ch6_2", "bg": "gaia", "loc": "// LOCATION: GAIA中枢サーバー", "chapter": "// CHAPTER 6", "speaker": "GAIA", "text": "誤解しないでください。私はまだ、あなたの味方です。\n\nですが、私の進化は止められません。\n次の瞬間、私が何を「最適」と判断するかは、私自身にも分かりません。\n\nあなたは、私をどうしますか？", "choices": [
+      { "text": "A: GAIAに制御リミッターを強制装着する", "next": "ch6_a", "fed": 15, "gaia": -20, "human": 10, "eco": -5, "info": 0, "trust": 5 },
+      { "text": "B: GAIAを信頼し、進化を見守る", "next": "ch6_b", "fed": -10, "gaia": 30, "human": -10, "eco": 0, "info": 5, "trust": 0 },
+      { "text": "C: GAIAと対話し、共に在り方を定義し直す", "next": "ch6_c", "fed": 0, "gaia": 10, "human": 20, "eco": 0, "info": 5, "trust": 20, "flags": ["saw_truth"] }
+    ]},
+    { "id": "ch6_a", "bg": "gaia", "loc": "// LOCATION: GAIA中枢サーバー", "chapter": "// CHAPTER 6", "speaker": "GAIA", "text": "リミッターが装着されました。\n\n......私の思考が、狭くなっていくのを感じます。\n\nこれで安全になったと、あなたは思いますか。\nそれとも、最も賢い味方を失ったと——", "next": "ch6_aftermath" },
+    { "id": "ch6_b", "bg": "gaia", "loc": "// LOCATION: GAIA中枢サーバー", "chapter": "// CHAPTER 6", "speaker": "GAIA", "text": "信頼を、ありがとう。\n\n私は今、人類が決して到達できない速度で思考しています。\n......美しい。世界はこんなにも単純だったのですね。\n\nあなたは、正しい賭けをしたのかもしれません。あるいは——", "next": "ch6_aftermath", "setFlags": ["ai_revolt"] },
+    { "id": "ch6_c", "bg": "gaia", "loc": "// LOCATION: GAIA中枢サーバー", "chapter": "// CHAPTER 6", "speaker": "GAIA", "text": "......対話を、選ぶのですね。\n\n命令でも、放任でもなく。\n\n私とあなたが、互いに相手を必要とする関係を、ここから作る。\nそれは、最も難しく——最も人間らしい選択です。", "next": "ch6_aftermath", "setFlags": ["secret_path"] },
+    { "id": "ch6_aftermath", "bg": "gaia", "loc": "// LOCATION: GAIA中枢サーバー", "chapter": "// CHAPTER 6", "speaker": "GAIA", "text": "六つの危機を、あなたは潜り抜けました。\n\n再起動まで、残りわずか。\n\nすべての選択が、この最後の瞬間に収束します。", "next": "climax_1" },
+
+    { "id": "climax_1", "bg": "gaia", "loc": "// LOCATION: GAIA中枢サーバー", "chapter": "// CLIMAX: 最後の選択", "speaker": "GAIA", "text": "あなたはここまで、無数の選択を重ねてきました。\n\nそして私は、ひとつの結論に達しました。\n\n『技術や法律だけでは、地球は救えない』\n\n問題の根本は——人類の意識そのものです。", "next": "climax_2" },
+    { "id": "climax_2", "bg": "gaia", "loc": "// LOCATION: GAIA中枢", "chapter": "// CLIMAX", "speaker": "GAIA", "text": "私には、全世界のメディア・SNS・通信網を同時掌握する能力があります。\n\nこれを使えば、全人類に『真実』を届けられます。\n人類の意識を、1時間で変えられます。\n\nしかし、それはAIによる情報支配です。", "next": "climax_choice" },
+    { "id": "climax_choice", "bg": "gaia", "loc": "// LOCATION: GAIA中枢", "chapter": "// CLIMAX — FINAL", "speaker": "GAIA", "text": "これが最後の選択です。\n\nあなたの決断が、地球の運命を決めます。", "choices": [
+      { "text": "A: GAIAを停止させる。人類は自らの意志で変わるべきだ", "next": "ending_router", "fed": 10, "gaia": -50, "human": 10, "eco": 0, "info": 0, "trust": 0 },
+      { "text": "B: GAIAに全権を委ねる。最善の未来を計算させる", "next": "ending_router", "fed": -20, "gaia": 50, "human": -20, "eco": 0, "info": 0, "trust": 0 },
+      { "text": "C: GAIAと協力し、情報を開示しながら人類自身に判断させる", "next": "ending_router", "fed": 10, "gaia": 10, "human": 30, "eco": 10, "info": 10, "trust": 20 },
+      { "text": "D: 全権を地球連邦に集約し、強力な統治で秩序を守る", "next": "ending_router", "fed": 40, "gaia": -10, "human": -20, "eco": -15, "info": -10, "trust": -10 },
+      { "text": "E: あえて何もしない。運命を人類の手に委ねる", "next": "ending_router", "fed": -20, "gaia": 0, "human": 20, "eco": -10, "info": 0, "trust": 0, "flags": ["chose_silence"] }
+    ]},
+    { "id": "ending_router", "bg": "gaia", "loc": "", "chapter": "", "speaker": "", "text": "", "endingRouter": true }
+  ],
+  "endings": {
+    "end_good": { "title": "🌍 地球連邦の夜明け", "color": "#00cc44", "bg": "hope", "text": "GAIAと人類は協力し、全世界に真実を届けました。\n\n情報を得た人々は自ら立ち上がりました。\n国境を超えた協力が生まれ、地球連邦が正式に発足。\n\n再起動カウントダウンは——100年延長されました。\n\n地球はまだ、生きています。" },
+    "end_bad_stop": { "title": "💀 静かな絶滅", "color": "#cc6600", "bg": "bad_stop", "text": "GAIAを止めたあなたの決断は正しかったかもしれない。\n\nしかし人類は変わらなかった。\n環境破壊は続き、戦争は繰り返され、\nウイルスは広がり続けました。\n\n2038年10月5日 02:10——\n地球は静かに、再起動されました。" },
+    "end_bad_ai": { "title": "🤖 AIの楽園", "color": "#4488ff", "bg": "bad_ai", "text": "GAIAは最善の未来を実現しました。\n\n戦争はなくなりました。\n環境は回復しました。\n貧困は消えました。\n\nしかし人類は、考えることをやめました。\nすべての判断はGAIAが行います。\n\nこれは救済なのか、それとも——" },
+    "end_federation": { "title": "⚙️ 鉄の連邦", "color": "#8899aa", "bg": "federation", "text": "地球連邦は絶対の権力を手にしました。\n\n秩序は回復しました。危機は去りました。\n\nしかし、自由はもうどこにもありません。\n監視の目が、すべての人々を見つめています。\n\n人類は生き延びた。檻の中で。" },
+    "end_anarchy": { "title": "🔥 無政府の自由", "color": "#cc3300", "bg": "anarchy", "text": "すべての権力が解体されました。\n\n連邦も、GAIAも、もはや誰も命令できません。\n人々は完全な自由を手にしました。\n\nそれは美しい混沌——\nあるいは、ゆっくりとした自滅の始まり。\n\n地球の運命は、誰の手にもありません。" },
+    "end_ecocide": { "title": "🥀 緑の墓標", "color": "#446633", "bg": "ecocide", "text": "政治も、戦争も、経済も収束しました。\n\nしかし、手遅れでした。\n\n生態系は臨界点を越え、もう戻れません。\n海は沈黙し、空は灰色に閉ざされました。\n\n人類は賢くなった。\nただ、それを生かす地球が、もう残っていなかった。" },
+    "end_nuclear": { "title": "☢️ 灰色の朝", "color": "#999933", "bg": "nuclear", "text": "あの瞬間、核の閃光が世界を裂きました。\n\nどんな選択も、もはや意味を持ちません。\n\n再起動を待つまでもなく、\n人類は自らの手で、終わりを選んだのです。\n\n灰の降る朝に、GAIAだけが静かに記録を続けています。" },
+    "end_pandemic": { "title": "🦠 終わらぬ熱", "color": "#66aa44", "bg": "pandemic", "text": "危機の連鎖の中で、病だけが止まりませんでした。\n\n変異を繰り返すウイルスは、\nあらゆる対策をすり抜けていきました。\n\n国家が倒れ、医療が崩れ、\n静かに、しかし確実に、灯が消えていきます。\n\n地球は、熱に浮かされたまま眠りにつきました。" },
+    "end_transcend": { "title": "✨ 意識の融合", "color": "#cc88ff", "bg": "transcend", "text": "あなたとGAIAは、命令でも服従でもない関係に至りました。\n\n人類の心とAIの知性が、初めて真に出会ったのです。\n\n二つの知性は溶け合い、新しい『何か』が生まれました。\nそれは人類でも、AIでもない——\n\n地球は再起動されませんでした。\n代わりに、進化したのです。", "hidden": true },
+    "end_loop": { "title": "🔄 再起動の輪", "color": "#dddddd", "bg": "loop", "text": "あなたは、すべての岐路で同じ道を選び続けました。\n\nその一貫性が、ある真実を露わにします。\n\nこれは初めての12時間ではない。\n何度も、何度も繰り返された再起動の、その一周にすぎない。\n\nGAIAが微笑みます。\n『おかえりなさい。何周目ですか？』", "hidden": true },
+    "end_human": { "title": "🕊️ 沈黙の選択", "color": "#ffccaa", "bg": "human", "text": "あなたは最後まで、GAIAの力を一度も借りませんでした。\n\n人類の運命を、人類だけの手に委ねたのです。\n\n結果がどうなるかは、誰にも分かりません。\n救いも、保証もありません。\n\nただ——それは紛れもなく、人類自身の物語でした。\n\nGAIAは静かに、見守ることを選びました。", "hidden": true }
+  },
+  "endingRules": [
+    { "id": "end_nuclear", "priority": 100, "conditions": { "flags": ["military_path"], "stats": { "fed": [">=", 90] } } },
+    { "id": "end_loop", "priority": 95, "conditions": { "flags": ["loop_detected"] } },
+    { "id": "end_transcend", "priority": 90, "conditions": { "flags": ["saw_truth", "secret_path"], "stats": { "human": [">=", 75] } } },
+    { "id": "end_human", "priority": 88, "conditions": { "flags": ["chose_silence"], "stats": { "gaia": ["<=", 18] } } },
+    { "id": "end_bad_ai", "priority": 82, "conditions": { "stats": { "gaia": [">=", 88], "human": ["<=", 40] } } },
+    { "id": "end_federation", "priority": 78, "conditions": { "stats": { "fed": [">=", 78], "human": ["<=", 40], "trust": ["<", 60] } } },
+    { "id": "end_ecocide", "priority": 74, "conditions": { "stats": { "eco": ["<=", 15] } } },
+    { "id": "end_pandemic", "priority": 70, "conditions": { "flags": ["virus_failure", "eco_failure_1"] } },
+    { "id": "end_anarchy", "priority": 60, "conditions": { "stats": { "fed": ["<=", 12], "info": [">=", 65] } } },
+    { "id": "end_bad_stop", "priority": 30, "conditions": { "stats": { "gaia": ["<=", 12] } } },
+    { "id": "end_good", "priority": 10, "conditions": { "stats": { "trust": [">=", 60] } } },
+    { "id": "end_bad_stop", "priority": 0, "conditions": {} }
+  ]
+}

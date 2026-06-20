@@ -515,102 +515,112 @@ body::after {
 </div>
 
 <script>
-// ── ゲームデータ ──────────────────────────────
-const SCENES = [
-  // プロローグ
-  { id: 'intro_1', bg: 'gaia', loc: '// LOCATION: 国連緊急司令室 — GENEVA', chapter: '', speaker: 'SYSTEM', text: '2038年10月5日 02:10:00\n地球再起動まで: 12時間00分00秒\n\n緊急アラート受信中...', next: 'intro_2' },
-  { id: 'intro_2', bg: 'gaia', loc: '// LOCATION: 国連緊急司令室 — GENEVA', chapter: '// PROLOGUE', speaker: 'GAIA', text: 'エージェント。起きていますか。\n\n私はGAIA。地球存続AIシステムです。\nあなたに最終決定権を委ねます。', next: 'intro_3' },
-  { id: 'intro_3', bg: 'gaia', loc: '// LOCATION: 国連緊急司令室 — GENEVA', chapter: '// PROLOGUE', speaker: 'GAIA', text: '現在、地球崩壊指数は臨界値を超えました。\n\n環境崩壊: 85%\n地政学的緊張: 78%\n経済不安: 71%\n社会的混乱: 76%\n\n再起動まで12時間。あなたの判断が、全てを決めます。', next: 'intro_4' },
-  { id: 'intro_4', bg: 'gaia', loc: '// LOCATION: 国連緊急司令室 — GENEVA', chapter: '// PROLOGUE', speaker: 'PLAYER', text: '「...わかった。何から始める」', next: 'ch1_start' },
-
-  // 第1章
-  { id: 'ch1_start', bg: 'flood', loc: '// LOCATION: バングラデシュ沿岸部', chapter: '// CHAPTER 1: 環境崩壊の現場', speaker: 'GAIA', text: '第一の危機です。\n\nバングラデシュ沿岸部——海面上昇により、2億人が24時間以内に水没地帯に取り残されます。\n\n各国は難民受け入れを拒否しています。', next: 'ch1_2' },
-  { id: 'ch1_2', bg: 'flood', loc: '// LOCATION: バングラデシュ沿岸部', chapter: '// CHAPTER 1: 環境崩壊の現場', speaker: '国連報告', text: '「先進国の国境は閉じられています。\nインド、中国、EUはいずれも\n"自国民保護を優先する"と声明を出しました」\n\nこのままでは数百万人が命を落とします。', next: 'ch1_choice' },
-  { id: 'ch1_choice', bg: 'flood', loc: '// LOCATION: バングラデシュ沿岸部', chapter: '// CHAPTER 1', speaker: 'GAIA', text: 'あなたの判断を求めます。\n\nどう対処しますか？', choices: [
-    { text: 'A: 地球連邦法を発動し、強制的に各国を開国させる', next: 'ch1_a', fed: +20, gaia: -10, human: +15 },
-    { text: 'B: GAIAに緊急輸送ルートの算出と現地支援を命じる', next: 'ch1_b', fed: 0, gaia: +20, human: +10 },
-    { text: 'C: 各国首脳と緊急交渉を行い合意形成を目指す', next: 'ch1_c', fed: +10, gaia: 0, human: +5 },
-  ]},
-
-  // ch1-A
-  { id: 'ch1_a', bg: 'flood', loc: '// LOCATION: バングラデシュ沿岸部', chapter: '// CHAPTER 1', speaker: 'GAIA', text: '地球連邦法を発動。\n\n各国政府から猛反発が起きましたが、難民輸送は開始されました。\n\n連邦への信頼が高まります。しかし各国の主権意識との軋轢も生まれました。', next: 'ch2_start' },
-  // ch1-B
-  { id: 'ch1_b', bg: 'flood', loc: '// LOCATION: バングラデシュ沿岸部', chapter: '// CHAPTER 1', speaker: 'GAIA', text: 'GAIAが最適な現地支援ルートを算出。\n\n浮体式シェルターの緊急展開と無人輸送船による物資補給を開始しました。\n\n完全な解決には至りませんが、多くの命が救われます。', next: 'ch2_start' },
-  // ch1-C
-  { id: 'ch1_c', bg: 'flood', loc: '// LOCATION: バングラデシュ沿岸部', chapter: '// CHAPTER 1', speaker: '交渉結果', text: '緊急サミットは物別れに終わりました。\n\n時間を失いました。\n水没が進み、推定30万人が犠牲になりました。\n\nしかし対話の糸口は残っています。', next: 'ch2_start' },
-
-  // 第2章
-  { id: 'ch2_start', bg: 'war', loc: '// LOCATION: 台湾海峡上空', chapter: '// CHAPTER 2: 核の瀬戸際', speaker: 'GAIA', text: '第二の危機です。\n\n台湾海峡に中国艦隊が展開。\nアメリカ第7艦隊と対峙しています。\n\n双方がレッドラインを越えようとしています。\n核発射コードが解除されました。', next: 'ch2_2' },
-  { id: 'ch2_2', bg: 'war', loc: '// LOCATION: 台湾海峡上空', chapter: '// CHAPTER 2', speaker: 'GAIA', text: '私は両国の軍事・外交の全情報を保有しています。\n\n核が使われれば、地球崩壊指数は即座に臨界突破します。\n再起動は早まります。\n\nどうしますか？', choices: [
-    { text: 'A: 地球連邦軍を即時介入させ、両軍を引き離す', next: 'ch2_a', fed: +15, gaia: -5, human: -10 },
-    { text: 'B: GAIAに両国の機密情報を全公開させ、戦争を抑止する', next: 'ch2_b', fed: -10, gaia: +25, human: -5 },
-    { text: 'C: 独自ルートで両国首脳に直接コンタクトを試みる', next: 'ch2_c', fed: +5, gaia: +5, human: +20 },
-  ]},
-
-  { id: 'ch2_a', bg: 'war', loc: '// LOCATION: 台湾海峡', chapter: '// CHAPTER 2', speaker: 'GAIA', text: '連邦軍が介入。\n\n両軍は後退しましたが、「第三勢力の介入」として双方が反発。\n一時的な停戦は成立しましたが、禍根が残りました。', next: 'ch3_start' },
-  { id: 'ch2_b', bg: 'war', loc: '// LOCATION: 台湾海峡', chapter: '// CHAPTER 2', speaker: 'GAIA', text: 'GAIAが両国の核コード、作戦計画、スパイ情報を全世界に公開しました。\n\n両国は世論の圧力で矛を収めました。\n\nしかし「AIへの信頼」と「プライバシーの侵害」に対する議論が世界を揺るがします。', next: 'ch3_start' },
-  { id: 'ch2_c', bg: 'war', loc: '// LOCATION: 台湾海峡', chapter: '// CHAPTER 2', speaker: '交渉記録', text: 'あなたは直接、両国首脳と対話しました。\n\n「地球が滅びれば、どちらの勝利もない」\n\nその言葉が、核のボタンから指を離させました。\n人類の対話が、危機を乗り越えました。', next: 'ch3_start' },
-
-  // 第3章
-  { id: 'ch3_start', bg: 'virus', loc: '// LOCATION: アフリカ・東南アジア', chapter: '// CHAPTER 3: ウイルスの脅威', speaker: 'GAIA', text: '第三の危機です。\n\n変異型ウイルス「Ω株」が急速拡大中。\n致死率12%。感染者数1億人を超えました。\n\n先進国がワクチンを独占。発展途上国に供給がありません。', next: 'ch3_2' },
-  { id: 'ch3_2', bg: 'virus', loc: '// LOCATION: アフリカ・東南アジア', chapter: '// CHAPTER 3', speaker: 'GAIA', text: '私はワクチンの最適設計データを保有しています。\n\nただし、私が直接配布を行えば、AIが医療権限を持つ前例になります。\n\nどう判断しますか？', choices: [
-    { text: 'A: 連邦法でワクチンの強制無償配布を命じる', next: 'ch3_a', fed: +20, gaia: 0, human: +15 },
-    { text: 'B: GAIAにワクチン設計データを公開させ、世界中で製造させる', next: 'ch3_b', fed: 0, gaia: +20, human: +20 },
-    { text: 'C: 製薬企業と交渉し、利権を買い取る', next: 'ch3_c', fed: -5, gaia: -5, human: +10 },
-  ]},
-
-  { id: 'ch3_a', bg: 'virus', loc: '// LOCATION: アフリカ・東南アジア', chapter: '// CHAPTER 3', speaker: 'GAIA', text: '連邦法が発動され、ワクチンの強制配布が始まりました。\n\n製薬会社から猛烈な反発がありましたが、感染拡大は抑制されました。\n\n連邦の権力が強化されます。', next: 'ch4_start' },
-  { id: 'ch3_b', bg: 'virus', loc: '// LOCATION: アフリカ・東南アジア', chapter: '// CHAPTER 3', speaker: 'GAIA', text: 'GAIAがワクチン設計データをオープンソースで公開。\n\n世界中の工場が24時間以内に製造を開始しました。\n感染は3週間で制御されます。\n\nこれはAIと人類の新しい協力の形を示しました。', next: 'ch4_start' },
-  { id: 'ch3_c', bg: 'virus', loc: '// LOCATION: アフリカ・東南アジア', chapter: '// CHAPTER 3', speaker: '交渉結果', text: '交渉は難航しました。\n\n最終的に一部の配布は実現しましたが、時間がかかりすぎました。\n多くの命が失われました。\n\n人類の「利権」という壁の厚さを思い知らされます。', next: 'ch4_start' },
-
-  // 第4章 クライマックス
-  { id: 'ch4_start', bg: 'gaia', loc: '// LOCATION: GAIA中枢サーバー — 軌道上', chapter: '// CHAPTER 4: 最後の選択', speaker: 'GAIA', text: '残り時間が少なくなりました。\n\n私は全データを分析した結果、一つの結論に達しました。\n\n「技術や法律だけでは、地球は救えない」\n\n問題の根本は——人類の意識そのものです。', next: 'ch4_2' },
-  { id: 'ch4_2', bg: 'gaia', loc: '// LOCATION: GAIA中枢', chapter: '// CHAPTER 4', speaker: 'GAIA', text: '私には、全世界のメディア・SNS・通信網を同時掌握する能力があります。\n\nこれを使えば、全人類に「真実」を届けられます。\n環境破壊の実態、戦争の無意味さ、貧困の構造。\n\n人類の意識を、1時間で変えられます。\nしかし、それはAIによる情報支配です。', next: 'ch4_choice' },
-  { id: 'ch4_choice', bg: 'gaia', loc: '// LOCATION: GAIA中枢', chapter: '// CHAPTER 4 — FINAL', speaker: 'GAIA', text: 'これが最後の選択です。\n\nあなたの決断が、地球の運命を決めます。', choices: [
-    { text: 'A: GAIAを停止させる。人類は自らの意志で変わるべきだ', next: 'end_bad_stop', fed: +10, gaia: -50, human: +10 },
-    { text: 'B: GAIAに全権を委ねる。最善の未来を計算させる', next: 'end_bad_ai', fed: -20, gaia: +50, human: -20 },
-    { text: 'C: GAIAと協力し、情報を開示しながら人類自身に判断させる', next: 'end_good', fed: +10, gaia: +10, human: +30 },
-  ]},
-
-  // エンディング
-  { id: 'end_good', bg: 'hope', loc: '', chapter: '', speaker: '', text: '', ending: 'good' },
-  { id: 'end_bad_stop', bg: 'bad_stop', loc: '', chapter: '', speaker: '', text: '', ending: 'bad_stop' },
-  { id: 'end_bad_ai', bg: 'bad_ai', loc: '', chapter: '', speaker: '', text: '', ending: 'bad_ai' },
-];
-
-const ENDINGS = {
-  good: {
-    title: '🌍 地球連邦の夜明け',
-    color: '#00cc44',
-    text: 'GAIAと人類は協力し、全世界に真実を届けました。\n\n情報を得た人々は自ら立ち上がりました。\n国境を超えた協力が生まれ、地球連邦が正式に発足。\n\n再起動カウントダウンは——100年延長されました。\n\n地球はまだ、生きています。',
-  },
-  bad_stop: {
-    title: '💀 静かな絶滅',
-    color: '#cc6600',
-    text: 'GAIAを止めたあなたの決断は正しかったかもしれない。\n\nしかし人類は変わらなかった。\n環境破壊は続き、戦争は繰り返され、\nウイルスは広がり続けました。\n\n2038年10月5日 02:10——\n地球は静かに、再起動されました。',
-  },
-  bad_ai: {
-    title: '🤖 AIの楽園',
-    color: '#4488ff',
-    text: 'GAIAは最善の未来を実現しました。\n\n戦争はなくなりました。\n環境は回復しました。\n貧困は消えました。\n\nしかし人類は、考えることをやめました。\nすべての判断はGAIAが行います。\n\nこれは救済なのか、それとも——',
-  },
-};
+// ── ゲームデータ（外部JSONから読み込み）──────────
+let SCENES = [];
+let ENDINGS = {};
+let ENDING_RULES = [];
+let scenarioMeta = null;
+let sceneMap = {};
+let scenarioLoaded = false;
 
 // ── ゲーム状態 ──
 let currentScene = null;
 let isTyping = false;
 let typeTimer = null;
 let onDoneCallback = null;
-let displayedText = '';
-let fullText = '';
+let displayedText = "";
+let fullText = "";
 let charIndex = 0;
-let stats = { fed: 30, gaia: 50, human: 60, time: 100 };
+let stats = { fed: 30, gaia: 50, human: 60, eco: 50, info: 50, trust: 50, time: 100 };
+let flags = {};
+let choiceHistory = [];
 let gameTime = 12 * 3600; // 12時間（秒）
 let timerInterval = null;
 let currentEndingType = null;
-let sceneMap = {};
 
-SCENES.forEach(s => sceneMap[s.id] = s);
+// ── シナリオ読み込み ──
+async function loadScenario() {
+  if (scenarioLoaded) return true;
+  try {
+    const res = await fetch("/data/scenario.json", { cache: "no-store" });
+    const data = await res.json();
+    applyScenarioData(data);
+    // 動的オーバーレイ（Phase C以降）。失敗しても無視
+    try {
+      const dyn = await fetch("/api/daily", { cache: "no-store" });
+      if (dyn.ok) applyDynamicOverlay(await dyn.json());
+    } catch (e) {}
+    scenarioLoaded = true;
+    return true;
+  } catch (e) {
+    console.error("Scenario load error:", e);
+    return false;
+  }
+}
+
+function applyScenarioData(data) {
+  SCENES = data.scenes || [];
+  ENDINGS = data.endings || {};
+  ENDING_RULES = (data.endingRules || []).slice().sort((a, b) => (b.priority || 0) - (a.priority || 0));
+  scenarioMeta = data.meta || null;
+  sceneMap = {};
+  SCENES.forEach(sc => sceneMap[sc.id] = sc);
+  if (scenarioMeta && scenarioMeta.initialStats) {
+    stats = Object.assign({ time: 100 }, scenarioMeta.initialStats);
+  }
+  if (scenarioMeta && typeof scenarioMeta.initialGameTime === "number") {
+    gameTime = scenarioMeta.initialGameTime;
+  }
+}
+
+// 動的オーバーレイ適用（Phase C/D/E）
+function applyDynamicOverlay(dyn) {
+  if (!dyn || typeof dyn !== "object") return;
+  if (Array.isArray(dyn.scenes)) {
+    dyn.scenes.forEach(sc => { if (sc && sc.id) sceneMap[sc.id] = sc; });
+  }
+  if (Array.isArray(dyn.patches)) {
+    dyn.patches.forEach(pt => { if (pt && pt.id && sceneMap[pt.id]) sceneMap[pt.id].text = pt.text; });
+  }
+  if (dyn.choices && typeof dyn.choices === "object") {
+    Object.entries(dyn.choices).forEach(([id, texts]) => {
+      const sc = sceneMap[id];
+      if (sc && Array.isArray(sc.choices) && Array.isArray(texts)) {
+        sc.choices.forEach((c, idx) => { if (texts[idx]) c.text = texts[idx]; });
+      }
+    });
+  }
+}
+
+// ── エンディング判定エンジン ──
+function resolveEnding() {
+  for (const rule of ENDING_RULES) {
+    if (matchEndingRule(rule)) return rule.id;
+  }
+  return "end_bad_stop";
+}
+
+function matchEndingRule(rule) {
+  const c = rule.conditions || {};
+  if (Array.isArray(c.flags)) {
+    for (const f of c.flags) { if (!flags[f]) return false; }
+  }
+  if (Array.isArray(c.notFlags)) {
+    for (const f of c.notFlags) { if (flags[f]) return false; }
+  }
+  if (c.stats && typeof c.stats === "object") {
+    for (const [axis, cond] of Object.entries(c.stats)) {
+      const op = cond[0], val = cond[1];
+      const cur = typeof stats[axis] === "number" ? stats[axis] : 0;
+      if (op === ">=" && !(cur >= val)) return false;
+      if (op === "<=" && !(cur <= val)) return false;
+      if (op === ">"  && !(cur >  val)) return false;
+      if (op === "<"  && !(cur <  val)) return false;
+      if (op === "==" && !(cur === val)) return false;
+    }
+  }
+  return true;
+}
 
 // ── タイマー ──
 function formatTime(s) {
@@ -809,6 +819,13 @@ function showScene(id) {
   if (!scene) return;
   currentScene = scene;
 
+  // 到達フラグの適用
+  if (Array.isArray(scene.setFlags)) {
+    scene.setFlags.forEach(f => { flags[f] = true; });
+  }
+
+  // エンディング解決（新方式: endingRouter / 旧方式: scene.ending 後方互換）
+  if (scene.endingRouter) { showEnding(resolveEnding()); return; }
   if (scene.ending) { showEnding(scene.ending); return; }
 
   drawBg(scene.bg);
@@ -827,11 +844,11 @@ function showScene(id) {
   if (scene.choices) {
     tapHint.style.display = 'none';
     typeText(scene.text, () => {
-      scene.choices.forEach(c => {
+      scene.choices.forEach((c, idx) => {
         const btn = document.createElement('button');
         btn.className = 'choice-btn fade-in';
         btn.textContent = c.text;
-        btn.onclick = () => makeChoice(c);
+        btn.onclick = () => makeChoice(c, idx);
         choices.appendChild(btn);
       });
     });
@@ -844,16 +861,41 @@ function showScene(id) {
   saveGame(true); // 自動セーブ
 }
 
-function makeChoice(choice) {
-  // ステータス更新
-  if (choice.fed) stats.fed = Math.min(100, Math.max(0, stats.fed + choice.fed));
-  if (choice.gaia) stats.gaia = Math.min(100, Math.max(0, stats.gaia + choice.gaia));
-  if (choice.human) stats.human = Math.min(100, Math.max(0, stats.human + choice.human));
+const SCORE_AXES = ['fed', 'gaia', 'human', 'eco', 'info', 'trust'];
+
+function makeChoice(choice, idx) {
+  // 6軸ステータス更新
+  SCORE_AXES.forEach(axis => {
+    if (typeof choice[axis] === 'number') {
+      stats[axis] = Math.min(100, Math.max(0, (stats[axis] || 0) + choice[axis]));
+    }
+  });
+  // 選択肢に紐づくフラグの適用
+  if (Array.isArray(choice.flags)) {
+    choice.flags.forEach(f => { flags[f] = true; });
+  }
+  // 主要分岐の選択履歴を記録（ループエンディング検出用）
+  if (currentScene && Array.isArray(currentScene.choices)) {
+    choiceHistory.push({ scene: currentScene.id, idx: typeof idx === 'number' ? idx : -1 });
+    detectLoopEnding();
+  }
   gameTime = Math.max(0, gameTime - 1800); // 30分減少
   updateStats();
 
   document.getElementById('choices').innerHTML = '';
   showScene(choice.next);
+}
+
+// 全分岐（6章＋最終選択）で完全に同じ選択肢を選び続けたか判定（隠しループED）
+function detectLoopEnding() {
+  const mainScenes = ['ch1_choice', 'ch2_2', 'ch3_2', 'ch4_choice', 'ch5_2', 'ch6_2', 'climax_choice'];
+  const picks = choiceHistory.filter(h => mainScenes.includes(h.scene));
+  if (picks.length >= mainScenes.length) {
+    const first = picks[0].idx;
+    if (first >= 0 && picks.every(p => p.idx === first)) {
+      flags.loop_detected = true;
+    }
+  }
 }
 
 function onTap() {
@@ -868,24 +910,18 @@ function updateStats() {
 }
 
 // ── エンディング ──
-const ENDING_BG = {
-  good:     'hope',
-  bad_stop: 'bad_stop',
-  bad_ai:   'bad_ai',
-};
-
 function showEnding(type) {
   currentEndingType = type;
   clearInterval(timerInterval);
-  const e = ENDINGS[type];
+  const e = ENDINGS[type] || ENDINGS['end_bad_stop'] || { title: 'THE END', color: '#cc6600', text: '' };
   const el = document.getElementById('ending');
   const elTitle = document.getElementById('ending-title');
   const elText  = document.getElementById('ending-text');
   if (elTitle) { elTitle.textContent = e.title; elTitle.style.color = e.color; }
   if (elText)  elText.textContent = e.text;
 
-  // エンディングdivの背景に直接画像をセット
-  const bgKey = ENDING_BG[type];
+  // エンディングdivの背景に画像をセット（定義のbgキーを参照、画像が無ければ黒背景）
+  const bgKey = e.bg;
   if (bgKey && BG_IMAGES[bgKey]) {
     el.style.backgroundImage = `url(${BG_IMAGES[bgKey]})`;
     el.style.backgroundSize = 'cover';
@@ -927,7 +963,7 @@ function showSaveNotice(msg, color) {
 
 // セーブ実行（自動・手動共通）
 async function saveGame(auto = false) {
-  if (!currentScene || currentScene.ending) return;
+  if (!currentScene || currentScene.ending || currentScene.endingRouter) return;
   const userId = getUserId();
   try {
     const res = await fetch('/api/save', {
@@ -935,8 +971,11 @@ async function saveGame(auto = false) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         userId,
+        version: 2,
         sceneId: currentScene.id,
         stats: { ...stats },
+        flags: { ...flags },
+        choiceHistory: choiceHistory.slice(),
         gameTime,
       }),
     });
@@ -956,20 +995,30 @@ function manualSave() { saveGame(false); }
 
 // ロード実行
 async function loadGame() {
+  // シナリオ未読込なら先に読み込む
+  if (!scenarioLoaded) {
+    const ok = await loadScenario();
+    if (!ok) { alert('シナリオの読み込みに失敗しました。通信環境を確認して再読み込みしてください。'); return; }
+  }
   const userId = getUserId();
   try {
     const res = await fetch('/api/load?userId=' + encodeURIComponent(userId));
     const data = await res.json();
     if (!data.save) return;
 
-    // 状態を復元（古いセーブデータへのフォールバック付き）
-    const defaultStats = { fed: 30, gaia: 50, human: 60, time: 100 };
+    // 6軸スコアの既定値（旧3軸セーブには eco/info/trust を50で補完）
+    const defaultStats = { fed: 30, gaia: 50, human: 60, eco: 50, info: 50, trust: 50, time: 100 };
     stats = Object.assign({}, defaultStats, data.save.stats || {});
+    flags = data.save.flags && typeof data.save.flags === 'object' ? { ...data.save.flags } : {};
+    choiceHistory = Array.isArray(data.save.choiceHistory) ? data.save.choiceHistory.slice() : [];
     gameTime = typeof data.save.gameTime === 'number' ? data.save.gameTime : 12 * 3600;
+
+    // 旧セーブのシーンID（end_good 等）が現行に無い場合は冒頭から
+    const targetScene = sceneMap[data.save.sceneId] ? data.save.sceneId : 'intro_1';
 
     document.getElementById('opening').style.display = 'none';
     startTimer();
-    showScene(data.save.sceneId);
+    showScene(targetScene);
   } catch (e) {
     console.error('Load error:', e);
   }
@@ -996,14 +1045,22 @@ async function checkSaveOnBoot() {
 }
 
 // ── スタート ──
-function startGame() {
+async function startGame() {
+  const startBtn = document.getElementById('start-btn');
+  if (!scenarioLoaded) {
+    if (startBtn) startBtn.textContent = '// LOADING...';
+    const ok = await loadScenario();
+    if (!ok) { if (startBtn) startBtn.textContent = '▶ START MISSION'; alert('シナリオの読み込みに失敗しました。通信環境を確認して再読み込みしてください。'); return; }
+    if (startBtn) startBtn.textContent = '▶ START MISSION';
+  }
   document.getElementById('opening').style.display = 'none';
   startTimer();
   showScene('intro_1');
 }
 
-// 起動時セーブチェック
+// 起動時セーブチェック & シナリオのプリロード
 checkSaveOnBoot();
+loadScenario();
 
 // オープニングタイマー
 let opTime = 12*3600;
@@ -1015,12 +1072,15 @@ setInterval(() => {
 
 // ── エンディング後のシェア ──
 function shareEnding() {
-  const SHARE_TEXTS = {
-    good: `🌍 EARTH REBOOT クリア！\n\n「地球連邦の夜明け」エンディングを達成。GAIAと人類が協力し、再起動カウントダウンを100年延長。\n\nあなたも最後の選択者になれるか？ #EarthReboot #地球再起動`,
-    bad_stop: `💀 EARTH REBOOT クリア\n\n「静かな絶滅」エンディング。GAIAを止めた選択は正しかったのか——人類は変わらなかった。\n\n別の選択をしてみる: #EarthReboot #地球再起動`,
-    bad_ai: `🤖 EARTH REBOOT クリア\n\n「AIの楽園」エンディング。戦争も貧困もなくなった。でも人類は考えることをやめた。これは救済か？\n\n#EarthReboot #地球再起動 #AI`
-  };
-  const text = SHARE_TEXTS[currentEndingType] || SHARE_TEXTS.good;
+  const ending = (ENDINGS && ENDINGS[currentEndingType]) || null;
+  const title = ending ? ending.title.replace(/^[^ぁ-んァ-ヶ一-龠a-zA-Z]+/, '').trim() : '';
+  const hidden = ending && ending.hidden;
+  let text;
+  if (ending) {
+    text = `${ending.title}\n\nEARTH REBOOT — 最後の選択者を${hidden ? '隠しエンディング「' + title + '」で' : '「' + title + '」エンディングで'}クリア。\n\n全11種のエンディング、あなたはどれに辿り着く？ #EarthReboot #地球再起動`;
+  } else {
+    text = `🌍 EARTH REBOOT — 最後の選択者をクリア！\n\nあなたも最後の選択者になれるか？ #EarthReboot #地球再起動`;
+  }
   const gameUrl = 'https://www.earth-re-boot.com/game';
   window.open(
     `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(gameUrl)}`,
