@@ -4,6 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>EARTH REBOOT — 最後の選択者</title>
+<meta property="og:title" content="EARTH REBOOT — 最後の選択者 | ブラウザ ビジュアルノベル">
+<meta property="og:description" content="2038年、地球再起動まで12時間。あなたはAI「GAIA」と共に人類最後の選択に臨む。選択肢型ノベルゲーム、無料プレイ。">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.earth-re-boot.com/ogp.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.earth-re-boot.com/game">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://www.earth-re-boot.com/ogp.png">
+<meta name="twitter:title" content="EARTH REBOOT — 最後の選択者">
+<meta name="twitter:description" content="2038年、地球再起動まで12時間。AIと共に人類最後の選択に臨む選択肢型ノベルゲーム。">
+<meta name="description" content="2038年、地球再起動まで12時間。スーパーAI「GAIA」と共に環境崩壊・核戦争・ウイルスの3つの危機に立ち向かう選択肢型ブラウザノベルゲーム。無料プレイ。">
+<meta name="keywords" content="気候変動 ゲーム,選択肢型ゲーム,ノベルゲーム ブラウザ,ビジュアルノベル,AI ゲーム,地球 ゲーム,無料ゲーム,ブラウザゲーム">
+<meta name="author" content="Earth Reboot Project">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://www.earth-re-boot.com/game">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Serif+JP:wght@400;700&family=Bebas+Neue&display=swap');
 
@@ -438,6 +454,19 @@ body::after {
   <div id="ending-title"></div>
   <div id="ending-text"></div>
   <a id="ending-link" href="https://www.earth-re-boot.com" target="_blank">🌍 実際の地球を救う → earth-re-boot.com</a>
+  <button id="ending-share" onclick="shareEnding()" style="
+    background:transparent;border:1px solid rgba(255,255,255,.25);
+    color:rgba(220,220,220,.8);font-family:var(--mono);
+    font-size:.75rem;letter-spacing:.2em;padding:11px 28px;
+    cursor:pointer;transition:all .3s;width:100%;max-width:300px;
+    margin-bottom:12px;display:flex;align-items:center;
+    justify-content:center;gap:8px;
+  ">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.73-8.835L1.254 2.25H8.08l4.259 5.63z"/>
+    </svg>
+    X (Twitter) でシェア
+  </button>
   <button id="ending-replay" onclick="location.reload()">⟳ REPLAY</button>
 </div>
 
@@ -578,6 +607,7 @@ let charIndex = 0;
 let stats = { fed: 30, gaia: 50, human: 60, time: 100 };
 let gameTime = 12 * 3600; // 12時間（秒）
 let timerInterval = null;
+let currentEndingType = null;
 let sceneMap = {};
 
 SCENES.forEach(s => sceneMap[s.id] = s);
@@ -845,6 +875,7 @@ const ENDING_BG = {
 };
 
 function showEnding(type) {
+  currentEndingType = type;
   clearInterval(timerInterval);
   const e = ENDINGS[type];
   const el = document.getElementById('ending');
@@ -981,6 +1012,21 @@ setInterval(() => {
   const el = document.getElementById('opening-timer');
   if(el) el.textContent = formatTime(opTime);
 }, 1000);
+
+// ── エンディング後のシェア ──
+function shareEnding() {
+  const SHARE_TEXTS = {
+    good: `🌍 EARTH REBOOT クリア！\n\n「地球連邦の夜明け」エンディングを達成。GAIAと人類が協力し、再起動カウントダウンを100年延長。\n\nあなたも最後の選択者になれるか？ #EarthReboot #地球再起動`,
+    bad_stop: `💀 EARTH REBOOT クリア\n\n「静かな絶滅」エンディング。GAIAを止めた選択は正しかったのか——人類は変わらなかった。\n\n別の選択をしてみる: #EarthReboot #地球再起動`,
+    bad_ai: `🤖 EARTH REBOOT クリア\n\n「AIの楽園」エンディング。戦争も貧困もなくなった。でも人類は考えることをやめた。これは救済か？\n\n#EarthReboot #地球再起動 #AI`
+  };
+  const text = SHARE_TEXTS[currentEndingType] || SHARE_TEXTS.good;
+  const gameUrl = 'https://www.earth-re-boot.com/game';
+  window.open(
+    `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(gameUrl)}`,
+    '_blank', 'width=600,height=400'
+  );
+}
 </script>
 </body>
 </html>

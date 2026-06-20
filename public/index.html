@@ -306,7 +306,7 @@ function shareToX() {
     ? `🌍 地球の再起動まで${timeText}\n\nAIが世界情勢を解析した結果、地球のカウントダウンが始まっています。あなたの寄付がカウントダウンを押し戻すことができます。\n\n#地球再起動時間 #EarthReboot`
     : `🌍 Earth reboots in ${timeText}\n\nAI has analyzed global threats and the countdown has begun. Your donation can push back the reboot.\n\n#EarthReboot #地球再起動時間`;
 
-  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent('https://earth-reboot.vercel.app')}`;
+  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent('https://www.earth-re-boot.com')}`;
   window.open(url, '_blank');
 }
 
@@ -359,14 +359,14 @@ function updateShareText() {
 }
 
 </script>
-<meta property="og:image" content="https://earth-reboot.vercel.app/ogp.png">
+<meta property="og:image" content="https://www.earth-re-boot.com/ogp.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:url" content="https://earth-reboot.vercel.app">
+<meta property="og:url" content="https://www.earth-re-boot.com">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://www.earth-re-boot.com/ogp.png">
 <meta name="twitter:title" content="地球再起動時間 / Earth Reboot Countdown">
-<meta name="twitter:description" content="AIが世界情勢を解析し、地球の再起動までのカウントダウンを算出。あなたの寄付がカウントダウンを押し戻す。">
-<meta name="twitter:image" content="https://earth-reboot.vercel.app/ogp.png">
+<meta name="twitter:description" content="AIが世界情勢を解析し、地球の再起動までのカウントダウンを算出。寄付で再起動を遅らせることができます。">
 </head>
 <body>
 
@@ -484,6 +484,28 @@ function updateShareText() {
       <div class="progress-label"><span id="lbl-progress">地球崩壊進行度</span><span id="progress-pct">0.000%</span></div>
       <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
     </div>
+  </div>
+
+  <!-- ゲームシミュレーション CTA バナー -->
+  <div class="panel" style="border-color:rgba(204,51,0,.5);background:rgba(20,0,0,.8);text-align:center;">
+    <div class="panel-label red">// SIMULATION</div>
+    <p style="font-family:'Noto Serif JP',serif;font-size:clamp(.75rem,2.5vw,.9rem);color:var(--text);line-height:1.9;margin-bottom:16px;">
+      2038年、地球再起動まで<strong style="color:var(--bright)">12時間</strong>。<br>
+      AIエージェントとなって、人類最後の選択に臨め。
+    </p>
+    <a href="/game" id="play-game-btn" style="
+      display:inline-block;
+      background:transparent;
+      border:1px solid var(--ember);
+      color:var(--ember);
+      font-family:var(--mono);
+      font-size:.8rem;
+      letter-spacing:.3em;
+      padding:14px 40px;
+      text-decoration:none;
+      transition:all .3s;
+    ">▶ ゲームをプレイ</a>
+    <p style="font-size:.55rem;color:var(--text-dim);margin-top:10px;letter-spacing:.15em;">// ブラウザで無料プレイ — 約10分</p>
   </div>
 
   <div class="panel donate-panel">
@@ -906,6 +928,16 @@ function applyLang() {
   document.getElementById("custom-amount").placeholder = lang==="ja" ? "金額を入力" : lang==="zh" ? "输入金额" : "Amount";
   document.title = t("title") + " / Earth Reboot Countdown";
 
+  // ゲームCTAボタンの多言語対応
+  const playBtn = document.getElementById('play-game-btn');
+  if (playBtn) {
+    playBtn.textContent = lang === 'ja' ? '▶ ゲームをプレイ'
+      : lang === 'zh' ? '▶ 开始游戏'
+      : lang === 'de' ? '▶ Spiel spielen'
+      : lang === 'fr' ? '▶ Jouer au jeu'
+      : '▶ Play Game';
+  }
+
   // PayPayボタンの多言語対応
   const paypayText = document.getElementById('paypay-btn-text');
   if(paypayText) paypayText.textContent = lang==='ja' ? 'PayPayで支援する' : lang==='zh' ? '用PayPay支持' : 'Support via PayPay';
@@ -1247,12 +1279,12 @@ function shareToX() {
   const textJa = `地球の再起動まで約${years}年。AIが世界情勢から算出したカウントダウン。あなたの寄付が再起動を遅らせる。 #地球再起動時間`;
   const textEn = `The Earth will reboot in ~${years} years. AI-calculated countdown from global events. Your donation delays the reboot. #EarthReboot`;
   const text = lang === 'ja' ? textJa : textEn;
-  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent('https://earth-reboot.vercel.app')}`;
+  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent('https://www.earth-re-boot.com')}`;
   window.open(url, '_blank');
 }
 
 function copyUrl() {
-  navigator.clipboard.writeText('https://earth-reboot.vercel.app').then(() => {
+  navigator.clipboard.writeText('https://www.earth-re-boot.com').then(() => {
     const btn = document.querySelector('.share-btn:not(.x-btn)');
     const orig = btn.textContent;
     btn.textContent = lang==='ja' ? '✓ コピーしました' : '✓ Copied!';

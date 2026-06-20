@@ -313,7 +313,7 @@ function shareToX() {
     ? `🌍 地球の再起動まで${timeText}\n\nAIが世界情勢を解析した結果、地球のカウントダウンが始まっています。あなたの寄付がカウントダウンを押し戻すことができます。\n\n#地球再起動時間 #EarthReboot`
     : `🌍 Earth reboots in ${timeText}\n\nAI has analyzed global threats and the countdown has begun. Your donation can push back the reboot.\n\n#EarthReboot #地球再起動時間`;
 
-  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent('https://earth-reboot.vercel.app')}`;
+  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent('https://www.earth-re-boot.com')}`;
   window.open(url, '_blank');
 }
 
@@ -366,14 +366,14 @@ function updateShareText() {
 }
 
 </script>
-<meta property="og:image" content="https://earth-reboot.vercel.app/ogp.png">
+<meta property="og:image" content="https://www.earth-re-boot.com/ogp.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:url" content="https://earth-reboot.vercel.app">
+<meta property="og:url" content="https://www.earth-re-boot.com">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="地球再起動時間 / Earth Reboot Countdown">
 <meta name="twitter:description" content="AIが世界情勢を解析し、地球の再起動までのカウントダウンを算出。あなたの寄付がカウントダウンを押し戻す。">
-<meta name="twitter:image" content="https://earth-reboot.vercel.app/ogp.png">
+<meta name="twitter:image" content="https://www.earth-re-boot.com/ogp.png">
 </head>
 <body>
 
@@ -1254,12 +1254,12 @@ function shareToX() {
   const textJa = `地球の再起動まで約${years}年。AIが世界情勢から算出したカウントダウン。あなたの寄付が再起動を遅らせる。 #地球再起動時間`;
   const textEn = `The Earth will reboot in ~${years} years. AI-calculated countdown from global events. Your donation delays the reboot. #EarthReboot`;
   const text = lang === 'ja' ? textJa : textEn;
-  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent('https://earth-reboot.vercel.app')}`;
+  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent('https://www.earth-re-boot.com')}`;
   window.open(url, '_blank');
 }
 
 function copyUrl() {
-  navigator.clipboard.writeText('https://earth-reboot.vercel.app').then(() => {
+  navigator.clipboard.writeText('https://www.earth-re-boot.com').then(() => {
     const btn = document.querySelector('.share-btn:not(.x-btn)');
     const orig = btn.textContent;
     btn.textContent = lang==='ja' ? '✓ コピーしました' : '✓ Copied!';
