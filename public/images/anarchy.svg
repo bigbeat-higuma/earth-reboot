@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="aSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a0a00"/><stop offset="0.5" stop-color="#5a1500"/><stop offset="1" stop-color="#1a0500"/>
+    </linearGradient>
+    <radialGradient id="aGlow" cx="0.5" cy="0.9" r="0.7">
+      <stop offset="0" stop-color="#ff6a1a" stop-opacity="0.8"/><stop offset="0.5" stop-color="#cc3300" stop-opacity="0.3"/><stop offset="1" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#aSky)"/>
+  <rect width="1200" height="800" fill="url(#aGlow)"/>
+  <g fill="#160300" opacity="0.95">
+    <polygon points="0,800 0,560 120,600 180,520 260,610 340,540 420,640 420,800"/>
+    <polygon points="1200,800 1200,540 1080,600 1000,500 900,620 800,560 780,800"/>
+    <polygon points="500,800 540,560 580,640 640,540 700,660 720,800"/>
+  </g>
+  <g stroke="#ff8a3a" stroke-width="3" opacity="0.7" fill="none">
+    <path d="M300 800 Q320 620 290 520 Q270 600 300 800"/>
+    <path d="M640 800 Q665 600 630 480 Q610 580 640 800"/>
+    <path d="M960 800 Q985 640 950 540 Q930 620 960 800"/>
+  </g>
+  <g fill="#ffcc66" opacity="0.8">
+    <circle cx="300" cy="520" r="5"/><circle cx="630" cy="485" r="6"/><circle cx="950" cy="545" r="5"/>
+    <circle cx="450" cy="600" r="3"/><circle cx="780" cy="560" r="4"/>
+  </g>
+  <rect width="1200" height="800" fill="#000" opacity="0.2"/>
+</svg>

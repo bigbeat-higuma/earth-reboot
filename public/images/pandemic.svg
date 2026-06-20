@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <radialGradient id="pBg" cx="0.5" cy="0.5" r="0.8">
+      <stop offset="0" stop-color="#1c3318"/><stop offset="0.6" stop-color="#0f2010"/><stop offset="1" stop-color="#050a06"/>
+    </radialGradient>
+    <radialGradient id="pCell" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#7ad14a" stop-opacity="0.5"/><stop offset="0.7" stop-color="#3a7a22" stop-opacity="0.25"/><stop offset="1" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#pBg)"/>
+  <g stroke="#5aa838" stroke-width="2" fill="none" opacity="0.55">
+    <g transform="translate(300,260)"><circle r="70"/><circle r="40"/>
+      <g stroke-width="3"><line y1="70" y2="92"/><line y1="-70" y2="-92"/><line x1="70" x2="92"/><line x1="-70" x2="-92"/>
+      <line x1="49" y1="49" x2="65" y2="65"/><line x1="-49" y1="-49" x2="-65" y2="-65"/><line x1="49" y1="-49" x2="65" y2="-65"/><line x1="-49" y1="49" x2="-65" y2="65"/></g>
+      <circle cx="92" r="6" fill="#7ad14a"/><circle cy="92" r="6" fill="#7ad14a"/><circle cx="-92" r="6" fill="#7ad14a"/><circle cy="-92" r="6" fill="#7ad14a"/>
+      <circle cx="65" cy="65" r="6" fill="#7ad14a"/><circle cx="-65" cy="-65" r="6" fill="#7ad14a"/><circle cx="65" cy="-65" r="6" fill="#7ad14a"/><circle cx="-65" cy="65" r="6" fill="#7ad14a"/>
+    </g>
+    <g transform="translate(880,520) scale(0.8)"><circle r="70"/><circle r="40"/>
+      <g stroke-width="3"><line y1="70" y2="92"/><line y1="-70" y2="-92"/><line x1="70" x2="92"/><line x1="-70" x2="-92"/></g>
+      <circle cx="92" r="6" fill="#7ad14a"/><circle cy="92" r="6" fill="#7ad14a"/><circle cx="-92" r="6" fill="#7ad14a"/><circle cy="-92" r="6" fill="#7ad14a"/>
+    </g>
+  </g>
+  <circle cx="300" cy="260" r="160" fill="url(#pCell)"/>
+  <circle cx="880" cy="520" r="140" fill="url(#pCell)"/>
+  <g fill="#8fe05a" opacity="0.3">
+    <circle cx="600" cy="160" r="8"/><circle cx="1050" cy="200" r="6"/><circle cx="180" cy="600" r="6"/><circle cx="700" cy="680" r="8"/>
+  </g>
+  <rect width="1200" height="800" fill="#020a04" opacity="0.2"/>
+</svg>

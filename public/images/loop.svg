@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <radialGradient id="lBg" cx="0.5" cy="0.5" r="0.8">
+      <stop offset="0" stop-color="#2a2c30"/><stop offset="0.6" stop-color="#15161a"/><stop offset="1" stop-color="#070809"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#lBg)"/>
+  <g stroke="#cfd2d6" fill="none" opacity="0.5">
+    <circle cx="600" cy="400" r="40" stroke-width="2.4"/>
+    <circle cx="600" cy="400" r="90" stroke-width="2"/>
+    <circle cx="600" cy="400" r="150" stroke-width="1.7"/>
+    <circle cx="600" cy="400" r="220" stroke-width="1.4" opacity="0.8"/>
+    <circle cx="600" cy="400" r="300" stroke-width="1.1" opacity="0.6"/>
+    <circle cx="600" cy="400" r="390" stroke-width="0.9" opacity="0.4"/>
+  </g>
+  <g stroke="#dddddd" stroke-width="6" fill="none" opacity="0.85" stroke-linecap="round">
+    <path d="M600 320 A80 80 0 1 1 524 372"/>
+    <polygon points="516,346 500,388 548,384" fill="#dddddd" stroke="none"/>
+  </g>
+  <g fill="#aab0b6" opacity="0.35">
+    <circle cx="600" cy="40" r="3"/><circle cx="600" cy="760" r="3"/><circle cx="200" cy="400" r="3"/><circle cx="1000" cy="400" r="3"/>
+  </g>
+  <rect width="1200" height="800" fill="#0a0b0d" opacity="0.2"/>
+</svg>

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="nSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9a9560"/><stop offset="0.45" stop-color="#6b6748"/><stop offset="1" stop-color="#2a2a22"/>
+    </linearGradient>
+    <radialGradient id="nFlash" cx="0.5" cy="0.78" r="0.5">
+      <stop offset="0" stop-color="#fff3c0" stop-opacity="0.9"/><stop offset="0.4" stop-color="#d9c24e" stop-opacity="0.4"/><stop offset="1" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#nSky)"/>
+  <rect width="1200" height="800" fill="url(#nFlash)"/>
+  <g fill="#cdbf7a" opacity="0.7">
+    <ellipse cx="600" cy="560" rx="150" ry="60"/>
+    <path d="M540 560 Q520 380 600 240 Q680 380 660 560 Z"/>
+    <ellipse cx="600" cy="250" rx="120" ry="80"/>
+  </g>
+  <rect y="600" width="1200" height="200" fill="#2b2a20"/>
+  <g fill="#e8dca0" opacity="0.5">
+    <circle cx="150" cy="120" r="2"/><circle cx="320" cy="200" r="2"/><circle cx="900" cy="150" r="2"/>
+    <circle cx="1050" cy="260" r="2"/><circle cx="480" cy="90" r="2"/><circle cx="760" cy="300" r="2"/>
+    <circle cx="220" cy="350" r="2"/><circle cx="1000" cy="400" r="2"/>
+  </g>
+  <rect width="1200" height="800" fill="#000" opacity="0.22"/>
+</svg>

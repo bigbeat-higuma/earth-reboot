@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <radialGradient id="tBg" cx="0.5" cy="0.45" r="0.85">
+      <stop offset="0" stop-color="#3a2a5a"/><stop offset="0.55" stop-color="#1e1638"/><stop offset="1" stop-color="#080514"/>
+    </radialGradient>
+    <radialGradient id="tCore" cx="0.5" cy="0.45" r="0.32">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="0.3" stop-color="#e0b0ff"/><stop offset="0.7" stop-color="#9a5ad8" stop-opacity="0.5"/><stop offset="1" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#tBg)"/>
+  <g stroke="#c89cff" stroke-width="1.2" fill="none" opacity="0.45">
+    <ellipse cx="600" cy="360" rx="360" ry="120"/>
+    <ellipse cx="600" cy="360" rx="360" ry="120" transform="rotate(60 600 360)"/>
+    <ellipse cx="600" cy="360" rx="360" ry="120" transform="rotate(120 600 360)"/>
+  </g>
+  <circle cx="600" cy="360" r="220" fill="url(#tCore)"/>
+  <g fill="#ffffff">
+    <circle cx="600" cy="360" r="22" opacity="0.95"/>
+    <circle cx="360" cy="280" r="4" opacity="0.8"/><circle cx="840" cy="300" r="5" opacity="0.8"/>
+    <circle cx="300" cy="470" r="3" opacity="0.7"/><circle cx="900" cy="500" r="4" opacity="0.7"/>
+    <circle cx="500" cy="180" r="3" opacity="0.7"/><circle cx="720" cy="600" r="4" opacity="0.7"/>
+    <circle cx="180" cy="360" r="3" opacity="0.6"/><circle cx="1040" cy="380" r="3" opacity="0.6"/>
+  </g>
+  <g stroke="#e8d0ff" stroke-width="0.8" opacity="0.5">
+    <line x1="600" y1="360" x2="360" y2="280"/><line x1="600" y1="360" x2="840" y2="300"/>
+    <line x1="600" y1="360" x2="720" y2="600"/><line x1="600" y1="360" x2="300" y2="470"/>
+  </g>
+  <rect width="1200" height="800" fill="#0a0518" opacity="0.18"/>
+</svg>

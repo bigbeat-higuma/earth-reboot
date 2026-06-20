@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="hSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#23354f"/><stop offset="0.45" stop-color="#7a6a78"/><stop offset="0.72" stop-color="#e6a878"/><stop offset="1" stop-color="#ffd9a8"/>
+    </linearGradient>
+    <radialGradient id="hSun" cx="0.5" cy="0.74" r="0.4">
+      <stop offset="0" stop-color="#fff4dc"/><stop offset="0.4" stop-color="#ffcf94" stop-opacity="0.7"/><stop offset="1" stop-color="#ffcf94" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#hSky)"/>
+  <rect width="1200" height="800" fill="url(#hSun)"/>
+  <circle cx="600" cy="600" r="70" fill="#fff0d2"/>
+  <rect y="600" width="1200" height="200" fill="#1c1a20" opacity="0.85"/>
+  <path d="M0 600 Q300 580 600 600 T1200 600 L1200 800 L0 800 Z" fill="#15131a"/>
+  <g fill="#15131a">
+    <path d="M520 600 q10 -26 24 -20 q-6 -16 8 -22 q14 6 10 22 q14 -8 22 4 q-10 10 -22 8 q6 14 -8 18 q-12 -6 -10 -18 q-14 6 -24 -2 Z" opacity="0.9"/>
+  </g>
+  <g fill="#fff8ea" opacity="0.7">
+    <circle cx="200" cy="120" r="2"/><circle cx="980" cy="100" r="2"/><circle cx="320" cy="200" r="1.5"/><circle cx="1080" cy="180" r="1.5"/>
+  </g>
+  <rect width="1200" height="800" fill="#1a1420" opacity="0.12"/>
+</svg>

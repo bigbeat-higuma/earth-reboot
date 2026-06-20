@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="eSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5a6253"/><stop offset="0.55" stop-color="#3a4234"/><stop offset="1" stop-color="#20261c"/>
+    </linearGradient>
+    <linearGradient id="eGround" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3b3a2c"/><stop offset="1" stop-color="#1a1a12"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#eSky)"/>
+  <circle cx="880" cy="200" r="90" fill="#7d8466" opacity="0.5"/>
+  <rect y="560" width="1200" height="240" fill="url(#eGround)"/>
+  <g stroke="#23271a" stroke-width="2" opacity="0.6">
+    <path d="M0 600 H1200 M0 660 H1200 M0 720 H1200" fill="none"/>
+    <path d="M150 560 L120 800 M420 560 L450 800 M820 560 L860 800" fill="none"/>
+  </g>
+  <g stroke="#2b2a20" stroke-width="6" fill="none" stroke-linecap="round">
+    <path d="M600 580 V300"/>
+    <path d="M600 380 Q540 320 500 340 M600 360 Q670 300 720 330 M600 430 Q560 400 520 420 M600 410 Q650 380 690 405"/>
+  </g>
+  <g fill="#6b7355" opacity="0.5">
+    <circle cx="300" cy="500" r="3"/><circle cx="950" cy="470" r="3"/><circle cx="500" cy="450" r="2"/>
+  </g>
+  <rect width="1200" height="800" fill="#202418" opacity="0.25"/>
+</svg>
