@@ -955,6 +955,10 @@ function getUserId() {
   return id;
 }
 
+// セーブ所有権トークン（初回保存時にサーバーが発行し、以後の保存/読込で提示する）
+function getSaveToken() { return localStorage.getItem('earth_reboot_save_token') || ''; }
+function setSaveToken(tok) { if (tok) localStorage.setItem('earth_reboot_save_token', tok); }
+
 // セーブ通知表示
 function showSaveNotice(msg, color) {
   const btn = document.getElementById('save-btn');
@@ -980,6 +984,7 @@ async function saveGame(auto = false) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         userId,
+        token: getSaveToken(),
         version: 2,
         sceneId: currentScene.id,
         stats: { ...stats },
@@ -988,7 +993,9 @@ async function saveGame(auto = false) {
         gameTime,
       }),
     });
+    const data = await res.json().catch(() => ({}));
     if (res.ok) {
+      if (data.token) setSaveToken(data.token); // 初回保存時に発行されたトークンを保存
       if (!auto) showSaveNotice('SAVED ✓', 'var(--green)');
     } else {
       if (!auto) showSaveNotice('ERROR', 'var(--red-bright)');
@@ -1011,7 +1018,7 @@ async function loadGame() {
   }
   const userId = getUserId();
   try {
-    const res = await fetch('/api/load?userId=' + encodeURIComponent(userId));
+    const res = await fetch('/api/load?userId=' + encodeURIComponent(userId) + '&token=' + encodeURIComponent(getSaveToken()));
     const data = await res.json();
     if (!data.save) return;
 
@@ -1037,7 +1044,7 @@ async function loadGame() {
 async function checkSaveOnBoot() {
   const userId = getUserId();
   try {
-    const res = await fetch('/api/load?userId=' + encodeURIComponent(userId));
+    const res = await fetch('/api/load?userId=' + encodeURIComponent(userId) + '&token=' + encodeURIComponent(getSaveToken()));
     const data = await res.json();
     if (data.save) {
       const loadBtn = document.getElementById('load-btn');

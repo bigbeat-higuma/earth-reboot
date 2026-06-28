@@ -1,4 +1,8 @@
 // api/load.js — Vercel KVからゲームのセーブデータをロードする
+//
+// 所有権検証: save.js が発行したトークン（save_token:<userId>）が存在する場合、
+// クエリの token が一致しない限りデータを返さない（存在の有無も明かさず save:null を返す）。
+// トークン未発行（移行前の旧セーブ）の場合は従来通り許可する。
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
@@ -12,21 +16,33 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Redis not configured" });
   }
 
-  const { userId } = req.query;
+  const { userId, token } = req.query;
   if (!userId) {
     return res.status(400).json({ error: "userId は必須です" });
   }
 
-  const key = `save:${userId}`;
+  const key      = `save:${userId}`;
+  const tokenKey = `save_token:${userId}`;
 
   try {
+    const tokenResp = await fetch(`${redisUrl}/get/${encodeURIComponent(tokenKey)}`, {
+      headers: { Authorization: `Bearer ${redisToken}` },
+    });
+    if (tokenResp.ok) {
+      const tokenResult = await tokenResp.json();
+      const existingToken = tokenResult.result;
+      if (existingToken && existingToken !== token) {
+        // トークン不一致 → データの存在自体を明かさない
+        return res.status(200).json({ save: null });
+      }
+    }
+
     const response = await fetch(`${redisUrl}/get/${encodeURIComponent(key)}`, {
       headers: { Authorization: `Bearer ${redisToken}` },
     });
 
     if (!response.ok) {
-      const err = await response.json();
-      return res.status(502).json({ error: "Redis error", detail: err });
+      return res.status(502).json({ error: "Redis error" });
     }
 
     const result = await response.json();
@@ -50,7 +66,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ save });
   } catch (err) {
-    console.error("Load handler error:", err);
+    console.error("Load handler error:", err.message);
     return res.status(500).json({ error: err.message });
   }
 }
