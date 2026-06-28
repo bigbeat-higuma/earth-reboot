@@ -1,5 +1,6 @@
 // api/donate.js — Stripeの決済セッションを作成する
-// 「再起動を○秒遅らせる」金額を受け取り、Stripe Checkoutページへリダイレクト
+// 運営協力金（サーバー・API利用料等）の金額を受け取り、Stripe Checkoutページへリダイレクト
+// 注: 寄付による再起動カウントダウンの延命機能は廃止済み（カウントダウンは実ニュース連動）
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -16,10 +17,6 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "金額は100円〜100,000円の範囲で指定してください" });
   }
 
-  // 寄付額に応じて「延命秒数」を計算
-  // 100円 = 86400秒（1日）延びるイメージ
-  const delaySeconds = Math.floor((amount / 100) * 21600); // 100円=6時間
-
   try {
     const origin = req.headers.origin || `https://${req.headers.host}`;
 
@@ -32,15 +29,14 @@ export default async function handler(req, res) {
       body: new URLSearchParams({
         "payment_method_types[]": "card",
         "line_items[0][price_data][currency]": "jpy",
-        "line_items[0][price_data][product_data][name]": "地球再起動を遅らせる寄付",
-        "line_items[0][price_data][product_data][description]": `この寄付により地球の再起動が${formatDelay(delaySeconds)}延長されます`,
+        "line_items[0][price_data][product_data][name]": "地球再起動時間 — 運営協力金",
+        "line_items[0][price_data][product_data][description]": "サーバー運営費・API利用料等の運営協力金としてご活用させていただきます",
         "line_items[0][price_data][unit_amount]": String(amount),
         "line_items[0][quantity]": "1",
         "mode": "payment",
-        "success_url": `${origin}/?donated=1&amount=${amount}&delay=${delaySeconds}`,
+        "success_url": `${origin}/?donated=1&amount=${amount}`,
         "cancel_url": `${origin}/?donated=0`,
         "metadata[amount_jpy]": String(amount),
-        "metadata[delay_seconds]": String(delaySeconds),
         "submit_type": "donate",
       }),
     });
@@ -58,11 +54,4 @@ export default async function handler(req, res) {
     console.error("Donate handler error:", err);
     return res.status(500).json({ error: err.message });
   }
-}
-
-function formatDelay(seconds) {
-  if (seconds >= 86400 * 365) return `${Math.floor(seconds / 86400 / 365)}年以上`;
-  if (seconds >= 86400 * 30)  return `${Math.floor(seconds / 86400 / 30)}ヶ月`;
-  if (seconds >= 86400)       return `${Math.floor(seconds / 86400)}日`;
-  return `${Math.floor(seconds / 3600)}時間`;
 }

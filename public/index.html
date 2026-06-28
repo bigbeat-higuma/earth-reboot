@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>地球再起動時間 / Earth Reboot Countdown</title>
 <meta property="og:title" content="地球再起動時間 / Earth Reboot Countdown">
-<meta property="og:description" content="AIが世界情勢を解析し、地球の再起動までのカウントダウンを算出。寄付で再起動を遅らせることができます。">
+<meta property="og:description" content="実際の世界情勢をAIが分析し、地球終末時計のように再起動までのカウントダウンを算出。ニュースに応じて毎日変化します。">
 <meta property="og:type" content="website">
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
@@ -105,7 +105,7 @@
   .donate-btn:disabled{opacity:.4;cursor:not-allowed;}
 
   .log-panel{border-color:rgba(68,255,136,.2);background:rgba(0,15,8,.8);}
-  .log-summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;}
+  .log-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
   .log-stat{text-align:center;border:1px solid rgba(68,255,136,.2);padding:10px 8px;}
   .log-stat-value{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.2rem,4vw,1.8rem);color:var(--green);text-shadow:0 0 10px rgba(68,255,136,.5);}
   .log-stat-label{font-size:.55rem;color:rgba(68,255,136,.5);letter-spacing:.2em;margin-top:2px;}
@@ -289,34 +289,12 @@ function toggleWorldClocks() {
   updateWorldClocks();
 }
 
-// ── SNSシェア ────────────────────────────────
-function shareToX() {
-  if (!rebootTarget) return;
-  const effective = new Date(rebootTarget.getTime() + donationDelayMs);
-  const now = new Date();
-  const diff = effective - now;
-  const days = Math.floor(diff / (1000*60*60*24));
-  const years = (diff / (1000*60*60*24*365.25)).toFixed(1);
-
-  let timeText = days > 365
-    ? `約${years}年`
-    : `約${days}日`;
-
-  const text = lang === 'ja'
-    ? `🌍 地球の再起動まで${timeText}\n\nAIが世界情勢を解析した結果、地球のカウントダウンが始まっています。あなたの寄付がカウントダウンを押し戻すことができます。\n\n#地球再起動時間 #EarthReboot`
-    : `🌍 Earth reboots in ${timeText}\n\nAI has analyzed global threats and the countdown has begun. Your donation can push back the reboot.\n\n#EarthReboot #地球再起動時間`;
-
-  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent('https://www.earth-re-boot.com')}`;
-  window.open(url, '_blank');
-}
-
 // ── カウントダウン崩壊演出 ────────────────────
 let collapseTriggered = false;
 
 function checkCollapse() {
   if (!rebootTarget || collapseTriggered) return;
-  const effective = new Date(rebootTarget.getTime() + donationDelayMs);
-  const diff = effective - new Date();
+  const diff = rebootTarget - new Date();
   if (diff <= 0) {
     triggerCollapse();
   }
@@ -349,8 +327,7 @@ function triggerCollapse() {
 // ── シェアボタンのテキスト更新 ────────────────
 function updateShareText() {
   if (!rebootTarget) return;
-  const effective = new Date(rebootTarget.getTime() + donationDelayMs);
-  const diff = effective - new Date();
+  const diff = rebootTarget - new Date();
   if (diff <= 0) return;
   const years = (diff / (1000*60*60*24*365.25)).toFixed(1);
   const days = Math.floor(diff / (1000*60*60*24));
@@ -366,7 +343,7 @@ function updateShareText() {
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://www.earth-re-boot.com/ogp.png">
 <meta name="twitter:title" content="地球再起動時間 / Earth Reboot Countdown">
-<meta name="twitter:description" content="AIが世界情勢を解析し、地球の再起動までのカウントダウンを算出。寄付で再起動を遅らせることができます。">
+<meta name="twitter:description" content="実際の世界情勢をAIが分析し、地球終末時計のように再起動までのカウントダウンを算出。ニュースに応じて毎日変化します。">
 </head>
 <body>
 
@@ -418,8 +395,8 @@ function updateShareText() {
   </div>
 
   <div class="extend-banner" id="extend-banner">
-    <div class="extend-banner-title" id="extend-banner-title">▲ 地球の再起動が延長されました</div>
-    <div class="extend-banner-sub" id="extend-banner-sub">寄付によりカウントダウンが更新されました</div>
+    <div class="extend-banner-title" id="extend-banner-title">✓ ご支援ありがとうございます</div>
+    <div class="extend-banner-sub" id="extend-banner-sub">サーバー運営の継続にご協力いただきました</div>
   </div>
 
   <div class="panel">
@@ -509,10 +486,10 @@ function updateShareText() {
   </div>
 
   <div class="panel donate-panel">
-    <div class="panel-label green" id="lbl-donate-title">// 地球を救う — 再起動を遅らせる</div>
+    <div class="panel-label green" id="lbl-donate-title">// 運営協力金 — サーバー維持にご協力ください</div>
     <div class="donate-intro" id="donate-intro">
-      寄付はそのまま<strong>環境保全活動</strong>に充てられます。<br>
-      <strong>100円につきわずか6時間</strong>——それでも、あなたの支援がカウントダウンを押し戻します。
+      このプロジェクトの運営にはサーバー・API利用料等の実費がかかっています。<br>
+      <strong>カウントダウンには一切影響しません</strong>——あなたの気持ちが運営を支えます。
     </div>
 
     <!-- 心理的ハードル低下メッセージ -->
@@ -521,13 +498,13 @@ function updateShareText() {
     </div>
 
     <div class="amount-grid">
-      <button class="amount-btn" onclick="selectAmount(500,this)">¥500<br><span style="font-size:.55rem;opacity:.7">+30h</span></button>
+      <button class="amount-btn" onclick="selectAmount(500,this)">¥500<br><span style="font-size:.55rem;opacity:.7">API利用料1日分</span></button>
       <button class="amount-btn active" onclick="selectAmount(1000,this)" style="position:relative;">
-        ¥1,000<br><span style="font-size:.55rem;opacity:.7">+60h</span>
+        ¥1,000<br><span style="font-size:.55rem;opacity:.7">サーバー費1日分</span>
         <span style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#44ff88;color:#001a0a;font-size:.45rem;padding:1px 6px;letter-spacing:.1em;white-space:nowrap;">人気No.1</span>
       </button>
-      <button class="amount-btn" onclick="selectAmount(3000,this)">¥3,000<br><span style="font-size:.55rem;opacity:.7">+7.5d</span></button>
-      <button class="amount-btn" onclick="selectAmount(10000,this)">¥10,000<br><span style="font-size:.55rem;opacity:.7">+25d</span></button>
+      <button class="amount-btn" onclick="selectAmount(3000,this)">¥3,000<br><span style="font-size:.55rem;opacity:.7">サーバー費1週間分</span></button>
+      <button class="amount-btn" onclick="selectAmount(10000,this)">¥10,000<br><span style="font-size:.55rem;opacity:.7">サーバー費1ヶ月分</span></button>
     </div>
     <div class="amount-custom">
       <input type="number" id="custom-amount" placeholder="金額 / Amount" min="100" max="100000" value="1000" oninput="onCustomAmount(this.value)">
@@ -536,7 +513,7 @@ function updateShareText() {
     <div class="delay-preview" id="delay-preview"></div>
 
     <!-- メインボタン（強調） -->
-    <button class="donate-btn" id="donate-btn" onclick="startDonate()" style="font-size:.9rem;padding:16px;border-width:2px;text-shadow:0 0 10px rgba(68,255,136,.5);">▶ 今すぐ寄付して地球を救う</button>
+    <button class="donate-btn" id="donate-btn" onclick="startDonate()" style="font-size:.9rem;padding:16px;border-width:2px;text-shadow:0 0 10px rgba(68,255,136,.5);">▶ 運営に協力する</button>
 
     <!-- 支払い方法説明 -->
     <div style="text-align:center;font-size:.55rem;color:rgba(68,255,136,.4);letter-spacing:.1em;margin:6px 0 10px;">
@@ -619,16 +596,15 @@ function updateShareText() {
   </div>
 
   <div class="panel log-panel">
-    <div class="panel-label green" id="lbl-log-title">// 寄付実績 — 透明性ログ</div>
+    <div class="panel-label green" id="lbl-log-title">// 運営協力金 — 透明性ログ</div>
     <div class="log-summary">
-      <div class="log-stat"><div class="log-stat-value" id="log-total-amount">¥0</div><div class="log-stat-label" id="lbl-total-amount">累計寄付額</div></div>
-      <div class="log-stat"><div class="log-stat-value" id="log-total-delay">0h</div><div class="log-stat-label" id="lbl-total-delay">累計延命時間</div></div>
+      <div class="log-stat"><div class="log-stat-value" id="log-total-amount">¥0</div><div class="log-stat-label" id="lbl-total-amount">累計支援額</div></div>
       <div class="log-stat"><div class="log-stat-value" id="log-total-count">0</div><div class="log-stat-label" id="lbl-total-count">支援者数</div></div>
     </div>
     <div class="log-list" id="log-list">
-      <div class="log-empty" id="log-empty">// まだ寄付実績がありません</div>
+      <div class="log-empty" id="log-empty">// まだ支援実績がありません</div>
     </div>
-    <div class="footer-note" id="lbl-log-footer" style="margin-top:12px;">収益は環境保全団体への寄付に充てられます</div>
+    <div class="footer-note" id="lbl-log-footer" style="margin-top:12px;">ご支援はサーバー運営費・API利用料に活用されます</div>
   </div>
 
 </main>
@@ -651,12 +627,12 @@ const T = {
     lblRemaining: "// 残存時間",
     lblDays: "DAYS / 日", lblHours: "HOURS / 時間", lblMins: "MINS / 分", lblSecs: "SECS / 秒",
     lblProgress: "地球崩壊進行度",
-    lblDonateTitle: "// 地球を救う — 再起動を遅らせる",
-    donateIntro: `寄付はそのまま<strong>環境保全活動</strong>に充てられます。<br><strong>100円につきわずか6時間</strong>——それでも、あなたの支援がカウントダウンを押し戻します。`,
-    donateBtn: "▶ 今すぐ寄付して地球を救う",
+    lblDonateTitle: "// 運営協力金 — サーバー維持にご協力ください",
+    donateIntro: `このプロジェクトの運営にはサーバー・API利用料等の実費がかかっています。<br><strong>カウントダウンには一切影響しません</strong>——あなたの気持ちが運営を支えます。`,
+    donateBtn: "▶ 運営に協力する",
     donateBtnLoading: "// 決済ページへ接続中...",
-    delayPreview: (h) => `この寄付により、再起動が ${h} 延長されます`,
-    delayMin: "100円以上で寄付できます",
+    usageNote: "ご支援はサーバー代・API利用料に充てられます",
+    delayMin: "100円以上で支援できます",
     lblAiTitle: "// AI解析ログ — 地球危機指数",
     aiConnecting: "// AI解析システム接続中...",
     aiScanning: "// AI解析システム：世界情勢スキャン中...",
@@ -671,13 +647,13 @@ const T = {
     liveNext: (m) => `次回自動更新まで約${m}分`,
     reloadBtn: "⟳ 世界情勢を強制再解析する",
     lastUpdated: (s) => `最終解析: ${s}`,
-    lblLogTitle: "// 寄付実績 — 透明性ログ",
-    lblTotalAmount: "累計寄付額", lblTotalDelay: "累計延命時間", lblTotalCount: "支援者数",
-    logEmpty: "// まだ寄付実績がありません",
-    logFooter: "収益は環境保全団体への寄付に充てられます",
-    logItem: (h, a) => `+${h} 延命 / ¥${a.toLocaleString()}`,
-    extendTitle: (h) => `▲ 地球の再起動が ${h} 延長されました`,
-    extendSub: (a) => `¥${a.toLocaleString()}の寄付ありがとうございます。カウントダウンが更新されました。`,
+    lblLogTitle: "// 運営協力金 — 透明性ログ",
+    lblTotalAmount: "累計支援額", lblTotalCount: "支援者数",
+    logEmpty: "// まだ支援実績がありません",
+    logFooter: "ご支援はサーバー運営費・API利用料に活用されます",
+    logItem: (a) => `¥${a.toLocaleString()} のご支援`,
+    extendTitle: "✓ ご支援ありがとうございます",
+    extendSub: (a) => `¥${a.toLocaleString()}のご支援をいただきました。運営の継続に活用させていただきます。`,
     loading: ["// EARTH SYSTEM ANALYSIS INITIALIZING...", "// SCANNING GLOBAL THREAT MATRIX...", "// CALCULATING REBOOT TIMESTAMP...", "// LOADING DONATION RECORDS...", "// SYSTEM READY"],
     currency: "円",
   },
@@ -689,12 +665,12 @@ const T = {
     lblRemaining: "// TIME REMAINING",
     lblDays: "DAYS", lblHours: "HOURS", lblMins: "MINS", lblSecs: "SECS",
     lblProgress: "EARTH COLLAPSE PROGRESS",
-    lblDonateTitle: "// SAVE THE EARTH — DELAY THE REBOOT",
-    donateIntro: `All donations go directly to <strong>environmental conservation</strong>.<br><strong>Every ¥100 buys just 6 hours</strong>——but your support pushes back the countdown.`,
-    donateBtn: "▶ DONATE NOW AND SAVE THE EARTH",
+    lblDonateTitle: "// OPERATIONAL SUPPORT — HELP KEEP THE SERVERS RUNNING",
+    donateIntro: `This project has real costs for servers and API usage.<br><strong>Your support has no effect on the countdown</strong>——it simply helps keep the project running.`,
+    donateBtn: "▶ SUPPORT THIS PROJECT",
     donateBtnLoading: "// CONNECTING TO PAYMENT...",
-    delayPreview: (h) => `This donation will extend the reboot by ${h}`,
-    delayMin: "Minimum donation: ¥100",
+    usageNote: "Your support goes toward server and API costs",
+    delayMin: "Minimum support: ¥100",
     lblAiTitle: "// AI ANALYSIS LOG — GLOBAL THREAT INDEX",
     aiConnecting: "// AI ANALYSIS SYSTEM CONNECTING...",
     aiScanning: "// AI SYSTEM: SCANNING GLOBAL SITUATION...",
@@ -709,13 +685,13 @@ const T = {
     liveNext: (m) => `Auto-update in ~${m}min`,
     reloadBtn: "⟳ FORCE RE-ANALYZE GLOBAL SITUATION",
     lastUpdated: (s) => `Last analysis: ${s}`,
-    lblLogTitle: "// DONATION LOG — TRANSPARENCY RECORD",
-    lblTotalAmount: "TOTAL DONATED", lblTotalDelay: "TOTAL DELAY", lblTotalCount: "SUPPORTERS",
-    logEmpty: "// No donations yet",
-    logFooter: "All proceeds go to environmental conservation organizations",
-    logItem: (h, a) => `+${h}延命 / ¥${a.toLocaleString()}`,
-    extendTitle: (h) => `▲ EARTH REBOOT DELAYED BY ${h}`,
-    extendSub: (a) => `Thank you for your ¥${a.toLocaleString()} donation. Countdown updated.`,
+    lblLogTitle: "// SUPPORT LOG — TRANSPARENCY RECORD",
+    lblTotalAmount: "TOTAL SUPPORT", lblTotalCount: "SUPPORTERS",
+    logEmpty: "// No support yet",
+    logFooter: "Your support goes toward server and API costs",
+    logItem: (a) => `¥${a.toLocaleString()} support`,
+    extendTitle: "✓ THANK YOU FOR YOUR SUPPORT",
+    extendSub: (a) => `Thank you for your ¥${a.toLocaleString()} support. It helps keep this project running.`,
     loading: ["// EARTH SYSTEM ANALYSIS INITIALIZING...", "// SCANNING GLOBAL THREAT MATRIX...", "// CALCULATING REBOOT TIMESTAMP...", "// LOADING DONATION RECORDS...", "// SYSTEM READY"],
     currency: "JPY",
   },
@@ -727,12 +703,12 @@ const T = {
     lblRemaining: "// VERBLEIBENDE ZEIT",
     lblDays: "TAGE", lblHours: "STUNDEN", lblMins: "MIN", lblSecs: "SEK",
     lblProgress: "FORTSCHRITT DES ERDUNTERGANGS",
-    lblDonateTitle: "// RETTE DIE ERDE — VERZÖGERE DEN NEUSTART",
-    donateIntro: `Alle Spenden fließen direkt in den <strong>Umweltschutz</strong>.<br><strong>Jede ¥100 kauft nur 6 Stunden</strong>——aber deine Unterstützung schiebt den Countdown zurück.`,
-    donateBtn: "▶ JETZT SPENDEN UND DIE ERDE RETTEN",
+    lblDonateTitle: "// BETRIEBSUNTERSTÜTZUNG — HILF MIT, DEN SERVER AM LAUFEN ZU HALTEN",
+    donateIntro: `Dieses Projekt hat echte Kosten für Server und API-Nutzung.<br><strong>Deine Unterstützung hat keinen Einfluss auf den Countdown</strong>——sie hilft einfach, das Projekt am Laufen zu halten.`,
+    donateBtn: "▶ PROJEKT UNTERSTÜTZEN",
     donateBtnLoading: "// VERBINDUNG ZUR ZAHLUNG...",
-    delayPreview: (h) => `Diese Spende verlängert den Neustart um ${h}`,
-    delayMin: "Mindestspende: ¥100",
+    usageNote: "Deine Unterstützung fließt in Server- und API-Kosten",
+    delayMin: "Mindestbetrag: ¥100",
     lblAiTitle: "// KI-ANALYSE — GLOBALER BEDROHUNGSINDEX",
     aiConnecting: "// KI-ANALYSESYSTEM VERBINDET...",
     aiScanning: "// KI-SYSTEM: SCANNT WELTLAGE...",
@@ -747,13 +723,13 @@ const T = {
     liveNext: (m) => `Auto-Update in ~${m} Min.`,
     reloadBtn: "⟳ WELTLAGE NEU ANALYSIEREN",
     lastUpdated: (s) => `Letzte Analyse: ${s}`,
-    lblLogTitle: "// SPENDENPROTOKOLL — TRANSPARENZ",
-    lblTotalAmount: "GESAMT GESPENDET", lblTotalDelay: "GESAMTVERZÖGERUNG", lblTotalCount: "UNTERSTÜTZER",
-    logEmpty: "// Noch keine Spenden",
-    logFooter: "Alle Einnahmen gehen an Umweltschutzorganisationen",
-    logItem: (h, a) => `+${h} Verzögerung / ¥${a.toLocaleString()}`,
-    extendTitle: (h) => `▲ ERDE-NEUSTART UM ${h} VERZÖGERT`,
-    extendSub: (a) => `Danke für deine Spende von ¥${a.toLocaleString()}. Countdown aktualisiert.`,
+    lblLogTitle: "// UNTERSTÜTZUNGSPROTOKOLL — TRANSPARENZ",
+    lblTotalAmount: "GESAMT UNTERSTÜTZUNG", lblTotalCount: "UNTERSTÜTZER",
+    logEmpty: "// Noch keine Unterstützung",
+    logFooter: "Deine Unterstützung fließt in Server- und API-Kosten",
+    logItem: (a) => `¥${a.toLocaleString()} Unterstützung`,
+    extendTitle: "✓ DANKE FÜR DEINE UNTERSTÜTZUNG",
+    extendSub: (a) => `Danke für deine Unterstützung von ¥${a.toLocaleString()}. Sie hilft, dieses Projekt am Laufen zu halten.`,
     loading: ["// ERDSYSTEM-ANALYSE INITIALISIERT...", "// GLOBALE BEDROHUNGSMATRIX WIRD GESCANNT...", "// NEUSTART-ZEITSTEMPEL WIRD BERECHNET...", "// SPENDENAUFZEICHNUNGEN WERDEN GELADEN...", "// SYSTEM BEREIT"],
     currency: "JPY",
   },
@@ -765,12 +741,12 @@ const T = {
     lblRemaining: "// TEMPS RESTANT",
     lblDays: "JOURS", lblHours: "HEURES", lblMins: "MIN", lblSecs: "SEC",
     lblProgress: "PROGRESSION DE L'EFFONDREMENT",
-    lblDonateTitle: "// SAUVEZ LA TERRE — RETARDEZ LE REDÉMARRAGE",
-    donateIntro: `Tous les dons vont directement à la <strong>conservation de l'environnement</strong>.<br><strong>Chaque ¥100 n'achète que 6 heures</strong>——mais votre soutien repousse le compte à rebours.`,
-    donateBtn: "▶ FAIRE UN DON ET SAUVER LA TERRE",
+    lblDonateTitle: "// SOUTIEN OPÉRATIONNEL — AIDEZ À MAINTENIR LES SERVEURS",
+    donateIntro: `Ce projet a des coûts réels de serveurs et d'utilisation d'API.<br><strong>Votre soutien n'a aucun effet sur le compte à rebours</strong>——il aide simplement à maintenir le projet en vie.`,
+    donateBtn: "▶ SOUTENIR CE PROJET",
     donateBtnLoading: "// CONNEXION AU PAIEMENT...",
-    delayPreview: (h) => `Ce don prolongera le redémarrage de ${h}`,
-    delayMin: "Don minimum: ¥100",
+    usageNote: "Votre soutien finance les coûts de serveur et d'API",
+    delayMin: "Soutien minimum: ¥100",
     lblAiTitle: "// JOURNAL D'ANALYSE IA — INDICE DE MENACE MONDIAL",
     aiConnecting: "// SYSTÈME D'ANALYSE IA EN CONNEXION...",
     aiScanning: "// SYSTÈME IA: ANALYSE DE LA SITUATION MONDIALE...",
@@ -785,13 +761,13 @@ const T = {
     liveNext: (m) => `Mise à jour auto dans ~${m} min`,
     reloadBtn: "⟳ FORCER UNE NOUVELLE ANALYSE MONDIALE",
     lastUpdated: (s) => `Dernière analyse: ${s}`,
-    lblLogTitle: "// JOURNAL DES DONS — REGISTRE DE TRANSPARENCE",
-    lblTotalAmount: "TOTAL DES DONS", lblTotalDelay: "DÉLAI TOTAL", lblTotalCount: "SUPPORTERS",
-    logEmpty: "// Pas encore de dons",
-    logFooter: "Tous les bénéfices vont aux organisations de protection de l'environnement",
-    logItem: (h, a) => `+${h} délai / ¥${a.toLocaleString()}`,
-    extendTitle: (h) => `▲ REDÉMARRAGE DE LA TERRE RETARDÉ DE ${h}`,
-    extendSub: (a) => `Merci pour votre don de ¥${a.toLocaleString()}. Compte à rebours mis à jour.`,
+    lblLogTitle: "// JOURNAL DE SOUTIEN — REGISTRE DE TRANSPARENCE",
+    lblTotalAmount: "TOTAL DU SOUTIEN", lblTotalCount: "SUPPORTERS",
+    logEmpty: "// Pas encore de soutien",
+    logFooter: "Votre soutien finance les coûts de serveur et d'API",
+    logItem: (a) => `¥${a.toLocaleString()} de soutien`,
+    extendTitle: "✓ MERCI POUR VOTRE SOUTIEN",
+    extendSub: (a) => `Merci pour votre soutien de ¥${a.toLocaleString()}. Il aide à maintenir ce projet en vie.`,
     loading: ["// ANALYSE DU SYSTÈME TERRESTRE...", "// ANALYSE DE LA MATRICE DE MENACES...", "// CALCUL DE L'HORODATAGE...", "// CHARGEMENT DES DONS...", "// SYSTÈME PRÊT"],
     currency: "JPY",
   },
@@ -803,12 +779,12 @@ const T = {
     lblRemaining: "// 剩余时间",
     lblDays: "天", lblHours: "时", lblMins: "分", lblSecs: "秒",
     lblProgress: "地球崩溃进度",
-    lblDonateTitle: "// 拯救地球 — 延迟重启",
-    donateIntro: `所有捐款直接用于<strong>环境保护</strong>。<br><strong>每¥100仅延迟6小时</strong>——但您的支持能推迟倒计时。`,
-    donateBtn: "▶ 立即捐款，拯救地球",
+    lblDonateTitle: "// 运营支持 — 帮助维持服务器运行",
+    donateIntro: `本项目需要承担服务器与API使用的实际费用。<br><strong>您的支持不会影响倒计时</strong>——只是帮助维持项目运营。`,
+    donateBtn: "▶ 支持本项目",
     donateBtnLoading: "// 正在连接支付...",
-    delayPreview: (h) => `此捐款将延迟重启 ${h}`,
-    delayMin: "最低捐款：¥100",
+    usageNote: "您的支持将用于服务器与API费用",
+    delayMin: "最低支持金额：¥100",
     lblAiTitle: "// AI分析日志 — 全球威胁指数",
     aiConnecting: "// AI分析系统连接中...",
     aiScanning: "// AI系统：正在扫描全球形势...",
@@ -823,13 +799,13 @@ const T = {
     liveNext: (m) => `自动更新约${m}分钟后`,
     reloadBtn: "⟳ 强制重新分析全球形势",
     lastUpdated: (s) => `最后分析：${s}`,
-    lblLogTitle: "// 捐款记录 — 透明度日志",
-    lblTotalAmount: "累计捐款", lblTotalDelay: "累计延迟时间", lblTotalCount: "支持者数",
-    logEmpty: "// 暂无捐款记录",
-    logFooter: "所有收益将捐给环境保护组织",
-    logItem: (h, a) => `+${h} 延迟 / ¥${a.toLocaleString()}`,
-    extendTitle: (h) => `▲ 地球重启已延迟 ${h}`,
-    extendSub: (a) => `感谢您捐款 ¥${a.toLocaleString()}。倒计时已更新。`,
+    lblLogTitle: "// 支持记录 — 透明度日志",
+    lblTotalAmount: "累计支持金额", lblTotalCount: "支持者数",
+    logEmpty: "// 暂无支持记录",
+    logFooter: "您的支持将用于服务器与API费用",
+    logItem: (a) => `¥${a.toLocaleString()} 的支持`,
+    extendTitle: "✓ 感谢您的支持",
+    extendSub: (a) => `感谢您 ¥${a.toLocaleString()} 的支持。这将帮助本项目持续运营。`,
     loading: ["// 地球系统分析初始化...", "// 扫描全球威胁矩阵...", "// 计算重启时间戳...", "// 加载捐款记录...", "// 系统就绪"],
     currency: "JPY",
   }
@@ -841,7 +817,7 @@ const DAYS_EN = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const DAYS_DE = ["So","Mo","Di","Mi","Do","Fr","Sa"];
 const DAYS_FR = ["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
 const DAYS_ZH = ["日","一","二","三","四","五","六"];
-let rebootTarget=null,analysisBaseTime=null,totalSpanMs=null,donationDelayMs=0,selectedAmount=1000;
+let rebootTarget=null,analysisBaseTime=null,totalSpanMs=null,selectedAmount=1000;
 
 // 都市設定（言語・タイムゾーン対応）
 const CITIES = {
@@ -919,7 +895,6 @@ function applyLang() {
   document.getElementById("reload-btn").textContent = t("reloadBtn");
   document.getElementById("lbl-log-title").textContent = t("lblLogTitle");
   document.getElementById("lbl-total-amount").textContent = t("lblTotalAmount");
-  document.getElementById("lbl-total-delay").textContent = t("lblTotalDelay");
   document.getElementById("lbl-total-count").textContent = t("lblTotalCount");
   document.getElementById("lbl-log-footer").textContent = t("logFooter");
   const pd = document.getElementById('paypal-divider');
@@ -1022,8 +997,7 @@ function updateClock(){
     document.getElementById("current-date").textContent=`${DAYS_EN[d.getDay()]}, ${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())}`;
   }
   if(!rebootTarget)return;
-  const effective=new Date(rebootTarget.getTime()+donationDelayMs);
-  const diff=effective-now;
+  const diff=rebootTarget-now;
   if(diff<=0){["cd-days","cd-hours","cd-mins","cd-secs"].forEach(id=>document.getElementById(id).textContent="00");triggerCollapse();return;}
   const days=Math.floor(diff/(1000*60*60*24)),hours=Math.floor((diff%(1000*60*60*24))/(1000*60*60)),mins=Math.floor((diff%(1000*60*60))/(1000*60)),secs=Math.floor((diff%(1000*60))/1000);
   const prev=document.getElementById("cd-secs").textContent;
@@ -1032,13 +1006,13 @@ function updateClock(){
   document.getElementById("cd-mins").textContent=pad(mins);
   document.getElementById("cd-secs").textContent=pad(secs);
   if(prev!==pad(secs)){const el=document.getElementById("cd-secs");el.classList.remove("tick");void el.offsetWidth;el.classList.add("tick");setTimeout(()=>el.classList.remove("tick"),300);}
-  if(totalSpanMs){const pct=Math.min(100,((now-analysisBaseTime)/(totalSpanMs+donationDelayMs))*100);document.getElementById("progress-fill").style.width=pct.toFixed(4)+"%";document.getElementById("progress-pct").textContent=pct.toFixed(3)+"%";}
+  if(totalSpanMs){const pct=Math.min(100,((now-analysisBaseTime)/totalSpanMs)*100);document.getElementById("progress-fill").style.width=pct.toFixed(4)+"%";document.getElementById("progress-pct").textContent=pct.toFixed(3)+"%";}
 }
 setInterval(function(){updateClock();if(typeof checkCollapse==="function")checkCollapse();if(typeof updateShareText==="function")updateShareText();if(lang==="en"&&typeof updateWorldClocks==="function")updateWorldClocks();},1000);
 
 function updateRestartDisplay(){
   if(!rebootTarget)return;
-  const e=new Date(rebootTarget.getTime()+donationDelayMs);
+  const e=rebootTarget;
   document.getElementById("restart-datetime").textContent=`${e.getFullYear()}/${pad(e.getMonth()+1)}/${pad(e.getDate())}\n${pad(e.getHours())}:${pad(e.getMinutes())}`;
 }
 
@@ -1055,7 +1029,6 @@ function saveOfflineData(json) {
         rebootTarget: rebootTarget.toISOString(),
         analysisBaseTime: analysisBaseTime ? analysisBaseTime.toISOString() : null,
         totalSpanMs,
-        donationDelayMs,
         savedAt: new Date().toISOString(),
       }));
     }
@@ -1169,8 +1142,6 @@ window.addEventListener('offline', () => {
   showOfflineBanner();
 });
 
-function calcDelay(amount){return Math.floor((amount/100)*6*3600);}
-
 function selectAmount(v,el){
   selectedAmount=v;document.getElementById("custom-amount").value=v;
   document.querySelectorAll(".amount-btn").forEach(b=>b.classList.remove("active"));
@@ -1179,7 +1150,7 @@ function selectAmount(v,el){
 function onCustomAmount(v){selectedAmount=parseInt(v)||0;document.querySelectorAll(".amount-btn").forEach(b=>b.classList.remove("active"));updateDelayPreview(selectedAmount);}
 function updateDelayPreview(a){
   if(a<100){document.getElementById("delay-preview").textContent=t("delayMin");return;}
-  document.getElementById("delay-preview").textContent=t("delayPreview",formatHours(calcDelay(a)));
+  document.getElementById("delay-preview").textContent=t("usageNote");
 }
 
 async function startDonate(){
@@ -1196,14 +1167,12 @@ async function loadDonationStats(){
   try{
     const res=await fetch("/api/donation-stats");const data=await res.json();const total=data.total||{};
     document.getElementById("log-total-amount").textContent=`¥${(total.amount||0).toLocaleString()}`;
-    document.getElementById("log-total-delay").textContent=formatHours(total.delay_seconds||0);
     document.getElementById("log-total-count").textContent=`${total.count||0}`;
-    donationDelayMs=(total.delay_seconds||0)*1000;updateRestartDisplay();
     const list=document.getElementById("log-list"),logs=data.logs||[];
     if(!logs.length){list.innerHTML=`<div class="log-empty">${t("logEmpty")}</div>`;return;}
     list.innerHTML=logs.map(l=>{
       const d=new Date(l.at),ds=`${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-      return`<div class="log-item"><span class="log-item-left">${t("logItem",formatHours(l.delay),l.amount)}</span><span class="log-item-right">${ds}</span></div>`;
+      return`<div class="log-item"><span class="log-item-left">${t("logItem",l.amount)}</span><span class="log-item-right">${ds}</span></div>`;
     }).join("");
   }catch(e){console.error(e);}
 }
@@ -1211,12 +1180,11 @@ async function loadDonationStats(){
 function handlePostDonate(){
   const p=new URLSearchParams(location.search);
   if(p.get("donated")!=="1")return;
-  const amount=parseInt(p.get("amount")||"0"),delay=parseInt(p.get("delay")||"0");
+  const amount=parseInt(p.get("amount")||"0");
   const banner=document.getElementById("extend-banner");
-  document.getElementById("extend-banner-title").textContent=t("extendTitle",formatHours(delay));
+  document.getElementById("extend-banner-title").textContent=t("extendTitle");
   document.getElementById("extend-banner-sub").textContent=t("extendSub",amount);
   banner.classList.add("show");
-  ["cd-days","cd-hours","cd-mins","cd-secs"].forEach(id=>{const el=document.getElementById(id);el.classList.add("extend-col");setTimeout(()=>el.classList.remove("extend-col"),4000);});
   history.replaceState({},"","/");
   setTimeout(()=>banner.classList.remove("show"),8000);
 }
@@ -1273,11 +1241,10 @@ function updateEvidence(evidence) {
 // ── SNSシェア ──────────────────────────────
 function shareToX() {
   if (!rebootTarget) { alert(lang==='ja'?'解析完了後にシェアできます':'Please wait for analysis to complete'); return; }
-  const effective = new Date(rebootTarget.getTime() + donationDelayMs);
-  const diff = effective - new Date();
+  const diff = rebootTarget - new Date();
   const years = (diff / (1000*60*60*24*365.25)).toFixed(1);
-  const textJa = `地球の再起動まで約${years}年。AIが世界情勢から算出したカウントダウン。あなたの寄付が再起動を遅らせる。 #地球再起動時間`;
-  const textEn = `The Earth will reboot in ~${years} years. AI-calculated countdown from global events. Your donation delays the reboot. #EarthReboot`;
+  const textJa = `地球の再起動まで約${years}年。実際の世界のニュースをAIが分析し、地球終末時計のように毎日変化するカウントダウン。 #地球再起動時間`;
+  const textEn = `The Earth will reboot in ~${years} years. A Doomsday Clock-style countdown that changes daily based on real-world news analyzed by AI. #EarthReboot`;
   const text = lang === 'ja' ? textJa : textEn;
   const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent('https://www.earth-re-boot.com')}`;
   window.open(url, '_blank');

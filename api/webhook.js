@@ -33,24 +33,24 @@ export default async function handler(req, res) {
   }
 
   const session = event.data.object;
-  const amountJpy    = parseInt(session.metadata?.amount_jpy || "0");
-  const delaySeconds = parseInt(session.metadata?.delay_seconds || "0");
-  const donatedAt    = new Date().toISOString();
-  const sessionId    = session.id;
+  const amountJpy = parseInt(session.metadata?.amount_jpy || "0");
+  const donatedAt = new Date().toISOString();
+  const sessionId = session.id;
 
   try {
+    // 注: 寄付は「運営協力金」として記録するのみで、再起動カウントダウンには一切影響しない。
+    // delay フィールドは新規寄付では記録しない（過去ログのdelay値は履歴としてそのまま保持される）。
     const logsRaw = await redis.get("donation_logs");
     const logs = Array.isArray(logsRaw) ? logsRaw : [];
-    logs.unshift({ id: sessionId, amount: amountJpy, delay: delaySeconds, at: donatedAt });
+    logs.unshift({ id: sessionId, amount: amountJpy, at: donatedAt });
     if (logs.length > 50) logs.splice(50);
     await redis.set("donation_logs", logs);
 
     const totalRaw = await redis.get("donation_total");
-    const total = totalRaw || { amount: 0, delay_seconds: 0, count: 0 };
-    total.amount        += amountJpy;
-    total.delay_seconds += delaySeconds;
-    total.count         += 1;
-    total.last_updated   = donatedAt;
+    const total = totalRaw || { amount: 0, count: 0 };
+    total.amount      += amountJpy;
+    total.count       += 1;
+    total.last_updated = donatedAt;
     await redis.set("donation_total", total);
 
     return res.status(200).json({ received: true });
