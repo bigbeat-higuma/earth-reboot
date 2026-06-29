@@ -9,6 +9,7 @@
 
 import { Redis } from "@upstash/redis";
 import { fetchNews, CATEGORIES } from "./news-fetch.js";
+import { timingSafeTokenEqual } from "./_security.js";
 
 const OVERLAY_LATEST = "dyn:overlay:latest";
 const TTL_SECONDS = 60 * 60 * 30; // 30時間
@@ -43,12 +44,14 @@ export function buildPatches(news) {
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
 
-  // Vercel Cron の認証（CRON_SECRET を設定している場合のみ検証。手動テストは許可）
+  // Vercel Cron の認証（CRON_SECRET を設定している場合は必ずBearerトークンを要求する）。
+  // User-Agent はクライアントが自由に詐称できるため、認証の根拠として使ってはならない。
+  // CRON_SECRET が設定されている限り、トークンの定数時間比較に合格しない限り常に拒否する。
   const cronSecret = process.env.CRON_SECRET;
   if (cronSecret) {
     const auth = req.headers["authorization"] || "";
-    const isVercelCron = (req.headers["user-agent"] || "").includes("vercel-cron");
-    if (!isVercelCron && auth !== `Bearer ${cronSecret}`) {
+    const expected = `Bearer ${cronSecret}`;
+    if (!timingSafeTokenEqual(auth, expected)) {
       return res.status(401).json({ ok: false, error: "Unauthorized" });
     }
   }
@@ -91,6 +94,6 @@ export default async function handler(req, res) {
     });
   } catch (e) {
     console.error("daily-build error:", e);
-    return res.status(500).json({ ok: false, error: String(e) });
+    return res.status(500).json({ ok: false, error: "Internal error" });
   }
 }

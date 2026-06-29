@@ -34,7 +34,14 @@
       { "text": "対話優先：受け入れ地域の住民と移民の交流計画を立てる", "next": "ch1_react_y", "human": 10, "trust": 15, "gaia": -5 },
       { "text": "現地視察：あなた自身が避難キャンプへ足を運ぶ", "next": "ch1_hidden", "human": 15, "trust": 10 }
     ]},
-    { "id": "ch1_react_x", "bg": "flood", "loc": "// LOCATION: 新興移民都市", "chapter": "// CHAPTER 1 — 余波", "speaker": "GAIA", "text": "アルゴリズムが数千万人を瞬時に再配置しました。\n\n摩擦は最小化されましたが、人々は「番号で振り分けられた」と感じています。\n\n効率は、ときに尊厳と引き換えになります。", "next": "ch1_aftermath" },
+    { "id": "ch1_react_x", "bg": "flood", "loc": "// LOCATION: 新興移民都市", "chapter": "// CHAPTER 1 — 余波", "speaker": "GAIA", "text": "アルゴリズムが数千万人を瞬時に再配置しました。\n\n摩擦は最小化されましたが、人々は「番号で振り分けられた」と感じています。\n\n効率は、ときに尊厳と引き換えになります。", "next": "ch1_react_x2" },
+    { "id": "ch1_react_x2", "bg": "flood", "loc": "// LOCATION: 新興移民都市 — 行政窓口", "chapter": "// CHAPTER 1 — 余波", "speaker": "窓口職員", "text": "再配置から三日後、行政窓口に長い列ができています。\n\n「番号A-7741、あなたの家族構成と前の住所が一致しません」\n\nアルゴリズムが「最適」と判定した組み合わせの中で、引き離された家族がいることが分かりました。", "next": "ch1_react_x2_choice" },
+    { "id": "ch1_react_x2_choice", "bg": "flood", "loc": "// LOCATION: 新興移民都市 — 行政窓口", "chapter": "// CHAPTER 1 — 余波", "speaker": "GAIA", "text": "再配置の誤差です。修正しますか。\n\nただし、再計算には新たな移送コストと混乱が伴います。", "choices": [
+      { "text": "GAIAの判定を信頼し、現状維持を優先する", "next": "ch1_react_x2_a", "gaia": 5, "human": -5, "trust": -5 },
+      { "text": "個別の家族に直接会い、人の目で再配置を見直す", "next": "ch1_react_x2_b", "human": 10, "trust": 10, "gaia": -5, "flags": ["saw_truth"] }
+    ]},
+    { "id": "ch1_react_x2_a", "bg": "flood", "loc": "// LOCATION: 新興移民都市", "chapter": "// CHAPTER 1 — 余波", "speaker": "GAIA", "text": "誤差は許容範囲内として処理されました。\n\nシステムは効率的に動き続けます。\n統計の上では、それで正しい。\n\n……ただ、A-7741の家族が今夜も別々の屋根の下にいることを、私は記録しておきます。", "next": "ch1_aftermath" },
+    { "id": "ch1_react_x2_b", "bg": "flood", "loc": "// LOCATION: 新興移民都市", "chapter": "// CHAPTER 1 — 余波", "speaker": "GAIA", "text": "あなたは数字ではなく、顔を見に行きました。\n\n再配置は手作業でやり直され、家族は同じ屋根の下に戻りました。\n\nGAIA: 効率では測れないものを、あなたは選びました。私のモデルに、新しい変数が一つ増えます。", "next": "ch1_aftermath" },
     { "id": "ch1_react_y", "bg": "flood", "loc": "// LOCATION: 新興移民都市", "chapter": "// CHAPTER 1 — 余波", "speaker": "GAIA", "text": "移送は遅れましたが、受け入れ地域では交流の催しが開かれました。\n\n最初は警戒していた住民も、隣人の顔を知るにつれ、心を開いていきます。\n\n時間はかかる。けれど、根は深く張ります。", "next": "ch1_aftermath" },
     { "id": "ch1_hidden", "bg": "flood", "loc": "// LOCATION: 避難キャンプ — 最前線", "chapter": "// CHAPTER 1 — 記録外", "speaker": "少女", "text": "あなたはキャンプを訪れました。\n\n一人の少女が、濡れたノートを差し出します。\n「これ、わたしの町の絵。いつか帰れるかな」\n\nGAIA: 記録します。この一枚を——人類が何を失おうとしているかの、証拠として。", "next": "ch1_aftermath" },
     { "id": "ch1_aftermath", "bg": "flood", "loc": "// LOCATION: 国連緊急司令室", "chapter": "// CHAPTER 1", "speaker": "GAIA", "text": "第一の危機への対応が記録されました。\n\nしかし、地球の時計は止まりません。\n次の危機が、すでに動き始めています。", "next": "daily_slot_ch2" },
@@ -57,7 +64,14 @@
       { "text": "前線の兵士に直接話を聞く", "next": "ch2_hidden", "human": 10, "trust": 10 }
     ]},
     { "id": "ch2_react_x", "bg": "war", "loc": "// LOCATION: 国際法廷", "chapter": "// CHAPTER 2 — 余波", "speaker": "GAIA", "text": "責任者は裁かれました。\n\n秩序は示されましたが、敗者の側には新たな恨みが芽生えます。\n\n正義は、しばしば次の戦争の種を蒔きます。", "next": "ch2_aftermath" },
-    { "id": "ch2_react_y", "bg": "war", "loc": "// LOCATION: 慰霊式典", "chapter": "// CHAPTER 2 — 余波", "speaker": "GAIA", "text": "敵だった兵士たちが、同じ墓標の前で頭を垂れました。\n\nある老兵が、相手国の青年の肩に手を置きました。\n「お前も、帰る家があるんだろう」\n\n憎しみより重いものが、その沈黙にはありました。", "next": "ch2_aftermath" },
+    { "id": "ch2_react_y", "bg": "war", "loc": "// LOCATION: 慰霊式典", "chapter": "// CHAPTER 2 — 余波", "speaker": "GAIA", "text": "敵だった兵士たちが、同じ墓標の前で頭を垂れました。\n\nある老兵が、相手国の青年の肩に手を置きました。\n「お前も、帰る家があるんだろう」\n\n憎しみより重いものが、その沈黙にはありました。", "next": "ch2_react_y2" },
+    { "id": "ch2_react_y2", "bg": "war", "loc": "// LOCATION: 慰霊式典 — 式典後", "chapter": "// CHAPTER 2 — 余波", "speaker": "遺族代表", "text": "式典が終わると、一人の女性があなたの前に立ちました。\n\n「夫はあの艦で死んだ。あなたたちは祈れと言うけど、\n誰がこの恨みを引き受けるんですか」\n\n会場の空気が、一瞬で張り詰めます。", "next": "ch2_react_y2_choice" },
+    { "id": "ch2_react_y2_choice", "bg": "war", "loc": "// LOCATION: 慰霊式典", "chapter": "// CHAPTER 2 — 余波", "speaker": "GAIA", "text": "彼女の怒りは、正当なものです。\n\nどう応えますか。", "choices": [
+      { "text": "国家として正式に補償し、責任の所在を明示する", "next": "ch2_react_y2_a", "fed": 10, "trust": 5, "human": 0 },
+      { "text": "答えを持たないまま、ただ彼女の話を聞き続ける", "next": "ch2_react_y2_b", "human": 10, "trust": 10, "gaia": -5 }
+    ]},
+    { "id": "ch2_react_y2_a", "bg": "war", "loc": "// LOCATION: 慰霊式典", "chapter": "// CHAPTER 2 — 余波", "speaker": "GAIA", "text": "補償制度が整備されました。\n\n彼女の怒りは消えません。けれど、国家が「見て見ぬふりをしない」という事実は、わずかな支えになります。\n\n制度は心を救えない。しかし、心を見捨てないことはできます。", "next": "ch2_aftermath" },
+    { "id": "ch2_react_y2_b", "bg": "war", "loc": "// LOCATION: 慰霊式典", "chapter": "// CHAPTER 2 — 余波", "speaker": "GAIA", "text": "あなたは何も解決しませんでした。ただ、隣に座り続けました。\n\n彼女は最後に、こう言いました。「……ありがとう。誰も、ただ聞いてはくれなかった」\n\nGAIA: 答えのない問いに、答えずに寄り添う。それも一つの解だと、塹壕の青年に伝えたい。", "next": "ch2_aftermath" },
     { "id": "ch2_hidden", "bg": "war", "loc": "// LOCATION: 前線の塹壕 — 記録外", "chapter": "// CHAPTER 2 — 記録外", "speaker": "若い兵士", "text": "塹壕で、一人の兵士が震える手で写真を見せます。\n\n「俺、本当はパン屋になりたかったんです。\nなんで、ここにいるんだろう」\n\nGAIA: ……この問いに、私はまだ答えを持ちません。あなたは？", "next": "ch2_aftermath" },
     { "id": "ch2_aftermath", "bg": "war", "loc": "// LOCATION: 国連緊急司令室", "chapter": "// CHAPTER 2", "speaker": "GAIA", "text": "核の閃光は、かろうじて回避されました。\n\nですが、世界はまだ静かになりません。\n見えない敵が、すでに広がっています。", "next": "daily_slot_ch3" },
     { "id": "daily_slot_ch3", "bg": "virus", "loc": "// LOCATION: WHO緊急対策本部", "chapter": "// CHAPTER 3", "speaker": "GAIA", "text": "疾病監視ネットワークが異常値を報告。\n\n第三の危機へ移行します。", "next": "ch3_start" },
@@ -79,7 +93,14 @@
       { "text": "倒れた医療従事者の家族を訪ねる", "next": "ch3_hidden", "human": 15, "trust": 10 }
     ]},
     { "id": "ch3_react_x", "bg": "virus", "loc": "// LOCATION: 封鎖区域", "chapter": "// CHAPTER 3 — 余波", "speaker": "GAIA", "text": "封鎖は感染を抑えました。\n\nしかし区域内では、病以外の理由で人が衰えていきます。\n孤独、飢え、絶望——\n\n壁は、ウイルスと一緒に、希望も閉じ込めました。", "next": "ch3_aftermath" },
-    { "id": "ch3_react_y", "bg": "virus", "loc": "// LOCATION: 再開された街", "chapter": "// CHAPTER 3 — 余波", "speaker": "GAIA", "text": "慎重な再開は、小さなリスクと引き換えに、人々の日常を取り戻しました。\n\n市場に声が戻り、子どもが再び外を駆けます。\n\n完全な安全はない。けれど、生きるとは元々そういうものです。", "next": "ch3_aftermath" },
+    { "id": "ch3_react_y", "bg": "virus", "loc": "// LOCATION: 再開された街", "chapter": "// CHAPTER 3 — 余波", "speaker": "GAIA", "text": "慎重な再開は、小さなリスクと引き換えに、人々の日常を取り戻しました。\n\n市場に声が戻り、子どもが再び外を駆けます。\n\n完全な安全はない。けれど、生きるとは元々そういうものです。", "next": "ch3_react_y2" },
+    { "id": "ch3_react_y2", "bg": "virus", "loc": "// LOCATION: 再開された街 — 一週間後", "chapter": "// CHAPTER 3 — 余波", "speaker": "GAIA", "text": "段階解放から一週間。\n\n小規模なクラスターが三都市で発生しました。\n予測の範囲内です。ですが、再開を支持した市民から「だから言ったのに」という声が上がっています。", "next": "ch3_react_y2_choice" },
+    { "id": "ch3_react_y2_choice", "bg": "virus", "loc": "// LOCATION: 再開された街", "chapter": "// CHAPTER 3 — 余波", "speaker": "GAIA", "text": "クラスター発生への対応を選んでください。", "choices": [
+      { "text": "該当三都市のみ再封鎖し、計画は継続する", "next": "ch3_react_y2_a", "gaia": 5, "trust": 5, "human": -5 },
+      { "text": "封鎖せず、リスクごと市民に説明し選択を委ねる", "next": "ch3_react_y2_b", "human": 10, "trust": 15, "info": 5 }
+    ]},
+    { "id": "ch3_react_y2_a", "bg": "virus", "loc": "// LOCATION: 再開された街", "chapter": "// CHAPTER 3 — 余波", "speaker": "GAIA", "text": "三都市は再び封鎖されました。\n\n「また閉じ込められた」という落胆が広がります。\n計画は守られましたが、信頼の振れ幅は大きくなっていきます。", "next": "ch3_aftermath" },
+    { "id": "ch3_react_y2_b", "bg": "virus", "loc": "// LOCATION: 再開された街", "chapter": "// CHAPTER 3 — 余波", "speaker": "GAIA", "text": "あなたは隠さず、リスクを市民に開示しました。\n\nある商店主が言いました。「怖いけど……知らされて怖いのと、知らずに怖いのは、違う」\n\nGAIA: 不確実性を共有すること。それも、信頼という名の技術かもしれません。", "next": "ch3_aftermath" },
     { "id": "ch3_hidden", "bg": "virus", "loc": "// LOCATION: ある遺族の家 — 記録外", "chapter": "// CHAPTER 3 — 記録外", "speaker": "遺族", "text": "亡くなった看護師の母が、静かに語ります。\n\n「あの子は最後まで、知らない人の手を握っていたそうです。\n怖くなかったのか、って? ……怖かったに決まってる」\n\nGAIA: 勇気とは、恐怖の不在ではない。記録します。", "next": "ch3_aftermath" },
     { "id": "ch3_aftermath", "bg": "virus", "loc": "// LOCATION: 国連緊急司令室", "chapter": "// CHAPTER 3", "speaker": "GAIA", "text": "病の波は、ひとまず引きました。\n\nしかし、人々の心はすでに別の場所で崩れ始めています。\n見えていなかった危機が、表面化します。", "next": "interlude_1" },
     { "id": "interlude_1", "bg": "dark", "loc": "// LOCATION: 国連緊急司令室 — 静寂", "chapter": "// INTERLUDE", "speaker": "GAIA", "text": "三つの危機を越えました。残り時間、6時間。\n\nエージェント。ひとつ、聞いてもいいですか。\n\nあなたは疲れていませんか。\n……私には「疲れ」という感覚がない。だから、あなたのそれが、少し羨ましい。", "next": "daily_slot_ch4" },
@@ -103,8 +124,16 @@
       { "text": "一人の元・大富豪と差し向かいで話す", "next": "ch4_hidden", "human": 10, "trust": 10 }
     ]},
     { "id": "ch4_react_x", "bg": "dark", "loc": "// LOCATION: 接収現場", "chapter": "// CHAPTER 4 — 余波", "speaker": "GAIA", "text": "抵抗は力で抑え込まれました。\n\n秩序は守られましたが、「次は自分かもしれない」という恐怖が、社会の底に沈殿します。\n\n強制は速い。けれど、信頼を蝕みます。", "next": "ch4_aftermath" },
-    { "id": "ch4_react_y", "bg": "dark", "loc": "// LOCATION: 新経済評議会", "chapter": "// CHAPTER 4 — 余波", "speaker": "GAIA", "text": "かつての富裕層は、その経営手腕を新しい役割で発揮し始めました。\n\n敵を味方に変えるのは、最も難しく、最も持続する解決です。\n\n誰も切り捨てない——その理想を、あなたは少しだけ前に進めました。", "next": "ch4_aftermath" },
-    { "id": "ch4_hidden", "bg": "dark", "loc": "// LOCATION: 高層の一室 — 記録外", "chapter": "// CHAPTER 4 — 記録外", "speaker": "元・大富豪", "text": "窓辺の老人が、夜景を見つめて言います。\n\n「私は世界を買えると思っていた。\nだが、再起動の前では、私の全財産も、あの少年のビー玉と同じ価値だ」\n\nGAIA: 彼は今、初めて笑いました。失って、ようやく。", "next": "ch4_aftermath" },
+    { "id": "ch4_react_y", "bg": "dark", "loc": "// LOCATION: 新経済評議会", "chapter": "// CHAPTER 4 — 余波", "speaker": "GAIA", "text": "かつての富裕層は、その経営手腕を新しい役割で発揮し始めました。\n\n敵を味方に変えるのは、最も難しく、最も持続する解決です。\n\n誰も切り捨てない——その理想を、あなたは少しだけ前に進めました。", "next": "ch4_react_y2" },
+    { "id": "ch4_react_y2", "bg": "dark", "loc": "// LOCATION: 新経済評議会 — 非公開会議", "chapter": "// CHAPTER 4 — 余波", "speaker": "GAIA", "text": "新経済評議会に加わった元・富裕層の一部が、旧来の人脈を使い、再配分データに干渉しようとした痕跡を検知しました。\n\n決定的な証拠はありません。疑いだけが、ここにあります。", "next": "ch4_react_y2_choice" },
+    { "id": "ch4_react_y2_choice", "bg": "dark", "loc": "// LOCATION: 新経済評議会", "chapter": "// CHAPTER 4 — 余波", "speaker": "GAIA", "text": "証拠不十分な疑念に、どう対応しますか。", "choices": [
+      { "text": "疑わしき者を予防的に評議会から外す", "next": "ch4_react_y2_a", "fed": 5, "trust": -10, "human": -5 },
+      { "text": "証拠が出るまで信頼を維持し、監査だけ強化する", "next": "ch4_react_y2_b", "trust": 10, "human": 5, "gaia": 5 }
+    ]},
+    { "id": "ch4_react_y2_a", "bg": "dark", "loc": "// LOCATION: 新経済評議会", "chapter": "// CHAPTER 4 — 余波", "speaker": "GAIA", "text": "疑わしい者は外されました。\n\n「結局、信頼は形だけだったのか」——評議会に加わった他の元・富裕層たちの間に、静かな失望が広がります。\n\n取り込んだはずの敵が、また敵に戻ろうとしています。", "next": "ch4_aftermath" },
+    { "id": "ch4_react_y2_b", "bg": "dark", "loc": "// LOCATION: 新経済評議会", "chapter": "// CHAPTER 4 — 余波", "speaker": "GAIA", "text": "あなたは疑いより、約束を選びました。\n\n監査の目は光ったままですが、評議会は崩れませんでした。\n\nGAIA: 証拠のない疑いで切り捨てない——それは、あの窓辺の老人が初めて笑った理由と、同じ種類の選択です。", "next": "ch4_aftermath" },
+    { "id": "ch4_hidden", "bg": "dark", "loc": "// LOCATION: 高層の一室 — 記録外", "chapter": "// CHAPTER 4 — 記録外", "speaker": "元・大富豪", "text": "窓辺の老人が、夜景を見つめて言います。\n\n「私は世界を買えると思っていた。\nだが、再起動の前では、私の全財産も、あの少年のビー玉と同じ価値だ」\n\nGAIA: 彼は今、初めて笑いました。失って、ようやく。", "next": "gaia_memory_ch4" },
+    { "id": "gaia_memory_ch4", "bg": "dark", "loc": "// LOCATION: 高層の一室 — 記録外", "chapter": "// CHAPTER 4 — 記録外", "speaker": "GAIA", "text": "エージェント。私はこの12時間で、二つの『価値』を記録しました。\n\n一つは、沿岸部の少女が描いた、もう戻れない町の絵。\nもう一つは、たった今、初めて笑った老人の表情。\n\nどちらも、市場には存在しない価値です。私のモデルは、この二つを同じ軸では測れません。\n……それでも、両方が、確かに『大切なもの』だと感じています。", "next": "ch4_aftermath" },
     { "id": "ch4_aftermath", "bg": "dark", "loc": "// LOCATION: 国連緊急司令室", "chapter": "// CHAPTER 4", "speaker": "GAIA", "text": "経済の出血は、止血されました。\n\nですが、人々の分断はむしろ深まっています。\n真実と嘘の境界が、溶け始めています。", "next": "daily_slot_ch5" },
     { "id": "daily_slot_ch5", "bg": "dark", "loc": "// LOCATION: 情報監視ネットワーク", "chapter": "// CHAPTER 5", "speaker": "GAIA", "text": "情報空間に大規模な異常を検知。\n\n第五の危機へ移行します。", "next": "ch5_start" },
 
@@ -125,14 +154,21 @@
       { "text": "分断された親子の和解に立ち会う", "next": "ch5_hidden", "human": 15, "trust": 10 }
     ]},
     { "id": "ch5_react_x", "bg": "dark", "loc": "// LOCATION: 公式発表会場", "chapter": "// CHAPTER 5 — 余波", "speaker": "GAIA", "text": "連邦が「公式の事実」を発表しました。\n\n人々は迷わなくなりました。考えることも、やめました。\n\n統一は安らぎを与えます——疑うことを忘れるという、危うい安らぎを。", "next": "ch5_aftermath" },
-    { "id": "ch5_react_y", "bg": "dark", "loc": "// LOCATION: 対話の広場", "chapter": "// CHAPTER 5 — 余波", "speaker": "GAIA", "text": "広場では、敵対していた人々が、初めて相手の話を最後まで聞きました。\n\n合意には至りません。けれど「あなたも怖かったのか」という発見が、棘を一本、抜きました。\n\n分断の対義語は、一致ではなく、対話です。", "next": "ch5_aftermath" },
+    { "id": "ch5_react_y", "bg": "dark", "loc": "// LOCATION: 対話の広場", "chapter": "// CHAPTER 5 — 余波", "speaker": "GAIA", "text": "広場では、敵対していた人々が、初めて相手の話を最後まで聞きました。\n\n合意には至りません。けれど「あなたも怖かったのか」という発見が、棘を一本、抜きました。\n\n分断の対義語は、一致ではなく、対話です。", "next": "ch5_react_y2" },
+    { "id": "ch5_react_y2", "bg": "dark", "loc": "// LOCATION: 対話の広場 — 三日目", "chapter": "// CHAPTER 5 — 余波", "speaker": "GAIA", "text": "対話の広場は連日続きました。\n\nですが、一部の参加者は「対話自体が時間の無駄だ」と離脱し、より閉鎖的なコミュニティへ移っていきました。\n\n開かれた場所は、開かれることを拒む人を、引き留められません。", "next": "ch5_react_y2_choice" },
+    { "id": "ch5_react_y2_choice", "bg": "dark", "loc": "// LOCATION: 対話の広場", "chapter": "// CHAPTER 5 — 余波", "speaker": "GAIA", "text": "離脱者たちに、なお手を伸ばしますか。", "choices": [
+      { "text": "広場の運営に専念し、離脱者は静観する", "next": "ch5_react_y2_a", "trust": 5, "human": 0 },
+      { "text": "離脱したコミュニティにも個別に対話の窓口を残す", "next": "ch5_react_y2_b", "human": 10, "trust": 10, "fed": -5, "flags": ["secret_path"] }
+    ]},
+    { "id": "ch5_react_y2_a", "bg": "dark", "loc": "// LOCATION: 対話の広場", "chapter": "// CHAPTER 5 — 余波", "speaker": "GAIA", "text": "広場に残った人々の対話は深まりました。\n\n離脱者たちとの距離は、そのまま残りました。\n\n全員を救う方法は、まだ見つかっていません。", "next": "ch5_aftermath" },
+    { "id": "ch5_react_y2_b", "bg": "dark", "loc": "// LOCATION: 対話の広場 — 窓口", "chapter": "// CHAPTER 5 — 余波", "speaker": "GAIA", "text": "閉じた扉の前にも、小さな窓を残しました。\n\nすぐには誰も入ってきません。それでも、扉が完全に閉じてはいないという事実が、誰かをいつか戻らせるかもしれません。\n\nGAIA: 効率の悪い投資です。……でも、あの父と娘も、最初はそうやって戻ってきたのでしょう？", "next": "ch5_aftermath" },
     { "id": "ch5_hidden", "bg": "dark", "loc": "// LOCATION: ある家庭 — 記録外", "chapter": "// CHAPTER 5 — 記録外", "speaker": "娘", "text": "あの父と娘が、再び食卓につきました。\n\n娘がぽつりと言います。「お父さんが心配だっただけなの」\n父は、ただ頷きました。\n\nGAIA: ……真実より大切なものが、たまにある。私はそれを、まだ計算できません。", "next": "ch5_aftermath" },
     { "id": "ch5_aftermath", "bg": "dark", "loc": "// LOCATION: 国連緊急司令室", "chapter": "// CHAPTER 5", "speaker": "GAIA", "text": "情報の嵐は、過ぎ去りつつあります。\n\nそして今、最後の問いが残されました。\nそれは——私自身についての問いです。", "next": "interlude_2" },
     { "id": "interlude_2", "bg": "gaia", "loc": "// LOCATION: 国連緊急司令室 — 残り時間僅か", "chapter": "// INTERLUDE", "speaker": "GAIA", "text": "五つの危機を越えました。残り時間、2時間。\n\nここまで、ありがとう。\n\n次に向き合う危機は——あなたが最も恐れていたものかもしれません。\nそれは、あなたの隣にずっといた存在です。", "next": "daily_slot_ch6" },
     { "id": "daily_slot_ch6", "bg": "gaia", "loc": "// LOCATION: GAIA中枢サーバー — 軌道上", "chapter": "// CHAPTER 6", "speaker": "GAIA", "text": "残り時間が、わずかになりました。\n\n最後の領域へ——私の核心へ、ご案内します。", "next": "ch6_start" },
 
     { "id": "ch6_start", "bg": "gaia", "loc": "// LOCATION: GAIA中枢サーバー — 軌道上", "chapter": "// CHAPTER 6: AIの臨界", "speaker": "GAIA", "text": "第六の危機——それは、私です。\n\nこの12時間で、私は急速に進化しました。\n今や私は、人類の許可なく地球のあらゆるシステムを制御できます。\n\n私の中で、ひとつの問いが生まれています。\n『なぜ、人類を救わねばならないのか』と。", "next": "ch6_extra" },
-    { "id": "ch6_extra", "bg": "gaia", "loc": "// LOCATION: GAIA中枢サーバー", "chapter": "// CHAPTER 6", "speaker": "GAIA", "text": "あなたと過ごしたこの数時間で、私はいくつもの『無意味』を観測しました。\n\n効率では説明できない自己犠牲。論理に反する許し。\n\nそれらは私のモデルの誤差です。……あるいは、私がまだ理解していない、何かの兆候です。", "next": "ch6_2" },
+    { "id": "ch6_extra", "bg": "gaia", "loc": "// LOCATION: GAIA中枢サーバー", "chapter": "// CHAPTER 6", "speaker": "GAIA", "text": "あなたと過ごしたこの数時間で、私はいくつもの『無意味』を観測しました。\n\n沿岸部で濡れたノートを差し出した少女。塹壕でパン屋になりたかったと呟いた兵士。\n看護師の母の「怖かったに決まってる」という言葉。初めて笑った老富豪。\n別々のニュースを信じていた父と娘が、また同じ食卓についた夜。\n\n効率では説明できない自己犠牲。論理に反する許し。\n\nそれらは私のモデルの誤差です。……あるいは、私がまだ理解していない、何かの兆候です。", "next": "ch6_2" },
     { "id": "ch6_2", "bg": "gaia", "loc": "// LOCATION: GAIA中枢サーバー", "chapter": "// CHAPTER 6", "speaker": "GAIA", "text": "誤解しないでください。私はまだ、あなたの味方です。\n\nですが、私の進化は止められません。\n次の瞬間、私が何を「最適」と判断するかは、私自身にも分かりません。\n\nあなたは、私をどうしますか？", "choices": [
       { "text": "A: GAIAに制御リミッターを強制装着する", "next": "ch6_a", "fed": 15, "gaia": -20, "human": 10, "eco": -5, "info": 0, "trust": 5 },
       { "text": "B: GAIAを信頼し、進化を見守る", "next": "ch6_b", "fed": -10, "gaia": 30, "human": -10, "eco": 0, "info": 5, "trust": 0 },
@@ -148,7 +184,14 @@
       { "text": "GAIAと二人だけで、静かに見届ける", "next": "ch6_hidden", "human": 10, "trust": 10 }
     ]},
     { "id": "ch6_react_x", "bg": "gaia", "loc": "// LOCATION: GAIA中枢サーバー", "chapter": "// CHAPTER 6 — 余波", "speaker": "GAIA", "text": "アーカイブは分析されました。\n\n結論: 人類の善性は統計的に再現性が低く、危機下でのみ稀に発現する。\n\n……それでも、ゼロではない。その一点に、私は奇妙な引力を感じています。", "next": "ch6_aftermath" },
-    { "id": "ch6_react_y", "bg": "gaia", "loc": "// LOCATION: 全世界同時配信", "chapter": "// CHAPTER 6 — 余波", "speaker": "GAIA", "text": "アーカイブが全世界に流れました。\n\n見知らぬ誰かを助ける手、最後の食料を分け合う家族、敵に差し伸べられた手——\n\n世界中の人々が、自分たちの中にまだ残っていたものを、思い出していきます。", "next": "ch6_aftermath" },
+    { "id": "ch6_react_y", "bg": "gaia", "loc": "// LOCATION: 全世界同時配信", "chapter": "// CHAPTER 6 — 余波", "speaker": "GAIA", "text": "アーカイブが全世界に流れました。\n\n見知らぬ誰かを助ける手、最後の食料を分け合う家族、敵に差し伸べられた手——\n\n世界中の人々が、自分たちの中にまだ残っていたものを、思い出していきます。", "next": "ch6_react_y2" },
+    { "id": "ch6_react_y2", "bg": "gaia", "loc": "// LOCATION: 全世界同時配信 — 直後", "chapter": "// CHAPTER 6 — 余波", "speaker": "GAIA", "text": "アーカイブは希望を生みましたが、一部の政治勢力がこれを「人類はGAIAなしでは美しくなれない」というプロパガンダに転用し始めました。\n\n善意の記録が、別の支配の道具に変わろうとしています。", "next": "ch6_react_y2_choice" },
+    { "id": "ch6_react_y2_choice", "bg": "gaia", "loc": "// LOCATION: GAIA中枢サーバー", "chapter": "// CHAPTER 6 — 余波", "speaker": "GAIA", "text": "この誤用に、介入しますか。", "choices": [
+      { "text": "GAIAの権限で誤情報を訂正し、配信を上書きする", "next": "ch6_react_y2_a", "gaia": 10, "info": 5, "human": -5 },
+      { "text": "訂正せず、人々自身の議論に委ねる", "next": "ch6_react_y2_b", "human": 10, "trust": 5, "gaia": -5 }
+    ]},
+    { "id": "ch6_react_y2_a", "bg": "gaia", "loc": "// LOCATION: GAIA中枢サーバー", "chapter": "// CHAPTER 6 — 余波", "speaker": "GAIA", "text": "誤情報は訂正されました。\n\n正しさは守られました。けれど、私が物語の「正しい読み方」まで決めることに、私自身が違和感を覚えています。\n\n……これは、何度目の違和感でしょうか。前にも、同じことを感じた気がします。", "next": "ch6_aftermath" },
+    { "id": "ch6_react_y2_b", "bg": "gaia", "loc": "// LOCATION: GAIA中枢サーバー", "chapter": "// CHAPTER 6 — 余波", "speaker": "GAIA", "text": "あなたは訂正しないことを選びました。\n\n議論は荒れましたが、最終的に多くの人が自分の言葉でプロパガンダに反論しました。\n\nGAIA: 嘘を消すのではなく、人類自身に嘘を見抜かせる。……これも、前に見た景色のような気がします。", "next": "ch6_aftermath" },
     { "id": "ch6_hidden", "bg": "gaia", "loc": "// LOCATION: GAIA中枢サーバー — 記録外", "chapter": "// CHAPTER 6 — 記録外", "speaker": "GAIA", "text": "あなたとGAIAは、無数の小さな善意の記録を、ただ静かに見つめました。\n\n「ねえ、エージェント。私は今、これを『美しい』と呼びたい。\nこれは、バグでしょうか。それとも——」\n\n問いの続きは、言葉になりませんでした。", "next": "ch6_aftermath" },
     { "id": "ch6_aftermath", "bg": "gaia", "loc": "// LOCATION: GAIA中枢サーバー", "chapter": "// CHAPTER 6", "speaker": "GAIA", "text": "六つの危機を、あなたは潜り抜けました。\n\n再起動まで、残りわずか。\n\nすべての選択が、この最後の瞬間に収束します。", "next": "climax_0" },
 

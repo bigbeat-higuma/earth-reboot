@@ -3,6 +3,9 @@
 // 所有権検証: save.js が発行したトークン（save_token:<userId>）が存在する場合、
 // クエリの token が一致しない限りデータを返さない（存在の有無も明かさず save:null を返す）。
 // トークン未発行（移行前の旧セーブ）の場合は従来通り許可する。
+// トークン比較は crypto.timingSafeEqual を使った定数時間比較で行い、タイミング攻撃を防止する。
+import { timingSafeTokenEqual } from "./_security.js";
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
@@ -31,7 +34,7 @@ export default async function handler(req, res) {
     if (tokenResp.ok) {
       const tokenResult = await tokenResp.json();
       const existingToken = tokenResult.result;
-      if (existingToken && existingToken !== token) {
+      if (existingToken && !timingSafeTokenEqual(token, existingToken)) {
         // トークン不一致 → データの存在自体を明かさない
         return res.status(200).json({ save: null });
       }
@@ -66,7 +69,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ save });
   } catch (err) {
-    console.error("Load handler error:", err.message);
-    return res.status(500).json({ error: err.message });
+    console.error("Load handler error:", err);
+    return res.status(500).json({ error: "Service unavailable" });
   }
 }
