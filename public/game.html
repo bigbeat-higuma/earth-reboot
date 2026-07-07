@@ -474,6 +474,7 @@ body::after {
 <div id="header">
   <div id="header-title">// EARTH REBOOT — LAST AGENT</div>
   <div style="display:flex;align-items:center;gap:10px;">
+    <button id="mute-btn" onclick="toggleMute()" title="BGM/SE" style="background:transparent;border:1px solid var(--red-dim);color:var(--text-dim);font-size:.85rem;padding:2px 6px;cursor:pointer;line-height:1;">🔊</button>
     <button id="save-btn" onclick="manualSave()" style="background:transparent;border:1px solid var(--red-dim);color:var(--red-dim);font-family:var(--mono);font-size:.55rem;letter-spacing:.15em;padding:3px 8px;cursor:pointer;transition:all .2s;">[ SAVE ]</button>
     <div id="countdown-header">T-<span id="header-timer">12:00:00</span></div>
   </div>
@@ -656,7 +657,74 @@ const BG_IMAGES = {
   transcend:  '/images/transcend.svg',
   loop:       '/images/loop.svg',
   human:      '/images/human.svg',
+  economy:    '/images/economy.jpg',
+  society:    '/images/society.jpg',
 };
+
+const BGM_FOR_BG = {
+  gaia: 'gaia', flood: 'flood', war: 'war', virus: 'virus',
+  economy: 'economy', society: 'society', dark: 'economy', hope: 'hope',
+};
+const GOOD_ENDINGS = new Set(['end_good', 'end_transcend', 'end_human']);
+
+let audioMuted = localStorage.getItem('earth_reboot_mute') === '1';
+let currentBgmTrack = null;
+let bgmAudio = null;
+const sfxPool = {};
+
+function initAudio() {
+  if (bgmAudio) return;
+  bgmAudio = document.createElement('audio');
+  bgmAudio.loop = true;
+  bgmAudio.volume = 0.32;
+  document.body.appendChild(bgmAudio);
+  updateMuteBtn();
+}
+
+function updateMuteBtn() {
+  const btn = document.getElementById('mute-btn');
+  if (btn) btn.textContent = audioMuted ? '🔇' : '🔊';
+}
+
+function toggleMute() {
+  audioMuted = !audioMuted;
+  localStorage.setItem('earth_reboot_mute', audioMuted ? '1' : '0');
+  updateMuteBtn();
+  if (audioMuted) {
+    if (bgmAudio) { bgmAudio.pause(); bgmAudio.removeAttribute('src'); }
+    currentBgmTrack = null;
+  } else if (currentBg) {
+    playBgmForBg(currentBg);
+  }
+}
+
+function playBgm(track) {
+  initAudio();
+  if (audioMuted || !track || track === currentBgmTrack) return;
+  const src = `/audio/bgm/${track}.mp3`;
+  const probe = new Audio();
+  probe.oncanplaythrough = () => {
+    currentBgmTrack = track;
+    bgmAudio.src = src;
+    bgmAudio.play().catch(() => {});
+  };
+  probe.onerror = () => {};
+  probe.src = src;
+}
+
+function playBgmForBg(bg) {
+  const track = BGM_FOR_BG[bg];
+  if (track) playBgm(track);
+}
+
+function playSfx(name) {
+  initAudio();
+  if (audioMuted) return;
+  const src = `/audio/sfx/${name}.mp3`;
+  const a = new Audio(src);
+  a.volume = name === 'choice' ? 0.45 : 0.55;
+  a.play().catch(() => {});
+}
 
 const BG_COLORS = {
   gaia:  { bg: '#020008', lines: '#001133', accent: '#0044cc' },
@@ -665,6 +733,8 @@ const BG_COLORS = {
   virus: { bg: '#020800', lines: '#112200', accent: '#44aa00' },
   hope:  { bg: '#000800', lines: '#002200', accent: '#00cc44' },
   dark:  { bg: '#000000', lines: '#110000', accent: '#440000' },
+  economy: { bg: '#080400', lines: '#221100', accent: '#cc8800' },
+  society: { bg: '#060008', lines: '#1a0022', accent: '#8844cc' },
 };
 
 // 画像をプリロードしてキャッシュ
@@ -683,6 +753,7 @@ function drawBg(type) {
 
   if (type === currentBg) return;
   currentBg = type;
+  playBgmForBg(type);
 
   if (BG_IMAGES[type]) {
     // 画像あり → imgタグで表示、canvasをフェードアウト
@@ -839,6 +910,8 @@ function showScene(id) {
 
   drawBg(scene.bg);
 
+  if (/^daily_slot_ch/.test(id)) playSfx('alert');
+
   const elLabel   = document.getElementById('scene-label');
   const elChapter = document.getElementById('chapter-text');
   const elSpeaker = document.getElementById('speaker');
@@ -857,7 +930,7 @@ function showScene(id) {
         const btn = document.createElement('button');
         btn.className = 'choice-btn fade-in';
         btn.textContent = c.text;
-        btn.onclick = () => makeChoice(c, idx);
+        btn.onclick = () => { playSfx('choice'); makeChoice(c, idx); };
         choices.appendChild(btn);
       });
     });
@@ -909,7 +982,7 @@ function detectLoopEnding() {
 
 function onTap() {
   if (isTyping) { skipType(); return; }
-  if (currentScene && currentScene.next) showScene(currentScene.next);
+  if (currentScene && currentScene.next) { playSfx('transition'); showScene(currentScene.next); }
 }
 
 function updateStats() {
@@ -941,6 +1014,8 @@ function showEnding(type) {
   }
 
   el.style.display = 'flex';
+  playSfx('ending');
+  playBgm(GOOD_ENDINGS.has(type) ? 'ending_hope' : 'ending_bad');
 }
 
 // ── セーブ・ロード ──────────────────────────────
@@ -996,7 +1071,7 @@ async function saveGame(auto = false) {
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
       if (data.token) setSaveToken(data.token); // 初回保存時に発行されたトークンを保存
-      if (!auto) showSaveNotice('SAVED ✓', 'var(--green)');
+      if (!auto) { showSaveNotice('SAVED ✓', 'var(--green)'); playSfx('save'); }
     } else {
       if (!auto) showSaveNotice('ERROR', 'var(--red-bright)');
     }
@@ -1070,6 +1145,8 @@ async function startGame() {
     if (startBtn) startBtn.textContent = '▶ START MISSION';
   }
   document.getElementById('opening').style.display = 'none';
+  playSfx('alert');
+  playBgm('opening');
   startTimer();
   showScene('intro_1');
 }
