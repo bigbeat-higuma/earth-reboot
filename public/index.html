@@ -30,8 +30,8 @@
   body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:998;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.08) 2px,rgba(0,0,0,.08) 4px);}
 
   /* 言語切り替えボタン */
-  .lang-switch{position:fixed;top:16px;left:16px;z-index:1000;display:flex;gap:4px;}
-  .lang-btn{background:transparent;border:1px solid rgba(139,0,0,.5);color:var(--text);font-family:var(--mono);font-size:.65rem;letter-spacing:.15em;padding:4px 10px;cursor:pointer;transition:all .2s;}
+  .lang-switch{position:fixed;top:12px;left:8px;z-index:1000;display:flex;flex-wrap:wrap;gap:3px;max-width:min(280px,calc(100vw - 24px));}
+  .lang-btn{background:transparent;border:1px solid rgba(139,0,0,.5);color:var(--text);font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;padding:3px 8px;cursor:pointer;transition:all .2s;}
   .lang-btn.active{border-color:var(--ember);color:var(--bright);background:rgba(139,0,0,.2);}
   .lang-btn:hover{border-color:var(--glow);color:var(--bright);}
 
@@ -229,8 +229,8 @@
   .world-clock-time{font-family:'Bebas Neue',sans-serif;font-size:clamp(.85rem,2.5vw,1.3rem);color:var(--text);letter-spacing:.1em;text-shadow:0 0 8px rgba(204,51,0,.4);}
   .world-clock-date{font-size:.45rem;color:rgba(120,60,60,.6);letter-spacing:.1em;margin-top:2px;}
 
-  /* 都市選択ボタン */
-  .city-switch{position:fixed;top:44px;left:8px;z-index:1000;display:flex;flex-direction:column;gap:4px;}
+  /* 都市選択ボタン（言語トグルの下） */
+  .city-switch{position:fixed;top:72px;left:8px;z-index:1000;display:flex;flex-direction:column;gap:4px;}
   .city-btn{background:rgba(5,0,0,.8);border:1px solid rgba(139,0,0,.4);color:rgba(180,80,80,.7);font-family:var(--mono);font-size:.5rem;letter-spacing:.1em;padding:4px 8px;cursor:pointer;transition:all .2s;text-align:left;white-space:nowrap;}
   .city-btn:hover{border-color:var(--ember);color:var(--text);}
   .city-btn.active{border-color:var(--glow);color:var(--bright);background:rgba(139,0,0,.2);}
@@ -347,10 +347,13 @@ function updateShareText() {
 </head>
 <body>
 
-<!-- 言語切り替えボタン（後方互換） -->
+<!-- 言語切り替えボタン -->
 <div class="lang-switch">
-  <button class="lang-btn active" id="btn-jp" onclick="setLang('ja')">JP</button>
+  <button class="lang-btn" id="btn-ja" onclick="setLang('ja')">JP</button>
   <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-zh" onclick="setLang('zh')">中</button>
+  <button class="lang-btn" id="btn-de" onclick="setLang('de')">DE</button>
+  <button class="lang-btn" id="btn-fr" onclick="setLang('fr')">FR</button>
 </div>
 
 <!-- 都市選択UI -->
@@ -463,6 +466,60 @@ function updateShareText() {
     </div>
   </div>
 
+  <!-- AI解析（価値提示を先に） -->
+  <div class="panel">
+    <div class="panel-label" id="lbl-ai-title">// AI解析ログ — 地球危機指数</div>
+    <div class="ai-status"><div class="ai-dot"></div><div class="ai-status-text" id="ai-status-label">// AI解析システム接続中...</div></div>
+    <div id="ai-summary">世界情勢を解析しています...</div>
+    <div class="key-factors" id="key-factors"></div>
+    <div class="threat-meters">
+      <div class="threat-item">
+        <div class="threat-header" onclick="toggleEvidence('geo')">
+          <div class="threat-name" id="lbl-t1">地政学的緊張</div>
+          <div class="threat-right"><div class="threat-value" id="t1v">0%</div><div class="threat-arrow" id="arrow-geo">▶</div></div>
+        </div>
+        <div class="threat-bar-bg"><div class="threat-bar-fill" id="t1" style="width:0%"></div></div>
+        <div class="evidence-box" id="ev-geo"><div class="evidence-list" id="evl-geo"><div class="evidence-loading">// データ読み込み中...</div></div></div>
+      </div>
+      <div class="threat-item">
+        <div class="threat-header" onclick="toggleEvidence('env')">
+          <div class="threat-name" id="lbl-t2">環境崩壊指数</div>
+          <div class="threat-right"><div class="threat-value" id="t2v">0%</div><div class="threat-arrow" id="arrow-env">▶</div></div>
+        </div>
+        <div class="threat-bar-bg"><div class="threat-bar-fill" id="t2" style="width:0%"></div></div>
+        <div class="evidence-box" id="ev-env"><div class="evidence-list" id="evl-env"><div class="evidence-loading">// データ読み込み中...</div></div></div>
+      </div>
+      <div class="threat-item">
+        <div class="threat-header" onclick="toggleEvidence('eco')">
+          <div class="threat-name" id="lbl-t3">経済システム不安</div>
+          <div class="threat-right"><div class="threat-value" id="t3v">0%</div><div class="threat-arrow" id="arrow-eco">▶</div></div>
+        </div>
+        <div class="threat-bar-bg"><div class="threat-bar-fill" id="t3" style="width:0%"></div></div>
+        <div class="evidence-box" id="ev-eco"><div class="evidence-list" id="evl-eco"><div class="evidence-loading">// データ読み込み中...</div></div></div>
+      </div>
+      <div class="threat-item">
+        <div class="threat-header" onclick="toggleEvidence('soc')">
+          <div class="threat-name" id="lbl-t4">社会的混乱度</div>
+          <div class="threat-right"><div class="threat-value" id="t4v">0%</div><div class="threat-arrow" id="arrow-soc">▶</div></div>
+        </div>
+        <div class="threat-bar-bg"><div class="threat-bar-fill" id="t4" style="width:0%"></div></div>
+        <div class="evidence-box" id="ev-soc"><div class="evidence-list" id="evl-soc"><div class="evidence-loading">// データ読み込み中...</div></div></div>
+      </div>
+    </div>
+    <div class="cache-info">
+      <span class="cache-badge" id="cache-badge">--</span>
+      <span class="cache-next" id="cache-next">--</span>
+    </div>
+    <div style="text-align:center;margin-top:16px;">
+      <button class="reload-btn" id="reload-btn" onclick="runAnalysis(true)">⟳ 世界情勢を強制再解析する</button>
+    </div>
+    <div class="footer-note" id="last-updated">最終解析: —</div>
+  <div class="share-row">
+    <button class="share-btn x-btn" onclick="shareToX()">𝕏 Xに投稿する</button>
+    <button class="share-btn" onclick="copyUrl()">🔗 URLをコピー</button>
+  </div>
+  </div>
+
   <!-- ゲームシミュレーション CTA バナー -->
   <div class="panel" style="border-color:rgba(204,51,0,.5);background:rgba(20,0,0,.8);text-align:center;">
     <div class="panel-label red">// SIMULATION</div>
@@ -540,59 +597,6 @@ function updateShareText() {
     <button class="notify-btn" id="notify-btn" onclick="togglePushSubscription()">
       🔔 <span id="notify-btn-text">地球の危機を通知で受け取る</span>
     </button>
-  </div>
-
-  <div class="panel">
-    <div class="panel-label" id="lbl-ai-title">// AI解析ログ — 地球危機指数</div>
-    <div class="ai-status"><div class="ai-dot"></div><div class="ai-status-text" id="ai-status-label">// AI解析システム接続中...</div></div>
-    <div id="ai-summary">世界情勢を解析しています...</div>
-    <div class="key-factors" id="key-factors"></div>
-    <div class="threat-meters">
-      <div class="threat-item">
-        <div class="threat-header" onclick="toggleEvidence('geo')">
-          <div class="threat-name" id="lbl-t1">地政学的緊張</div>
-          <div class="threat-right"><div class="threat-value" id="t1v">0%</div><div class="threat-arrow" id="arrow-geo">▶</div></div>
-        </div>
-        <div class="threat-bar-bg"><div class="threat-bar-fill" id="t1" style="width:0%"></div></div>
-        <div class="evidence-box" id="ev-geo"><div class="evidence-list" id="evl-geo"><div class="evidence-loading">// データ読み込み中...</div></div></div>
-      </div>
-      <div class="threat-item">
-        <div class="threat-header" onclick="toggleEvidence('env')">
-          <div class="threat-name" id="lbl-t2">環境崩壊指数</div>
-          <div class="threat-right"><div class="threat-value" id="t2v">0%</div><div class="threat-arrow" id="arrow-env">▶</div></div>
-        </div>
-        <div class="threat-bar-bg"><div class="threat-bar-fill" id="t2" style="width:0%"></div></div>
-        <div class="evidence-box" id="ev-env"><div class="evidence-list" id="evl-env"><div class="evidence-loading">// データ読み込み中...</div></div></div>
-      </div>
-      <div class="threat-item">
-        <div class="threat-header" onclick="toggleEvidence('eco')">
-          <div class="threat-name" id="lbl-t3">経済システム不安</div>
-          <div class="threat-right"><div class="threat-value" id="t3v">0%</div><div class="threat-arrow" id="arrow-eco">▶</div></div>
-        </div>
-        <div class="threat-bar-bg"><div class="threat-bar-fill" id="t3" style="width:0%"></div></div>
-        <div class="evidence-box" id="ev-eco"><div class="evidence-list" id="evl-eco"><div class="evidence-loading">// データ読み込み中...</div></div></div>
-      </div>
-      <div class="threat-item">
-        <div class="threat-header" onclick="toggleEvidence('soc')">
-          <div class="threat-name" id="lbl-t4">社会的混乱度</div>
-          <div class="threat-right"><div class="threat-value" id="t4v">0%</div><div class="threat-arrow" id="arrow-soc">▶</div></div>
-        </div>
-        <div class="threat-bar-bg"><div class="threat-bar-fill" id="t4" style="width:0%"></div></div>
-        <div class="evidence-box" id="ev-soc"><div class="evidence-list" id="evl-soc"><div class="evidence-loading">// データ読み込み中...</div></div></div>
-      </div>
-    </div>
-    <div class="cache-info">
-      <span class="cache-badge" id="cache-badge">--</span>
-      <span class="cache-next" id="cache-next">--</span>
-    </div>
-    <div style="text-align:center;margin-top:16px;">
-      <button class="reload-btn" id="reload-btn" onclick="runAnalysis(true)">⟳ 世界情勢を強制再解析する</button>
-    </div>
-    <div class="footer-note" id="last-updated">最終解析: —</div>
-  <div class="share-row">
-    <button class="share-btn x-btn" onclick="shareToX()">𝕏 Xに投稿する</button>
-    <button class="share-btn" onclick="copyUrl()">🔗 URLをコピー</button>
-  </div>
   </div>
 
   <div class="panel log-panel">
@@ -811,13 +815,7 @@ const T = {
   }
 };
 
-let lang = localStorage.getItem("lang") || "ja";
-const DAYS_JP = ["日","月","火","水","木","金","土"];
-const DAYS_EN = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const DAYS_DE = ["So","Mo","Di","Mi","Do","Fr","Sa"];
-const DAYS_FR = ["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
-const DAYS_ZH = ["日","一","二","三","四","五","六"];
-let rebootTarget=null,analysisBaseTime=null,totalSpanMs=null,selectedAmount=1000;
+const LANG_DEFAULT_CITY = { ja: "tokyo", zh: "beijing", en: "newyork", fr: "paris", de: "berlin" };
 
 // 都市設定（言語・タイムゾーン対応）
 const CITIES = {
@@ -830,19 +828,81 @@ const CITIES = {
   berlin:  { id: 'berlin',  label: 'BERLIN',   tz: 'Europe/Berlin',       lang: 'de', flag: '🇩🇪' },
 };
 
-let currentCity = localStorage.getItem("city") || "tokyo";
+function detectBrowserLang() {
+  const raw = (navigator.language || navigator.userLanguage || "ja").toLowerCase();
+  if (raw.startsWith("ja")) return "ja";
+  if (raw.startsWith("zh")) return "zh";
+  if (raw.startsWith("de")) return "de";
+  if (raw.startsWith("fr")) return "fr";
+  if (raw.startsWith("en")) return "en";
+  return "en"; // 未知言語は海外向けに英語
+}
+
+function resolveInitialLang() {
+  const fromUrl = new URLSearchParams(location.search).get("lang");
+  if (fromUrl && T[fromUrl]) return fromUrl;
+  const stored = localStorage.getItem("lang");
+  if (stored && T[stored]) return stored;
+  return detectBrowserLang();
+}
+
+function resolveInitialCity(forLang) {
+  const stored = localStorage.getItem("city");
+  if (stored && CITIES[stored] && CITIES[stored].lang === forLang) return stored;
+  return LANG_DEFAULT_CITY[forLang] || "tokyo";
+}
+
+let lang = resolveInitialLang();
+const DAYS_JP = ["日","月","火","水","木","金","土"];
+const DAYS_EN = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const DAYS_DE = ["So","Mo","Di","Mi","Do","Fr","Sa"];
+const DAYS_FR = ["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
+const DAYS_ZH = ["日","一","二","三","四","五","六"];
+let rebootTarget=null,analysisBaseTime=null,totalSpanMs=null,selectedAmount=1000;
+
+let currentCity = resolveInitialCity(lang);
+localStorage.setItem("lang", lang);
+localStorage.setItem("city", currentCity);
 
 function t(key, ...args) {
   const v = T[lang][key];
   return typeof v === "function" ? v(...args) : v;
 }
 
+function syncLangButtons() {
+  ["ja","en","zh","de","fr"].forEach(l => {
+    const btn = document.getElementById("btn-" + l);
+    if (btn) btn.classList.toggle("active", lang === l);
+  });
+  document.documentElement.lang = lang === "zh" ? "zh-CN" : lang;
+}
+
+function syncCityButtons() {
+  Object.keys(CITIES).forEach(id => {
+    const btn = document.getElementById("city-btn-" + id);
+    if (btn) btn.classList.toggle("active", id === currentCity);
+  });
+}
+
 function setLang(l) {
+  if (!T[l]) return;
+  const prevLang = lang;
   lang = l;
   localStorage.setItem("lang", l);
-  document.getElementById("btn-jp").classList.toggle("active", l==="ja");
-  document.getElementById("btn-en").classList.toggle("active", l==="en");
+
+  // 言語に合わない都市ならデフォルト都市へ
+  if (!CITIES[currentCity] || CITIES[currentCity].lang !== l) {
+    currentCity = LANG_DEFAULT_CITY[l] || "newyork";
+    localStorage.setItem("city", currentCity);
+  }
+
+  syncLangButtons();
+  syncCityButtons();
   applyLang();
+
+  if (prevLang !== lang && typeof runAnalysis === "function") {
+    runAnalysis(false);
+  }
 }
 
 // 都市選択で言語と時刻を切り替え
@@ -855,20 +915,11 @@ function setCity(cityId) {
   localStorage.setItem("city", cityId);
   localStorage.setItem("lang", lang);
 
-  // 都市ボタンのactive状態を更新
-  Object.keys(CITIES).forEach(id => {
-    const btn = document.getElementById('city-btn-' + id);
-    if (btn) btn.classList.toggle('active', id === cityId);
-  });
-
-  // 旧JP/ENボタンも同期
-  document.getElementById("btn-jp").classList.toggle("active", lang==="ja");
-  document.getElementById("btn-en").classList.toggle("active", lang==="en");
-
+  syncCityButtons();
+  syncLangButtons();
   applyLang();
 
-  // 言語が変わったらAI解析を再取得
-  if (prevLang !== lang && typeof runAnalysis === 'function') {
+  if (prevLang !== lang && typeof runAnalysis === "function") {
     runAnalysis(false);
   }
 }
@@ -1195,6 +1246,8 @@ let mi=0;const lbl=document.getElementById("loading-text");
 const iv=setInterval(()=>{lbl.textContent=MSGS[Math.min(mi++,MSGS.length-1)];},700);
 
 applyLang();
+syncLangButtons();
+syncCityButtons();
 updateDelayPreview(1000);
 
 Promise.all([runAnalysis(false),loadDonationStats()]).finally(()=>{
@@ -1239,6 +1292,11 @@ function updateEvidence(evidence) {
 
 
 // ── SNSシェア ──────────────────────────────
+function siteUrlForShare() {
+  if (lang === "ja") return "https://www.earth-re-boot.com";
+  return `https://www.earth-re-boot.com/?lang=${lang}`;
+}
+
 function shareToX() {
   if (!rebootTarget) { alert(lang==='ja'?'解析完了後にシェアできます':'Please wait for analysis to complete'); return; }
   const diff = rebootTarget - new Date();
@@ -1246,12 +1304,12 @@ function shareToX() {
   const textJa = `地球の再起動まで約${years}年。実際の世界のニュースをAIが分析し、地球終末時計のように毎日変化するカウントダウン。 #地球再起動時間`;
   const textEn = `The Earth will reboot in ~${years} years. A Doomsday Clock-style countdown that changes daily based on real-world news analyzed by AI. #EarthReboot`;
   const text = lang === 'ja' ? textJa : textEn;
-  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent('https://www.earth-re-boot.com')}`;
+  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(siteUrlForShare())}`;
   window.open(url, '_blank');
 }
 
 function copyUrl() {
-  navigator.clipboard.writeText('https://www.earth-re-boot.com').then(() => {
+  navigator.clipboard.writeText(siteUrlForShare()).then(() => {
     const btn = document.querySelector('.share-btn:not(.x-btn)');
     const orig = btn.textContent;
     btn.textContent = lang==='ja' ? '✓ コピーしました' : '✓ Copied!';
