@@ -39,14 +39,15 @@ const ADMIN_SECRET = process.env.ADMIN_SECRET;
 const IMAGE_PROMPTS = {
   economy: "Abandoned stock exchange trading floor at night, shattered screens showing red crash graphs, homeless crowds outside skyscrapers, dystopian cyberpunk, cinematic wide shot, no text, photorealistic",
   society: "Divided city street at dusk, opposing protest groups with conflicting holographic news feeds, broken trust atmosphere, dystopian near-future, cinematic, no text, photorealistic",
-  federation: "Earth from orbit under unified global government, cold blue order, geometric grid overlay, cinematic sci-fi, no text",
-  anarchy: "Collapsed megacity with fires, no central authority, chaotic orange-red sky, dystopian, cinematic, no text",
-  ecocide: "Dead forest and dried riverbed, extreme heat haze, lifeless brown landscape, climate collapse, cinematic, no text",
-  nuclear: "Mushroom cloud on distant horizon, silhouettes of ruins, apocalyptic red sky, cinematic, no text",
-  pandemic: "Empty hospital corridor, green emergency lighting, abandoned stretchers, cinematic, no text",
-  transcend: "Human consciousness merging with light network, abstract cosmic purple-gold, cinematic sci-fi art, no text",
-  loop: "Infinite recursive corridor of identical doorways, surreal glitch aesthetic, cinematic, no text",
-  human: "Single candle in dark room, fragile warmth, intimate close shot, cinematic, no text",
+  federation: "Earth from orbit under a cold unified global government, blue geometric surveillance grid over continents, authoritarian sci-fi order, cinematic wide shot, no text, photorealistic",
+  anarchy: "Collapsed megacity with street fires and broken towers, no central authority, chaotic orange-red sky, dystopian riot aftermath, cinematic wide shot, no text, photorealistic",
+  ecocide: "Dead forest and dried cracked riverbed under extreme heat haze, lifeless brown landscape, climate collapse, cinematic wide shot, no text, photorealistic",
+  nuclear: "Distant mushroom cloud beyond ruined city silhouettes, ash falling, apocalyptic red-gray sky, cinematic wide shot, no text, photorealistic",
+  pandemic: "Empty hospital corridor with green emergency lighting, abandoned stretchers and PPE, eerie silence, cinematic wide shot, no text, photorealistic",
+  transcend: "Human silhouette dissolving into a luminous neural light network, purple-gold cosmic fusion of mind and AI, cinematic sci-fi, no text, photorealistic",
+  loop: "Infinite recursive corridor of identical glowing doorways repeating forever, surreal time-loop atmosphere, cinematic wide shot, no text, photorealistic",
+  human: "Single candle flame in a dark empty room, fragile human warmth against darkness, intimate cinematic close shot, no text, photorealistic",
+  dark: "Pitch-black command bunker corridor lit only by sparse red emergency strips, void-like silence between crises, moody cinematic wide shot, no text, photorealistic",
 };
 
 const MUSIC_PROMPTS = {
@@ -157,6 +158,19 @@ async function batchPriority() {
   console.log("Done.");
 }
 
+async function batchEndings() {
+  const keys = [
+    "federation", "anarchy", "ecocide", "nuclear",
+    "pandemic", "transcend", "loop", "human", "dark",
+  ];
+  console.log("=== Ending + dark backgrounds ===");
+  for (const key of keys) {
+    console.log(`Generating image: ${key}`);
+    await saveImage(key, IMAGE_PROMPTS[key]);
+  }
+  console.log("Done.");
+}
+
 async function main() {
   const { positional, duration } = parseArgs(process.argv.slice(2));
   const [cmd, key] = positional;
@@ -166,6 +180,7 @@ async function main() {
   node scripts/generate-assets.mjs music <key> [--duration 45]
   node scripts/generate-assets.mjs sfx <key> [--duration 2]
   node scripts/generate-assets.mjs batch-priority
+  node scripts/generate-assets.mjs batch-endings
 
 Keys — image: ${Object.keys(IMAGE_PROMPTS).join(", ")}
 Keys — music: ${Object.keys(MUSIC_PROMPTS).join(", ")}
@@ -174,6 +189,10 @@ Keys — sfx: ${Object.keys(SFX_PROMPTS).join(", ")}`);
   }
   if (cmd === "batch-priority") {
     await batchPriority();
+    return;
+  }
+  if (cmd === "batch-endings") {
+    await batchEndings();
     return;
   }
   if (cmd === "image") {
