@@ -18,3 +18,12 @@ _*.mjs
 
 .vercel
 .env*
+
+# 社内向けドキュメント（本リポジトリは public のためコミットしない）
+# - SECURITY_AUDIT.md: 未修正の脆弱性と攻撃手順を含む
+# - scenario_expansion_proposal.md: 隠しエンディング等のネタバレを含む
+# - OPERATIONS_ROADMAP.md: 運用計画の内部資料
+# 正本は Obsidian の project/ 配下で管理する
+SECURITY_AUDIT.md
+OPERATIONS_ROADMAP.md
+docs/scenario_expansion_proposal.md

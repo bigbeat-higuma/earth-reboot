@@ -7,6 +7,10 @@
 // 曖昧な短い単語（"WHO" 等）を含めると無関係な記事が混入する。
 // そのため取得後に「テーマ関連語を含むか」で再フィルタし、
 // マッチしない場合はそのカテゴリを空（= その日は見出し注入なし）として扱う。
+//
+// フィルタは2段構え:
+// - relevance: 主題語。単独でマッチすれば採用
+// - weak + context: 他分野でも使われる曖昧語。context 語との共起がある場合のみ採用
 
 // 章テーマ → NewsAPI 検索クエリ・対応する日次スロット・関連性チェック用正規表現
 export const CATEGORIES = [
@@ -18,7 +22,8 @@ export const CATEGORIES = [
   {
     key: "conflict", slot: "daily_slot_ch2", label: "紛争", theme: "国際紛争",
     q: '(war OR "military conflict" OR nuclear OR ceasefire OR sanctions OR airstrike)',
-    relevance: /(war|military|nuclear|ceasefire|sanction|airstrike|troops|missile|invasion|conflict)/i,
+    // 「strike」単独は労働争議と紛れるため、軍事的な言い回しに限定して拾う
+    relevance: /(war|military|nuclear|ceasefire|sanction|airstrike|air strike|troops|missile|invasion|conflict|strikes? (on|against)|threaten(s|ed)? to attack)/i,
   },
   {
     key: "virus", slot: "daily_slot_ch3", label: "感染症", theme: "感染症",
@@ -33,7 +38,11 @@ export const CATEGORIES = [
   {
     key: "social", slot: "daily_slot_ch5", label: "社会", theme: "社会分断",
     q: '(protest OR "social unrest" OR misinformation OR riot OR "civil unrest")',
-    relevance: /(protest|unrest|misinformation|disinformation|riot|civil disorder|polariz)/i,
+    relevance: /(protest|unrest|riot|civil disorder|polariz)/i,
+    // 「誤解を正す」系の科学・動物記事にも misinformation 等が使われるため
+    // （2026-08-08: ガラガラヘビの通説を扱う記事が CH5 に混入した）、社会文脈語との共起を必須にする
+    weak: /(misinformation|disinformation|conspiracy|rumou?rs?)/i,
+    context: /(election|voter|government|politic|social media|platform|society|societal|community|campaign|citizen|authorities|police|extremis|propaganda)/i,
   },
   {
     key: "ai", slot: "daily_slot_ch6", label: "AI", theme: "AIの台頭",
@@ -43,6 +52,14 @@ export const CATEGORIES = [
 ];
 
 function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
+
+// 記事がカテゴリのテーマに合致するか判定する
+export function isRelevant(cat, article) {
+  const text = `${article.title || ""} ${article.description || ""}`;
+  if (cat.relevance.test(text)) return true;
+  if (cat.weak && cat.weak.test(text)) return cat.context.test(text);
+  return false;
+}
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
@@ -60,10 +77,7 @@ async function fetchCategory(cat, apiKey) {
     const all = (data.articles || []).filter((a) => a && a.title && a.title !== "[Removed]");
 
     // 関連性フィルタ: タイトル+概要にテーマ語を含むものだけ採用
-    const relevant = all.filter((a) => {
-      const text = `${a.title} ${a.description || ""}`;
-      return cat.relevance.test(text);
-    });
+    const relevant = all.filter((a) => isRelevant(cat, a));
 
     const articles = relevant.slice(0, 5).map((a) => ({
       title: a.title.trim(),
