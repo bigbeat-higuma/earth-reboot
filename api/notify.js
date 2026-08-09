@@ -13,6 +13,7 @@
 import { Redis } from '@upstash/redis';
 import webpush from 'web-push';
 import { timingSafeTokenEqual } from './_security.js';
+import { postDailyUpdate } from './_x-post.js';
 
 // Redis 接続（2026-08-08 修正）:
 // 以前は Redis.fromEnv() を使っていたが、これは UPSTASH_REDIS_REST_URL / _TOKEN を参照する。
@@ -34,19 +35,65 @@ webpush.setVapidDetails(
 );
 
 // メインサイト（public/index.html）と同じ計算で再起動までの残り日数を求める
-async function getDaysUntilReboot() {
-  const cached = await redis.get(ANALYSIS_CACHE_KEY);
-  if (!cached) return null;
+function daysUntilReboot(analysis) {
+  if (!analysis) return null;
 
-  const years = parseFloat(cached.reboot_years_from_now);
+  const years = parseFloat(analysis.reboot_years_from_now);
   if (!Number.isFinite(years)) return null;
 
-  const analyzedAt = cached.analyzed_at ? new Date(cached.analyzed_at) : new Date();
+  const analyzedAt = analysis.analyzed_at ? new Date(analysis.analyzed_at) : new Date();
   if (Number.isNaN(analyzedAt.getTime())) return null;
 
   const target = analyzedAt.getTime() + years * 365.25 * 24 * 3600 * 1000;
   const days = Math.floor((target - Date.now()) / (1000 * 60 * 60 * 24));
   return days > 0 ? days : null;
+}
+
+// プッシュ通知の送信。購読者が居ない場合も含め、例外を投げずに結果を返す。
+async function sendPushNotifications(diffDays) {
+  const keys = await redis.smembers('push:subscribers');
+  if (!keys || keys.length === 0) return { sent: 0, failed: 0, reason: 'no subscribers' };
+  if (diffDays === null) {
+    // サイト表示と食い違う日数を送るより、送らない方が害が少ない
+    console.error('Notify: push skipped — 再起動までの残り日数を算出できませんでした');
+    return { sent: 0, failed: 0, reason: 'countdown unavailable' };
+  }
+
+  const payload = JSON.stringify({
+    title: '🌍 地球再起動時間',
+    // カウントダウンは実ニュース連動。寄付による延命は 2026-06-28 に廃止済みのため訴求しない
+    body: `地球の再起動まであと ${diffDays} 日。今日の世界のニュースが、この時間を動かしています。`,
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    url: SITE_URL,
+  });
+
+  let sent = 0;
+  let failed = 0;
+  const toRemove = [];
+
+  for (const key of keys) {
+    try {
+      const subStr = await redis.get(key);
+      if (!subStr) { toRemove.push(key); continue; }
+      const subscription = typeof subStr === 'string' ? JSON.parse(subStr) : subStr;
+      await webpush.sendNotification(subscription, payload);
+      sent++;
+    } catch (err) {
+      // 410 Gone = 購読解除済み → 削除
+      if (err.statusCode === 410 || err.statusCode === 404) {
+        toRemove.push(key);
+      }
+      failed++;
+    }
+  }
+
+  if (toRemove.length > 0) {
+    await redis.srem('push:subscribers', ...toRemove);
+    for (const key of toRemove) await redis.del(key);
+  }
+
+  return { sent, failed };
 }
 
 export default async function handler(req, res) {
@@ -66,54 +113,23 @@ export default async function handler(req, res) {
   }
 
   try {
-    const keys = await redis.smembers('push:subscribers');
-    if (!keys || keys.length === 0) {
-      return res.status(200).json({ message: 'No subscribers', sent: 0 });
+    const analysis = await redis.get(ANALYSIS_CACHE_KEY);
+    const diffDays = daysUntilReboot(analysis);
+
+    const push = await sendPushNotifications(diffDays);
+
+    // X への定期投稿。購読者ゼロでもここに到達させるため、プッシュ通知とは独立して実行する。
+    // 投稿しない条件（キー未設定・対象曜日外・投稿済み等）はすべてスキップ扱いで返る。
+    let x;
+    try {
+      x = await postDailyUpdate(redis, analysis);
+    } catch (err) {
+      // X側の失敗でCron全体を落とさない
+      console.error('X post error:', err);
+      x = { posted: false, reason: 'exception' };
     }
 
-    const diffDays = await getDaysUntilReboot();
-    if (diffDays === null) {
-      // サイト表示と食い違う日数を送るより、送らない方が害が少ない
-      console.error('Notify: skipped — 再起動までの残り日数を算出できませんでした');
-      return res.status(200).json({ message: 'Skipped: countdown unavailable', sent: 0 });
-    }
-
-    const payload = JSON.stringify({
-      title: '🌍 地球再起動時間',
-      // カウントダウンは実ニュース連動。寄付による延命は 2026-06-28 に廃止済みのため訴求しない
-      body: `地球の再起動まであと ${diffDays} 日。今日の世界のニュースが、この時間を動かしています。`,
-      icon: '/icon-192.png',
-      badge: '/icon-192.png',
-      url: SITE_URL,
-    });
-
-    let sent = 0;
-    let failed = 0;
-    const toRemove = [];
-
-    for (const key of keys) {
-      try {
-        const subStr = await redis.get(key);
-        if (!subStr) { toRemove.push(key); continue; }
-        const subscription = typeof subStr === 'string' ? JSON.parse(subStr) : subStr;
-        await webpush.sendNotification(subscription, payload);
-        sent++;
-      } catch (err) {
-        // 410 Gone = 購読解除済み → 削除
-        if (err.statusCode === 410 || err.statusCode === 404) {
-          toRemove.push(key);
-        }
-        failed++;
-      }
-    }
-
-    // 無効な購読者を削除
-    if (toRemove.length > 0) {
-      await redis.srem('push:subscribers', ...toRemove);
-      for (const key of toRemove) await redis.del(key);
-    }
-
-    return res.status(200).json({ message: 'Done', days: diffDays, sent, failed });
+    return res.status(200).json({ message: 'Done', days: diffDays, push, x });
   } catch (error) {
     console.error('Notify error:', error);
     return res.status(500).json({ error: 'Internal server error' });
