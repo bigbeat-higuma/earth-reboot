@@ -40,9 +40,12 @@ export const CATEGORIES = [
     q: '(protest OR "social unrest" OR misinformation OR riot OR "civil unrest")',
     relevance: /(protest|unrest|riot|civil disorder|polariz)/i,
     // 「誤解を正す」系の科学・動物記事にも misinformation 等が使われるため
-    // （2026-08-08: ガラガラヘビの通説を扱う記事が CH5 に混入した）、社会文脈語との共起を必須にする
+    // （2026-08-08: ガラガラヘビの通説を扱う記事が CH5 に混入した）、社会文脈語との共起を必須にする。
+    // context に police / authorities / community のような汎用語を入れると意味がない
+    // （上記の記事は "police officers ... have spread misinformation" で police に一致していた）。
+    // 社会分断そのものを指す語だけに絞る。
     weak: /(misinformation|disinformation|conspiracy|rumou?rs?)/i,
-    context: /(election|voter|government|politic|social media|platform|society|societal|community|campaign|citizen|authorities|police|extremis|propaganda)/i,
+    context: /(election|voter|politic|social media|propaganda|extremis|polari[sz]|far-right|far-left|hate speech|censorship|civil society)/i,
   },
   {
     key: "ai", slot: "daily_slot_ch6", label: "AI", theme: "AIの台頭",
@@ -53,12 +56,19 @@ export const CATEGORIES = [
 
 function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
 
-// 記事がカテゴリのテーマに合致するか判定する
-export function isRelevant(cat, article) {
+// 記事がカテゴリのテーマにどの程度合致するかを段階で返す
+//   2 = 主題語に一致（確実に該当）
+//   1 = 曖昧語＋文脈語に一致（該当の可能性が高いが確証はない）
+//   0 = 不一致
+export function relevanceTier(cat, article) {
   const text = `${article.title || ""} ${article.description || ""}`;
-  if (cat.relevance.test(text)) return true;
-  if (cat.weak && cat.weak.test(text)) return cat.context.test(text);
-  return false;
+  if (cat.relevance.test(text)) return 2;
+  if (cat.weak && cat.weak.test(text) && cat.context.test(text)) return 1;
+  return 0;
+}
+
+export function isRelevant(cat, article) {
+  return relevanceTier(cat, article) > 0;
 }
 
 function todayStr() {
@@ -76,8 +86,15 @@ async function fetchCategory(cat, apiKey) {
     const data = await res.json();
     const all = (data.articles || []).filter((a) => a && a.title && a.title !== "[Removed]");
 
-    // 関連性フィルタ: タイトル+概要にテーマ語を含むものだけ採用
-    const relevant = all.filter((a) => isRelevant(cat, a));
+    // 関連性フィルタ: タイトル+概要にテーマ語を含むものだけ採用。
+    // 各章のスロットには先頭1件だけが使われるため、曖昧語で拾った記事が1位に来ると
+    // 後続に本物の記事があってもスロットが汚染される。主題語に一致した記事を前に出す。
+    // sort は安定なので、同じ段階の中では NewsAPI の relevancy 順が保たれる。
+    const relevant = all
+      .map((a) => ({ a, tier: relevanceTier(cat, a) }))
+      .filter((x) => x.tier > 0)
+      .sort((x, y) => y.tier - x.tier)
+      .map((x) => x.a);
 
     const articles = relevant.slice(0, 5).map((a) => ({
       title: a.title.trim(),

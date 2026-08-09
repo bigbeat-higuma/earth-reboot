@@ -1,7 +1,31 @@
+// api/notify.js — 購読者へプッシュ通知を送る（日次Cron: 09:00 UTC = 18:00 JST）
+//
+// 認証: daily-build.js と同じく CRON_SECRET による Bearer 認証。
+// これが無いと誰でも POST で全購読者へ通知を配信できてしまうため必須。
+//
+// カウントダウンの出典（2026-08-08 修正）:
+// 以前は再起動日を 2038-10-05 に固定していたが、メインサイトのカウントダウンは
+// AI解析（/api/analyze）の reboot_years_from_now を analyzed_at 起点で換算した値であり、
+// 通知の日数がサイト表示と食い違っていた。ここでは analyze のキャッシュを直接読み、
+// public/index.html と同じ式で残り日数を算出する（Claude API は呼ばないので費用ゼロ）。
+// 値が取れない場合は「誤った日数を送るくらいなら送らない」方針でスキップする。
+
 import { Redis } from '@upstash/redis';
 import webpush from 'web-push';
+import { timingSafeTokenEqual } from './_security.js';
 
-const redis = Redis.fromEnv();
+// Redis 接続（2026-08-08 修正）:
+// 以前は Redis.fromEnv() を使っていたが、これは UPSTASH_REDIS_REST_URL / _TOKEN を参照する。
+// 本番に設定されているのは KV_REST_API_URL / _TOKEN のみで UPSTASH_* は存在しないため、
+// subscribe / notify は Redis 呼び出しのたびに失敗し、プッシュ通知は機能していなかった。
+// 他のエンドポイント（analyze / daily / save 等）と同じく明示的に KV_REST_API_* を渡す。
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL,
+  token: process.env.KV_REST_API_TOKEN,
+});
+
+const ANALYSIS_CACHE_KEY = 'analysis_cache_ja'; // analyze.js が書き込むキー
+const SITE_URL = 'https://www.earth-re-boot.com';
 
 webpush.setVapidDetails(
   process.env.VAPID_EMAIL,
@@ -9,29 +33,58 @@ webpush.setVapidDetails(
   process.env.VAPID_PRIVATE_KEY
 );
 
+// メインサイト（public/index.html）と同じ計算で再起動までの残り日数を求める
+async function getDaysUntilReboot() {
+  const cached = await redis.get(ANALYSIS_CACHE_KEY);
+  if (!cached) return null;
+
+  const years = parseFloat(cached.reboot_years_from_now);
+  if (!Number.isFinite(years)) return null;
+
+  const analyzedAt = cached.analyzed_at ? new Date(cached.analyzed_at) : new Date();
+  if (Number.isNaN(analyzedAt.getTime())) return null;
+
+  const target = analyzedAt.getTime() + years * 365.25 * 24 * 3600 * 1000;
+  const days = Math.floor((target - Date.now()) / (1000 * 60 * 60 * 24));
+  return days > 0 ? days : null;
+}
+
 export default async function handler(req, res) {
+  res.setHeader('Cache-Control', 'no-store');
+
   if (req.method !== 'POST' && req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Vercel Cron の認証。User-Agent は詐称できるため認証の根拠に使わない。
+  const cronSecret = process.env.CRON_SECRET;
+  if (cronSecret) {
+    const auth = req.headers['authorization'] || '';
+    if (!timingSafeTokenEqual(auth, `Bearer ${cronSecret}`)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+  }
+
   try {
-    // 購読者リストを取得
     const keys = await redis.smembers('push:subscribers');
     if (!keys || keys.length === 0) {
       return res.status(200).json({ message: 'No subscribers', sent: 0 });
     }
 
-    // 再起動日までの残り日数を計算
-    const rebootDate = new Date('2038-10-05T02:10:00');
-    const now = new Date();
-    const diffDays = Math.floor((rebootDate - now) / (1000 * 60 * 60 * 24));
+    const diffDays = await getDaysUntilReboot();
+    if (diffDays === null) {
+      // サイト表示と食い違う日数を送るより、送らない方が害が少ない
+      console.error('Notify: skipped — 再起動までの残り日数を算出できませんでした');
+      return res.status(200).json({ message: 'Skipped: countdown unavailable', sent: 0 });
+    }
 
     const payload = JSON.stringify({
       title: '🌍 地球再起動時間',
-      body: `地球の再起動まであと ${diffDays} 日。あなたの支援がカウントダウンを遅らせます。`,
+      // カウントダウンは実ニュース連動。寄付による延命は 2026-06-28 に廃止済みのため訴求しない
+      body: `地球の再起動まであと ${diffDays} 日。今日の世界のニュースが、この時間を動かしています。`,
       icon: '/icon-192.png',
       badge: '/icon-192.png',
-      url: 'https://earth-reboot.vercel.app',
+      url: SITE_URL,
     });
 
     let sent = 0;
@@ -60,7 +113,7 @@ export default async function handler(req, res) {
       for (const key of toRemove) await redis.del(key);
     }
 
-    return res.status(200).json({ message: 'Done', sent, failed });
+    return res.status(200).json({ message: 'Done', days: diffDays, sent, failed });
   } catch (error) {
     console.error('Notify error:', error);
     return res.status(500).json({ error: 'Internal server error' });

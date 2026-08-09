@@ -22,7 +22,8 @@ export default async function handler(req, res) {
       logs:  Array.isArray(logs) ? logs.slice(0, 10) : [],
     });
   } catch (err) {
+    // err.message には Redis の接続情報や内部構造のヒントが含まれ得るため、クライアントには返さない
     console.error("donation-stats error:", err);
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: "Service unavailable" });
   }
 }

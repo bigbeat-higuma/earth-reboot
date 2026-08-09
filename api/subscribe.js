@@ -1,6 +1,11 @@
 import { Redis } from '@upstash/redis';
 
-const redis = Redis.fromEnv();
+// Redis.fromEnv() は UPSTASH_REDIS_REST_* を参照するが、本番には KV_REST_API_* しか無く
+// 購読の保存が常に失敗していた（2026-08-08 修正）。他のエンドポイントと接続方法を揃える。
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL,
+  token: process.env.KV_REST_API_TOKEN,
+});
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
