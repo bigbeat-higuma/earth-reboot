@@ -259,7 +259,18 @@ function donatePayPal() {
 }
 
 // PayPay寄付（QRコードをモーダル表示）
+//
+// ⚠️ QRの有効期限（PayPayのマイコードは約2週間で失効する）
+// 期限を過ぎたQRを表示し続けると、読み取った人がエラーになり支援導線が壊れる。
+// 実際に 2026年8月上旬、期限切れのQRが3日間表示されたままになっていた。
+// そのため期限を過ぎたら PayPay ボタンを自動的に隠す。
+//
+// 🔁 QRを差し替えたら、この日付も必ず更新すること（PayPayアプリに表示される期限）。
+const PAYPAY_QR_EXPIRES_AT = new Date('2026-08-22T15:11:00+09:00');
+function isPayPayQrValid() { return Date.now() < PAYPAY_QR_EXPIRES_AT.getTime(); }
+
 function donatePayPay() {
+  if (!isPayPayQrValid()) return; // 期限切れなら開かない（ボタンも隠れている想定）
   document.getElementById('paypay-modal').style.display = 'flex';
 }
 function closePayPayModal() {
@@ -967,14 +978,17 @@ function applyLang() {
   // PayPayボタンの多言語対応
   const paypayText = document.getElementById('paypay-btn-text');
   if(paypayText) paypayText.textContent = lang==='ja' ? 'PayPayで支援する' : lang==='zh' ? '用PayPay支持' : 'Support via PayPay';
+  // 日本語・中国語のときだけ表示。ただしQRが期限切れなら言語を問わず隠す
   const paypayBtn = document.getElementById('paypay-btn');
-  if(paypayBtn) paypayBtn.style.display = (lang==='ja' || lang==='zh') ? 'flex' : 'none';
+  if(paypayBtn) paypayBtn.style.display = ((lang==='ja' || lang==='zh') && isPayPayQrValid()) ? 'flex' : 'none';
 
   // ヒントテキストの多言語対応
+  // PayPayボタンを隠しているときに「PayPay対応」と書いてあると矛盾するため、文言も連動させる
   const hint = document.getElementById('donate-hint');
   if(hint) {
-    if(lang==='ja') hint.textContent = '▼ ¥500から支援できます — カード・PayPal・PayPay対応';
-    else if(lang==='zh') hint.textContent = '▼ 从¥500开始支持 — 支持信用卡・PayPal・PayPay';
+    const pp = isPayPayQrValid();
+    if(lang==='ja') hint.textContent = pp ? '▼ ¥500から支援できます — カード・PayPal・PayPay対応' : '▼ ¥500から支援できます — カード・PayPal対応';
+    else if(lang==='zh') hint.textContent = pp ? '▼ 从¥500开始支持 — 支持信用卡・PayPal・PayPay' : '▼ 从¥500开始支持 — 支持信用卡・PayPal';
     else if(lang==='de') hint.textContent = '▼ Ab ¥500 unterstützen — Karte & PayPal akzeptiert';
     else if(lang==='fr') hint.textContent = '▼ À partir de ¥500 — Carte & PayPal acceptés';
     else hint.textContent = '▼ Support from ¥500 — Card & PayPal accepted';
