@@ -598,9 +598,11 @@ const CHAPTER_THREAT_KEY = {
 let dynDigest = null;
 
 // シーンIDから、その章の当日スコアを取り出す（該当が無ければ null）
+// ch1_react_x2 のような章内シーンに加え、daily_slot_ch1（当日ニュースの差し込み）にも効かせる。
+// ニュースを提示する場面こそ、その日の深刻さが画面に出る意味が大きい。
 function threatScoreForScene(sceneId) {
   if (!dynDigest || !sceneId) return null;
-  const ch = String(sceneId).match(/^(ch\d)/);
+  const ch = String(sceneId).match(/(?:^|_)(ch\d)(?:_|$)/);
   if (!ch) return null;
   const v = dynDigest[CHAPTER_THREAT_KEY[ch[1]]];
   return typeof v === "number" ? v : null;
