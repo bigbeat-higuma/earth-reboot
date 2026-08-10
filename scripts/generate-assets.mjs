@@ -48,6 +48,25 @@ const IMAGE_PROMPTS = {
   loop: "Infinite recursive corridor of identical glowing doorways repeating forever, surreal time-loop atmosphere, cinematic wide shot, no text, photorealistic",
   human: "Single candle flame in a dark empty room, fragile human warmth against darkness, intimate cinematic close shot, no text, photorealistic",
   dark: "Pitch-black command bunker corridor lit only by sparse red emergency strips, void-like silence between crises, moody cinematic wide shot, no text, photorealistic",
+
+  // --- 2026-08-10 追加: 背景の単調さを解消するための8枚 ---
+  // 121シーンに対し背景が7種しかなく、特に gaia がオープニング・CH6・クライマックス・
+  // 幕間を兼任していた（全体の27%）。物語の最高潮が道中と同じ絵になっていたため分離する。
+
+  // オープニング専用（従来は gaia を流用）
+  intro: "Vast dark server cathedral awakening, a single column of pale blue light rising through endless data towers, the first breath of an artificial mind, cold and immense, cinematic wide shot, no text, photorealistic",
+  // クライマックス専用（従来は gaia を流用）
+  // 注: "decision interface" と書くと ✓/?/✗ のアイコンが描かれ、UIモックアップのような絵になった。
+  // 抽象概念ではなく「場所」として描写し、文字が重なる中央部が明るくなりすぎないようにする。
+  climax: "Colossal dark control chamber at the core of a planetary AI, a lone human silhouette standing on a narrow platform facing an immense curved wall of dim flickering monitors, Earth faintly visible far below through a fractured dome, oppressive scale, deep blues and blacks, cinematic wide shot, no text, no symbols, no user interface, photorealistic",
+
+  // 各章の「余波」。章の後半で景色が変わり、危機の収束と代償を可視化する
+  flood_after: "Receding floodwater over a drowned district at dawn, mud-covered streets and stranded belongings, survivors' temporary shelters in pale morning light, aftermath stillness, cinematic wide shot, no text, photorealistic",
+  war_after: "Ceasefire dawn over a shelled city, silent artillery abandoned in snow, thin smoke columns under a gray truce sky, exhausted quiet after conflict, cinematic wide shot, no text, photorealistic",
+  virus_after: "Field hospital being dismantled at sunrise, empty rows of stripped beds and folded isolation tents, disinfectant mist in pale light, the quiet after an outbreak, cinematic wide shot, no text, photorealistic",
+  economy_after: "Former trading floor repurposed as a communal distribution hall, dead screens above orderly ration queues, cold daylight through cracked glass, austere new normal, cinematic wide shot, no text, photorealistic",
+  society_after: "Emptied protest square at night after the crowds have gone, scattered placards and a single lit public screen, uneasy silence between factions, cinematic wide shot, no text, photorealistic",
+  gaia_after: "Vast server hall in low-power dormancy, most lights extinguished, one console still glowing among cooling machines, an intelligence holding its breath, cinematic wide shot, no text, photorealistic",
 };
 
 const MUSIC_PROMPTS = {

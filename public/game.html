@@ -131,7 +131,9 @@ body::after {
   letter-spacing: .2em;
   border: 1px solid var(--red-dim);
   padding: 2px 8px;
-  background: rgba(2,0,0,.7);
+  /* 2026-08-10: 章の「余波」背景（flood_after 等）は従来より明るく、.7 では
+     ラベルが背景に負けて読めなくなったため不透明度を上げた */
+  background: rgba(2,0,0,.85);
 }
 
 #chapter-text {
@@ -661,6 +663,20 @@ const BG_IMAGES = {
   economy:    '/images/economy.jpg',
   society:    '/images/society.jpg',
   dark:       '/images/dark.jpg',
+
+  // --- 2026-08-10 追加: 背景の単調さを解消するための8枚 ---
+  // 121シーンに対し背景が7種しかなく、gaia がオープニング・CH6・クライマックス・幕間を
+  // 兼任していた（全体の27%）。物語の最高潮が道中と同じ絵になっていたため分離した。
+  intro:      '/images/intro.jpg',    // オープニング（従来は gaia 流用）
+  climax:     '/images/climax.jpg',   // クライマックス（従来は gaia 流用）
+
+  // 各章の「余波」。react 以降で景色が変わり、危機の収束と代償を示す
+  flood_after:   '/images/flood_after.jpg',
+  war_after:     '/images/war_after.jpg',
+  virus_after:   '/images/virus_after.jpg',
+  economy_after: '/images/economy_after.jpg',
+  society_after: '/images/society_after.jpg',
+  gaia_after:    '/images/gaia_after.jpg',
 };
 
 const BGM_FOR_BG = {

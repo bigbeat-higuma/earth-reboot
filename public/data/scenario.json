@@ -31,7 +31,7 @@
   "scenes": [
     {
       "id": "intro_1",
-      "bg": "gaia",
+      "bg": "intro",
       "loc": "// LOCATION: 国連緊急司令室 — GENEVA",
       "chapter": "",
       "speaker": "SYSTEM",
@@ -40,7 +40,7 @@
     },
     {
       "id": "intro_1b",
-      "bg": "gaia",
+      "bg": "intro",
       "loc": "// LOCATION: 国連緊急司令室 — GENEVA",
       "chapter": "",
       "speaker": "SYSTEM",
@@ -49,7 +49,7 @@
     },
     {
       "id": "intro_2",
-      "bg": "gaia",
+      "bg": "intro",
       "loc": "// LOCATION: 国連緊急司令室 — GENEVA",
       "chapter": "// PROLOGUE",
       "speaker": "GAIA",
@@ -58,7 +58,7 @@
     },
     {
       "id": "intro_3",
-      "bg": "gaia",
+      "bg": "intro",
       "loc": "// LOCATION: 国連緊急司令室 — GENEVA",
       "chapter": "// PROLOGUE",
       "speaker": "GAIA",
@@ -67,7 +67,7 @@
     },
     {
       "id": "intro_3b",
-      "bg": "gaia",
+      "bg": "intro",
       "loc": "// LOCATION: 国連緊急司令室 — GENEVA",
       "chapter": "// PROLOGUE",
       "speaker": "GAIA",
@@ -76,7 +76,7 @@
     },
     {
       "id": "intro_4",
-      "bg": "gaia",
+      "bg": "intro",
       "loc": "// LOCATION: 国連緊急司令室 — GENEVA",
       "chapter": "// PROLOGUE",
       "speaker": "PLAYER",
@@ -85,7 +85,7 @@
     },
     {
       "id": "intro_4b",
-      "bg": "gaia",
+      "bg": "intro",
       "loc": "// LOCATION: 国連緊急司令室 — GENEVA",
       "chapter": "// PROLOGUE",
       "speaker": "GAIA",
@@ -200,7 +200,7 @@
     },
     {
       "id": "ch1_react",
-      "bg": "flood",
+      "bg": "flood_after",
       "loc": "// LOCATION: 難民受け入れ調整本部",
       "chapter": "// CHAPTER 1 — 余波",
       "speaker": "GAIA",
@@ -209,7 +209,7 @@
     },
     {
       "id": "ch1_react_choice",
-      "bg": "flood",
+      "bg": "flood_after",
       "loc": "// LOCATION: 難民受け入れ調整本部",
       "chapter": "// CHAPTER 1 — 余波",
       "speaker": "GAIA",
@@ -240,7 +240,7 @@
     },
     {
       "id": "ch1_react_x",
-      "bg": "flood",
+      "bg": "flood_after",
       "loc": "// LOCATION: 新興移民都市",
       "chapter": "// CHAPTER 1 — 余波",
       "speaker": "GAIA",
@@ -249,7 +249,7 @@
     },
     {
       "id": "ch1_react_x2",
-      "bg": "flood",
+      "bg": "flood_after",
       "loc": "// LOCATION: 新興移民都市 — 行政窓口",
       "chapter": "// CHAPTER 1 — 余波",
       "speaker": "窓口職員",
@@ -258,7 +258,7 @@
     },
     {
       "id": "ch1_react_x2_choice",
-      "bg": "flood",
+      "bg": "flood_after",
       "loc": "// LOCATION: 新興移民都市 — 行政窓口",
       "chapter": "// CHAPTER 1 — 余波",
       "speaker": "GAIA",
@@ -285,7 +285,7 @@
     },
     {
       "id": "ch1_react_x2_a",
-      "bg": "flood",
+      "bg": "flood_after",
       "loc": "// LOCATION: 新興移民都市",
       "chapter": "// CHAPTER 1 — 余波",
       "speaker": "GAIA",
@@ -294,7 +294,7 @@
     },
     {
       "id": "ch1_react_x2_b",
-      "bg": "flood",
+      "bg": "flood_after",
       "loc": "// LOCATION: 新興移民都市",
       "chapter": "// CHAPTER 1 — 余波",
       "speaker": "GAIA",
@@ -303,7 +303,7 @@
     },
     {
       "id": "ch1_react_y",
-      "bg": "flood",
+      "bg": "flood_after",
       "loc": "// LOCATION: 新興移民都市",
       "chapter": "// CHAPTER 1 — 余波",
       "speaker": "GAIA",
@@ -312,7 +312,7 @@
     },
     {
       "id": "ch1_hidden",
-      "bg": "flood",
+      "bg": "flood_after",
       "loc": "// LOCATION: 避難キャンプ — 最前線",
       "chapter": "// CHAPTER 1 — 記録外",
       "speaker": "少女",
@@ -321,7 +321,7 @@
     },
     {
       "id": "ch1_aftermath",
-      "bg": "flood",
+      "bg": "flood_after",
       "loc": "// LOCATION: 国連緊急司令室",
       "chapter": "// CHAPTER 1",
       "speaker": "GAIA",
@@ -433,7 +433,7 @@
     },
     {
       "id": "ch2_react",
-      "bg": "war",
+      "bg": "war_after",
       "loc": "// LOCATION: 停戦ライン",
       "chapter": "// CHAPTER 2 — 余波",
       "speaker": "GAIA",
@@ -442,7 +442,7 @@
     },
     {
       "id": "ch2_react_choice",
-      "bg": "war",
+      "bg": "war_after",
       "loc": "// LOCATION: 停戦ライン",
       "chapter": "// CHAPTER 2 — 余波",
       "speaker": "GAIA",
@@ -472,7 +472,7 @@
     },
     {
       "id": "ch2_react_x",
-      "bg": "war",
+      "bg": "war_after",
       "loc": "// LOCATION: 国際法廷",
       "chapter": "// CHAPTER 2 — 余波",
       "speaker": "GAIA",
@@ -481,7 +481,7 @@
     },
     {
       "id": "ch2_react_y",
-      "bg": "war",
+      "bg": "war_after",
       "loc": "// LOCATION: 慰霊式典",
       "chapter": "// CHAPTER 2 — 余波",
       "speaker": "GAIA",
@@ -490,7 +490,7 @@
     },
     {
       "id": "ch2_react_y2",
-      "bg": "war",
+      "bg": "war_after",
       "loc": "// LOCATION: 慰霊式典 — 式典後",
       "chapter": "// CHAPTER 2 — 余波",
       "speaker": "遺族代表",
@@ -499,7 +499,7 @@
     },
     {
       "id": "ch2_react_y2_choice",
-      "bg": "war",
+      "bg": "war_after",
       "loc": "// LOCATION: 慰霊式典",
       "chapter": "// CHAPTER 2 — 余波",
       "speaker": "GAIA",
@@ -523,7 +523,7 @@
     },
     {
       "id": "ch2_react_y2_a",
-      "bg": "war",
+      "bg": "war_after",
       "loc": "// LOCATION: 慰霊式典",
       "chapter": "// CHAPTER 2 — 余波",
       "speaker": "GAIA",
@@ -532,7 +532,7 @@
     },
     {
       "id": "ch2_react_y2_b",
-      "bg": "war",
+      "bg": "war_after",
       "loc": "// LOCATION: 慰霊式典",
       "chapter": "// CHAPTER 2 — 余波",
       "speaker": "GAIA",
@@ -541,7 +541,7 @@
     },
     {
       "id": "ch2_hidden",
-      "bg": "war",
+      "bg": "war_after",
       "loc": "// LOCATION: 前線の塹壕 — 記録外",
       "chapter": "// CHAPTER 2 — 記録外",
       "speaker": "若い兵士",
@@ -550,7 +550,7 @@
     },
     {
       "id": "ch2_aftermath",
-      "bg": "war",
+      "bg": "war_after",
       "loc": "// LOCATION: 国連緊急司令室",
       "chapter": "// CHAPTER 2",
       "speaker": "GAIA",
@@ -656,7 +656,7 @@
     },
     {
       "id": "ch3_react",
-      "bg": "virus",
+      "bg": "virus_after",
       "loc": "// LOCATION: 検疫管理センター",
       "chapter": "// CHAPTER 3 — 余波",
       "speaker": "GAIA",
@@ -665,7 +665,7 @@
     },
     {
       "id": "ch3_react_choice",
-      "bg": "virus",
+      "bg": "virus_after",
       "loc": "// LOCATION: 検疫管理センター",
       "chapter": "// CHAPTER 3 — 余波",
       "speaker": "GAIA",
@@ -695,7 +695,7 @@
     },
     {
       "id": "ch3_react_x",
-      "bg": "virus",
+      "bg": "virus_after",
       "loc": "// LOCATION: 封鎖区域",
       "chapter": "// CHAPTER 3 — 余波",
       "speaker": "GAIA",
@@ -704,7 +704,7 @@
     },
     {
       "id": "ch3_react_y",
-      "bg": "virus",
+      "bg": "virus_after",
       "loc": "// LOCATION: 再開された街",
       "chapter": "// CHAPTER 3 — 余波",
       "speaker": "GAIA",
@@ -713,7 +713,7 @@
     },
     {
       "id": "ch3_react_y2",
-      "bg": "virus",
+      "bg": "virus_after",
       "loc": "// LOCATION: 再開された街 — 一週間後",
       "chapter": "// CHAPTER 3 — 余波",
       "speaker": "GAIA",
@@ -722,7 +722,7 @@
     },
     {
       "id": "ch3_react_y2_choice",
-      "bg": "virus",
+      "bg": "virus_after",
       "loc": "// LOCATION: 再開された街",
       "chapter": "// CHAPTER 3 — 余波",
       "speaker": "GAIA",
@@ -746,7 +746,7 @@
     },
     {
       "id": "ch3_react_y2_a",
-      "bg": "virus",
+      "bg": "virus_after",
       "loc": "// LOCATION: 再開された街",
       "chapter": "// CHAPTER 3 — 余波",
       "speaker": "GAIA",
@@ -755,7 +755,7 @@
     },
     {
       "id": "ch3_react_y2_b",
-      "bg": "virus",
+      "bg": "virus_after",
       "loc": "// LOCATION: 再開された街",
       "chapter": "// CHAPTER 3 — 余波",
       "speaker": "GAIA",
@@ -764,7 +764,7 @@
     },
     {
       "id": "ch3_hidden",
-      "bg": "virus",
+      "bg": "virus_after",
       "loc": "// LOCATION: ある遺族の家 — 記録外",
       "chapter": "// CHAPTER 3 — 記録外",
       "speaker": "遺族",
@@ -773,7 +773,7 @@
     },
     {
       "id": "ch3_aftermath",
-      "bg": "virus",
+      "bg": "virus_after",
       "loc": "// LOCATION: 国連緊急司令室",
       "chapter": "// CHAPTER 3",
       "speaker": "GAIA",
@@ -900,7 +900,7 @@
     },
     {
       "id": "ch4_react",
-      "bg": "economy",
+      "bg": "economy_after",
       "loc": "// LOCATION: 旧富裕層居住区",
       "chapter": "// CHAPTER 4 — 余波",
       "speaker": "GAIA",
@@ -909,7 +909,7 @@
     },
     {
       "id": "ch4_react_choice",
-      "bg": "economy",
+      "bg": "economy_after",
       "loc": "// LOCATION: 旧富裕層居住区",
       "chapter": "// CHAPTER 4 — 余波",
       "speaker": "GAIA",
@@ -939,7 +939,7 @@
     },
     {
       "id": "ch4_react_x",
-      "bg": "economy",
+      "bg": "economy_after",
       "loc": "// LOCATION: 接収現場",
       "chapter": "// CHAPTER 4 — 余波",
       "speaker": "GAIA",
@@ -948,7 +948,7 @@
     },
     {
       "id": "ch4_react_y",
-      "bg": "economy",
+      "bg": "economy_after",
       "loc": "// LOCATION: 新経済評議会",
       "chapter": "// CHAPTER 4 — 余波",
       "speaker": "GAIA",
@@ -957,7 +957,7 @@
     },
     {
       "id": "ch4_react_y2",
-      "bg": "economy",
+      "bg": "economy_after",
       "loc": "// LOCATION: 新経済評議会 — 非公開会議",
       "chapter": "// CHAPTER 4 — 余波",
       "speaker": "GAIA",
@@ -966,7 +966,7 @@
     },
     {
       "id": "ch4_react_y2_choice",
-      "bg": "economy",
+      "bg": "economy_after",
       "loc": "// LOCATION: 新経済評議会",
       "chapter": "// CHAPTER 4 — 余波",
       "speaker": "GAIA",
@@ -990,7 +990,7 @@
     },
     {
       "id": "ch4_react_y2_a",
-      "bg": "economy",
+      "bg": "economy_after",
       "loc": "// LOCATION: 新経済評議会",
       "chapter": "// CHAPTER 4 — 余波",
       "speaker": "GAIA",
@@ -999,7 +999,7 @@
     },
     {
       "id": "ch4_react_y2_b",
-      "bg": "economy",
+      "bg": "economy_after",
       "loc": "// LOCATION: 新経済評議会",
       "chapter": "// CHAPTER 4 — 余波",
       "speaker": "GAIA",
@@ -1008,7 +1008,7 @@
     },
     {
       "id": "ch4_hidden",
-      "bg": "economy",
+      "bg": "economy_after",
       "loc": "// LOCATION: 高層の一室 — 記録外",
       "chapter": "// CHAPTER 4 — 記録外",
       "speaker": "元・大富豪",
@@ -1026,7 +1026,7 @@
     },
     {
       "id": "ch4_aftermath",
-      "bg": "economy",
+      "bg": "economy_after",
       "loc": "// LOCATION: 国連緊急司令室",
       "chapter": "// CHAPTER 4",
       "speaker": "GAIA",
@@ -1138,7 +1138,7 @@
     },
     {
       "id": "ch5_react",
-      "bg": "society",
+      "bg": "society_after",
       "loc": "// LOCATION: 公共広場",
       "chapter": "// CHAPTER 5 — 余波",
       "speaker": "GAIA",
@@ -1147,7 +1147,7 @@
     },
     {
       "id": "ch5_react_choice",
-      "bg": "society",
+      "bg": "society_after",
       "loc": "// LOCATION: 公共広場",
       "chapter": "// CHAPTER 5 — 余波",
       "speaker": "GAIA",
@@ -1177,7 +1177,7 @@
     },
     {
       "id": "ch5_react_x",
-      "bg": "society",
+      "bg": "society_after",
       "loc": "// LOCATION: 公式発表会場",
       "chapter": "// CHAPTER 5 — 余波",
       "speaker": "GAIA",
@@ -1186,7 +1186,7 @@
     },
     {
       "id": "ch5_react_y",
-      "bg": "society",
+      "bg": "society_after",
       "loc": "// LOCATION: 対話の広場",
       "chapter": "// CHAPTER 5 — 余波",
       "speaker": "GAIA",
@@ -1195,7 +1195,7 @@
     },
     {
       "id": "ch5_react_y2",
-      "bg": "society",
+      "bg": "society_after",
       "loc": "// LOCATION: 対話の広場 — 三日目",
       "chapter": "// CHAPTER 5 — 余波",
       "speaker": "GAIA",
@@ -1204,7 +1204,7 @@
     },
     {
       "id": "ch5_react_y2_choice",
-      "bg": "society",
+      "bg": "society_after",
       "loc": "// LOCATION: 対話の広場",
       "chapter": "// CHAPTER 5 — 余波",
       "speaker": "GAIA",
@@ -1230,7 +1230,7 @@
     },
     {
       "id": "ch5_react_y2_a",
-      "bg": "society",
+      "bg": "society_after",
       "loc": "// LOCATION: 対話の広場",
       "chapter": "// CHAPTER 5 — 余波",
       "speaker": "GAIA",
@@ -1239,7 +1239,7 @@
     },
     {
       "id": "ch5_react_y2_b",
-      "bg": "society",
+      "bg": "society_after",
       "loc": "// LOCATION: 対話の広場 — 窓口",
       "chapter": "// CHAPTER 5 — 余波",
       "speaker": "GAIA",
@@ -1248,7 +1248,7 @@
     },
     {
       "id": "ch5_hidden",
-      "bg": "society",
+      "bg": "society_after",
       "loc": "// LOCATION: ある家庭 — 記録外",
       "chapter": "// CHAPTER 5 — 記録外",
       "speaker": "娘",
@@ -1257,7 +1257,7 @@
     },
     {
       "id": "ch5_aftermath",
-      "bg": "society",
+      "bg": "society_after",
       "loc": "// LOCATION: 国連緊急司令室",
       "chapter": "// CHAPTER 5",
       "speaker": "GAIA",
@@ -1378,7 +1378,7 @@
     },
     {
       "id": "ch6_react",
-      "bg": "gaia",
+      "bg": "gaia_after",
       "loc": "// LOCATION: GAIA中枢サーバー",
       "chapter": "// CHAPTER 6 — 余波",
       "speaker": "GAIA",
@@ -1387,7 +1387,7 @@
     },
     {
       "id": "ch6_react_choice",
-      "bg": "gaia",
+      "bg": "gaia_after",
       "loc": "// LOCATION: GAIA中枢サーバー",
       "chapter": "// CHAPTER 6 — 余波",
       "speaker": "GAIA",
@@ -1416,7 +1416,7 @@
     },
     {
       "id": "ch6_react_x",
-      "bg": "gaia",
+      "bg": "gaia_after",
       "loc": "// LOCATION: GAIA中枢サーバー",
       "chapter": "// CHAPTER 6 — 余波",
       "speaker": "GAIA",
@@ -1425,7 +1425,7 @@
     },
     {
       "id": "ch6_react_y",
-      "bg": "gaia",
+      "bg": "gaia_after",
       "loc": "// LOCATION: 全世界同時配信",
       "chapter": "// CHAPTER 6 — 余波",
       "speaker": "GAIA",
@@ -1434,7 +1434,7 @@
     },
     {
       "id": "ch6_react_y2",
-      "bg": "gaia",
+      "bg": "gaia_after",
       "loc": "// LOCATION: 全世界同時配信 — 直後",
       "chapter": "// CHAPTER 6 — 余波",
       "speaker": "GAIA",
@@ -1443,7 +1443,7 @@
     },
     {
       "id": "ch6_react_y2_choice",
-      "bg": "gaia",
+      "bg": "gaia_after",
       "loc": "// LOCATION: GAIA中枢サーバー",
       "chapter": "// CHAPTER 6 — 余波",
       "speaker": "GAIA",
@@ -1467,7 +1467,7 @@
     },
     {
       "id": "ch6_react_y2_a",
-      "bg": "gaia",
+      "bg": "gaia_after",
       "loc": "// LOCATION: GAIA中枢サーバー",
       "chapter": "// CHAPTER 6 — 余波",
       "speaker": "GAIA",
@@ -1476,7 +1476,7 @@
     },
     {
       "id": "ch6_react_y2_b",
-      "bg": "gaia",
+      "bg": "gaia_after",
       "loc": "// LOCATION: GAIA中枢サーバー",
       "chapter": "// CHAPTER 6 — 余波",
       "speaker": "GAIA",
@@ -1485,7 +1485,7 @@
     },
     {
       "id": "ch6_hidden",
-      "bg": "gaia",
+      "bg": "gaia_after",
       "loc": "// LOCATION: GAIA中枢サーバー — 記録外",
       "chapter": "// CHAPTER 6 — 記録外",
       "speaker": "GAIA",
@@ -1494,7 +1494,7 @@
     },
     {
       "id": "ch6_aftermath",
-      "bg": "gaia",
+      "bg": "gaia_after",
       "loc": "// LOCATION: GAIA中枢サーバー",
       "chapter": "// CHAPTER 6",
       "speaker": "GAIA",
@@ -1503,7 +1503,7 @@
     },
     {
       "id": "climax_0",
-      "bg": "gaia",
+      "bg": "climax",
       "loc": "// LOCATION: GAIA中枢サーバー — 軌道上",
       "chapter": "// CLIMAX",
       "speaker": "SYSTEM",
@@ -1512,7 +1512,7 @@
     },
     {
       "id": "climax_1",
-      "bg": "gaia",
+      "bg": "climax",
       "loc": "// LOCATION: GAIA中枢サーバー",
       "chapter": "// CLIMAX: 最後の選択",
       "speaker": "GAIA",
@@ -1521,7 +1521,7 @@
     },
     {
       "id": "climax_1b",
-      "bg": "gaia",
+      "bg": "climax",
       "loc": "// LOCATION: GAIA中枢サーバー",
       "chapter": "// CLIMAX",
       "speaker": "GAIA",
@@ -1530,7 +1530,7 @@
     },
     {
       "id": "climax_2",
-      "bg": "gaia",
+      "bg": "climax",
       "loc": "// LOCATION: GAIA中枢",
       "chapter": "// CLIMAX",
       "speaker": "GAIA",
@@ -1539,7 +1539,7 @@
     },
     {
       "id": "climax_2b",
-      "bg": "gaia",
+      "bg": "climax",
       "loc": "// LOCATION: GAIA中枢",
       "chapter": "// CLIMAX",
       "speaker": "GAIA",
@@ -1548,7 +1548,7 @@
     },
     {
       "id": "climax_choice",
-      "bg": "gaia",
+      "bg": "climax",
       "loc": "// LOCATION: GAIA中枢",
       "chapter": "// CLIMAX — FINAL",
       "speaker": "GAIA",
