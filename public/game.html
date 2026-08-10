@@ -741,9 +741,11 @@ const BGM_FOR_BG = {
   // 前の章のBGMが鳴り続けてしまう（playBgmForBg は未登録キーで何もしない）。
   intro: 'opening',
   climax: 'climax',
-  // 各章の後半は「余波」曲へ。背景が切り替わるのと同じ位置で音楽も変わる
-  flood_after: 'aftermath', war_after: 'aftermath', virus_after: 'aftermath',
-  economy_after: 'aftermath', society_after: 'aftermath', gaia_after: 'aftermath',
+  // 各章の後半は章ごとの「余波」曲へ。背景が切り替わるのと同じ位置で音楽も変わる。
+  // 当初は全章共通の1曲だったが、1周で6回同じ曲を聴くことになり単調だったため分けた。
+  // 曲名は背景キーと一致させているので、ここは1対1の対応になる。
+  flood_after: 'flood_after', war_after: 'war_after', virus_after: 'virus_after',
+  economy_after: 'economy_after', society_after: 'society_after', gaia_after: 'gaia_after',
 };
 
 // エンディングの曲。11種類あるため方向性で3つに束ねる（これらはBGM選択にのみ使う）

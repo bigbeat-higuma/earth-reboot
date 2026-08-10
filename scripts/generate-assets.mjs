@@ -84,8 +84,16 @@ const MUSIC_PROMPTS = {
   // --- 2026-08-10 追加（Phase 3） ---
   // クライマックス専用。従来は CH6 と同じ gaia が鳴り続け、最高潮に音の変化が無かった
   climax: "Slow massive build to a single suspended decision, deep pulsing low end, sparse piano over vast reverb, unbearable stillness before an irreversible choice, instrumental loop",
-  // 各章の後半（react以降）。背景が「余波」へ切り替わるのと同じ位置で音楽も変える
-  aftermath: "Quiet aftermath ambience, sparse piano notes over soft drone, exhaustion and fragile relief after a crisis has passed, restrained and cold, instrumental loop",
+  // 各章の後半（react以降）。背景が「余波」へ切り替わるのと同じ位置で音楽も変える。
+  // 2026-08-10: 当初は全章共通の aftermath 1曲だったが、1周で6回同じ曲を聴くことになり
+  // 単調だったため、章ごとの曲に分けた。曲名は背景キーと一致させている（BGM_FOR_BG が1対1）。
+  // 各曲は「その章の危機の曲」の音色を引き継ぎつつ、力を失った状態として書く。
+  flood_after: "The rain has stopped. Hollow strings over dripping water and distant wind, waterlogged silence, mourning what the flood took, slow and thin, instrumental loop",
+  war_after: "The drums have stopped. A single distant horn over ash and low wind, spent brass fading into cold quiet, the exhaustion after shelling ends, instrumental loop",
+  virus_after: "The heartbeat slows to normal. Sterile ambient with faint room tone, empty ward calm, relief indistinguishable from emptiness, muted and clinical, instrumental loop",
+  economy_after: "The glitches have settled. Slow mechanical hum and dull repeating pulse, resigned order after collapse, grey and procedural, instrumental loop",
+  society_after: "The shouting has faded to a murmur. Blurred distant voices under a soft unresolved pad, uneasy quiet between people who still disagree, instrumental loop",
+  gaia_after: "The choir has dimmed to a single held tone. Vast machine at rest, faint cooling drone and slow breath, an intelligence waiting in the dark, instrumental loop",
   // transcend / loop 用。従来は11エンディングを ending_hope / ending_bad の2曲で賄っていた
   ending_strange: "Uncanny weightless resolution, shimmering detuned pads and reversed tones, neither victory nor defeat, dreamlike and unresolved, instrumental",
 };
