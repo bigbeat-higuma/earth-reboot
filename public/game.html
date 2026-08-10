@@ -112,7 +112,7 @@ body::after {
   inset: 0;
   width: 100%;
   height: 100%;
-  transition: opacity .8s;
+  transition: opacity .8s, filter .8s;
 }
 
 #scene-overlay {
@@ -485,7 +485,9 @@ body::after {
 </div>
 
 <div id="scene-bg">
-  <img id="scene-img" src="" alt="" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:0;transition:opacity .8s;">
+  <!-- filter は章ごとの危機度で変化する（applyThreatTint）。章が切り替わる瞬間に色調が
+       急変しないよう、opacity と同じ長さで補間する -->
+  <img id="scene-img" src="" alt="" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:0;transition:opacity .8s, filter .8s;">
 <canvas id="scene-canvas" style="width:100%;height:100%;position:absolute;inset:0;opacity:1;transition:opacity .8s;"></canvas>
   <div id="scene-overlay"></div>
   <div id="scene-label">// LOCATION: UNKNOWN</div>
@@ -578,9 +580,58 @@ function applyScenarioData(data) {
   }
 }
 
+// ── その日の危機度に応じた画面の色調（2026-08-10 追加） ──
+//
+// /api/daily が返す digest には、当日の実ニュースから算出したカテゴリ別スコア(30〜95)が入る。
+// 各章のテーマは digest のカテゴリと1対1で対応するため、章ごとに「今日の現実の深刻さ」を
+// 背景の色調へ反映する。危機が重い日ほど彩度が落ち、コントラストが上がり、わずかに赤へ寄る。
+//
+// 演出は控えめにしている（背景美術を壊さない範囲）。データが無い日は何もしない。
+const CHAPTER_THREAT_KEY = {
+  ch1: "climate_score",   // 環境崩壊
+  ch2: "conflict_score",  // 核戦争・紛争
+  ch3: "virus_score",     // 疫病
+  ch4: "economy_score",   // 経済崩壊
+  ch5: "social_score",    // 社会分断
+  ch6: "ai_score",        // AI制御権
+};
+let dynDigest = null;
+
+// シーンIDから、その章の当日スコアを取り出す（該当が無ければ null）
+function threatScoreForScene(sceneId) {
+  if (!dynDigest || !sceneId) return null;
+  const ch = String(sceneId).match(/^(ch\d)/);
+  if (!ch) return null;
+  const v = dynDigest[CHAPTER_THREAT_KEY[ch[1]]];
+  return typeof v === "number" ? v : null;
+}
+
+// スコア30〜95を 0〜1 に正規化し、CSSフィルタへ変換する
+function threatFilter(score) {
+  if (score === null) return "";
+  const t = Math.max(0, Math.min(1, (score - 30) / 65));
+  const saturate   = (1 - 0.35 * t).toFixed(3);
+  const contrast   = (1 + 0.25 * t).toFixed(3);
+  const brightness = (1 - 0.15 * t).toFixed(3);
+  const hue        = (-8 * t).toFixed(1);
+  return `saturate(${saturate}) contrast(${contrast}) brightness(${brightness}) hue-rotate(${hue}deg)`;
+}
+
+// シーン表示時に、その章の危機度を背景へ反映する。
+// canvasフォールバック側にも同じフィルタを当て、画像の有無で見え方が割れないようにする。
+function applyThreatTint(sceneId) {
+  const score = threatScoreForScene(sceneId);
+  const f = threatFilter(score);
+  const img = document.getElementById('scene-img');
+  const cv  = document.getElementById('scene-canvas');
+  if (img) img.style.filter = f;
+  if (cv)  cv.style.filter  = f;
+}
+
 // 動的オーバーレイ適用（Phase C/D/E）
 function applyDynamicOverlay(dyn) {
   if (!dyn || typeof dyn !== "object") return;
+  if (dyn.digest && typeof dyn.digest === "object") dynDigest = dyn.digest;
   if (Array.isArray(dyn.scenes)) {
     dyn.scenes.forEach(sc => { if (sc && sc.id) sceneMap[sc.id] = sc; });
   }
@@ -927,6 +978,7 @@ function showScene(id) {
   if (scene.ending) { showEnding(scene.ending); return; }
 
   drawBg(scene.bg);
+  applyThreatTint(id);
 
   if (/^daily_slot_ch/.test(id)) playSfx('alert');
 

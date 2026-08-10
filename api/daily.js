@@ -73,12 +73,14 @@ export default async function handler(req, res) {
     if (!overlay || typeof overlay !== "object") {
       return res.status(200).json({});
     }
-    // game.html の applyDynamicOverlay が解釈する形 { scenes?, patches?, choices? }
+    // game.html の applyDynamicOverlay が解釈する形 { scenes?, patches?, choices?, digest? }
+    // digest はカテゴリ別の危機スコア（30〜95）。ゲーム側で章ごとの背景の色調に反映する。
     return res.status(200).json({
       date: overlay.date,
       patches: Array.isArray(overlay.patches) ? overlay.patches : [],
       scenes: Array.isArray(overlay.scenes) ? overlay.scenes : [],
       choices: overlay.choices && typeof overlay.choices === "object" ? overlay.choices : {},
+      digest: overlay.digest && typeof overlay.digest === "object" ? overlay.digest : null,
     });
   } catch (e) {
     console.error("daily endpoint error:", e);
