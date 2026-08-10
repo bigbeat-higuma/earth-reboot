@@ -29,8 +29,11 @@ const analysis = {
 const post = composePost(analysis);
 check("280以内に収まる", weightedLength(post) <= 280, true);
 check("残り年数が入る", post.includes("残り約11.5年"), true);
-check("サイトURLが入る", post.includes("https://www.earth-re-boot.com"), true);
 check("ハッシュタグが入る", post.includes("#EarthReboot"), true);
+
+// URLを含むと1件あたりの課金が $0.015 → $0.200 と13倍になり、
+// X側の表示も抑制されやすい。本文にURLを入れないことを固定する。
+check("URLを含まない", /https?:\/\//.test(post), false);
 
 // 極端に長い要約でも必ず280以内に収める（文単位で切り詰められる）
 const longPost = composePost({
@@ -38,7 +41,8 @@ const longPost = composePost({
   summary: Array.from({ length: 40 }, (_, i) => `これは${i}番目のとても長い文章です`).join("。") + "。",
 });
 check("長い要約でも280以内", weightedLength(longPost) <= 280, true);
-check("長い要約でも文の途中で切れない", /。\n\n🌍|年。\n\n🌍/.test(longPost), true);
+// 本文の最後がハッシュタグ行の直前で「。」で終わっている＝文の途中で切れていない
+check("長い要約でも文の途中で切れない", /。\n\n#EarthReboot/.test(longPost), true);
 
 // 要約が空でも成立する
 const noSummary = composePost({ reboot_years_from_now: 5.0, summary: "" });

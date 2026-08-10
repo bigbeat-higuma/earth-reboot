@@ -11,9 +11,14 @@
 // 必要な環境変数（未設定なら何もせずスキップする）:
 //   X_API_KEY / X_API_SECRET             … アプリの Consumer Key / Secret
 //   X_ACCESS_TOKEN / X_ACCESS_TOKEN_SECRET … アカウントの Access Token / Secret
+//
+// ⚠️ 投稿本文に URL を入れないこと（2026-08-10 決定）。理由は2つ:
+//   1. コスト: X API は従量課金で、"Post: Create" $0.015/件 に対し
+//      "Post: Create (with URL)" は $0.200/件 と 13倍になる（無料枠は存在しない）
+//   2. リーチ: X は外部リンクを含む投稿の表示を抑制する傾向がある
+// サイトへの導線はプロフィール欄のリンクと固定ツイートで担保する。
 import crypto from "crypto";
 
-const SITE_URL = "https://www.earth-re-boot.com";
 const HASHTAGS = "#EarthReboot #地球再起動時間";
 const MAX_WEIGHTED_LENGTH = 280;
 
@@ -77,7 +82,7 @@ export function composePost(analysis) {
   if (!Number.isFinite(years)) return null;
 
   const header = `地球再起動まで、残り約${years.toFixed(1)}年。`;
-  const footer = `🌍 ${SITE_URL}\n${HASHTAGS}`;
+  const footer = HASHTAGS; // URLは入れない（冒頭のコメント参照）
 
   // 要約に使える残り予算（改行4つ分を含めて概算）
   const budget = MAX_WEIGHTED_LENGTH - weightedLength(`${header}\n\n\n\n${footer}`);
