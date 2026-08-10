@@ -733,8 +733,27 @@ const BG_IMAGES = {
 const BGM_FOR_BG = {
   gaia: 'gaia', flood: 'flood', war: 'war', virus: 'virus',
   economy: 'economy', society: 'society', dark: 'economy', hope: 'hope',
+
+  // --- 2026-08-10 追加 ---
+  // 背景8枚を追加した際、ここに登録し忘れると新しい背景では曲が切り替わらず、
+  // 前の章のBGMが鳴り続けてしまう（playBgmForBg は未登録キーで何もしない）。
+  intro: 'opening',
+  climax: 'climax',
+  // 各章の後半は「余波」曲へ。背景が切り替わるのと同じ位置で音楽も変わる
+  flood_after: 'aftermath', war_after: 'aftermath', virus_after: 'aftermath',
+  economy_after: 'aftermath', society_after: 'aftermath', gaia_after: 'aftermath',
 };
-const GOOD_ENDINGS = new Set(['end_good', 'end_transcend', 'end_human']);
+
+// エンディングの曲。11種類あるため方向性で3つに束ねる（これらはBGM選択にのみ使う）
+const HOPEFUL_ENDINGS = new Set(['end_good', 'end_human']);
+// transcend / loop は「勝利でも敗北でもない」異質な結末。専用曲を当てる
+const STRANGE_ENDINGS = new Set(['end_transcend', 'end_loop']);
+
+function endingBgm(type) {
+  if (STRANGE_ENDINGS.has(type)) return 'ending_strange';
+  if (HOPEFUL_ENDINGS.has(type)) return 'ending_hope';
+  return 'ending_bad';
+}
 
 let audioMuted = localStorage.getItem('earth_reboot_mute') === '1';
 let currentBgmTrack = null;
@@ -1085,7 +1104,7 @@ function showEnding(type) {
 
   el.style.display = 'flex';
   playSfx('ending');
-  playBgm(GOOD_ENDINGS.has(type) ? 'ending_hope' : 'ending_bad');
+  playBgm(endingBgm(type));
 }
 
 // ── セーブ・ロード ──────────────────────────────

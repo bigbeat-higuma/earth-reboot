@@ -80,6 +80,14 @@ const MUSIC_PROMPTS = {
   hope: "Rising orchestral hope with underlying dread, final choice moment, instrumental loop",
   ending_hope: "Bittersweet resolution, gentle piano and strings, ambiguous hope, instrumental",
   ending_bad: "Deep drone, fading heartbeat, apocalyptic silence, slow decay, instrumental",
+
+  // --- 2026-08-10 追加（Phase 3） ---
+  // クライマックス専用。従来は CH6 と同じ gaia が鳴り続け、最高潮に音の変化が無かった
+  climax: "Slow massive build to a single suspended decision, deep pulsing low end, sparse piano over vast reverb, unbearable stillness before an irreversible choice, instrumental loop",
+  // 各章の後半（react以降）。背景が「余波」へ切り替わるのと同じ位置で音楽も変える
+  aftermath: "Quiet aftermath ambience, sparse piano notes over soft drone, exhaustion and fragile relief after a crisis has passed, restrained and cold, instrumental loop",
+  // transcend / loop 用。従来は11エンディングを ending_hope / ending_bad の2曲で賄っていた
+  ending_strange: "Uncanny weightless resolution, shimmering detuned pads and reversed tones, neither victory nor defeat, dreamlike and unresolved, instrumental",
 };
 
 const SFX_PROMPTS = {
