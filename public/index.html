@@ -1279,8 +1279,8 @@ Promise.all([runAnalysis(false),loadDonationStats()]).finally(()=>{
   setTimeout(()=>{document.getElementById("loading-overlay").classList.add("hidden");handlePostDonate();},400);
 });
 
-// 出典ニュースは解析の完了を待たずに読み込む（失敗しても本体の表示に影響しない）
-loadNewsSources();
+// 出典ニュースの読み込みは、newsSources の宣言より後で呼ぶ必要があるため
+// このスクリプトの末尾で行う（関数宣言は巻き上げられるが let は巻き上げられない）。
 
 // 証拠データ
 let threatEvidence = {};
@@ -1309,7 +1309,10 @@ async function loadNewsSources() {
       renderNewsSources();
     }
   } catch (e) {
-    // 出典が出せなくても本体の表示は成立するため、失敗しても何もしない
+    // 出典が出せなくても本体の表示は成立するため握りつぶすが、必ずログには残す。
+    // 最初の実装ではログを出しておらず、呼び出し位置が let 宣言より前にあったことで
+    // 発生していた TDZ エラーに気づけなかった。
+    console.warn('出典ニュースの読み込みに失敗:', e);
   }
 }
 
@@ -1536,6 +1539,10 @@ window.addEventListener('load', () => {
   const savedCity = localStorage.getItem("city") || "tokyo";
   setCity(savedCity);
 });
+
+// 出典ニュースの読み込み。newsSources / renderNewsSources の宣言より後で呼ぶ必要があるため
+// スクリプトの末尾に置いている。解析の完了は待たない（失敗しても本体の表示に影響しない）。
+loadNewsSources();
 
 </script>
 
