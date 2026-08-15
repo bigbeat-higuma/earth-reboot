@@ -1279,8 +1279,7 @@ Promise.all([runAnalysis(false),loadDonationStats()]).finally(()=>{
   setTimeout(()=>{document.getElementById("loading-overlay").classList.add("hidden");handlePostDonate();},400);
 });
 
-// 出典ニュースの読み込みは、newsSources の宣言より後で呼ぶ必要があるため
-// このスクリプトの末尾で行う（関数宣言は巻き上げられるが let は巻き上げられない）。
+// 出典ニュースはスクリプト末尾で読み込む（下部を参照）。
 
 // 証拠データ
 let threatEvidence = {};
@@ -1297,7 +1296,11 @@ function toggleEvidence(key) {
 // 危機4軸の根拠として表示しているのはAIが書いた要約文なので、それだけでは
 // 「本当に実ニュースを見ているのか」を読者が確かめられない。
 // daily-build が保存した実際の記事（見出し・媒体名・URL）を各軸に添える。
-let newsSources = null;
+// 状態は window に持たせる。let で持つと、宣言行より前に renderNewsSources() が
+// 呼ばれた瞬間に TDZ エラーになり、スクリプト全体がそこで停止してしまう。
+// 実際 applyLang() の末尾からの呼び出しが宣言より前に走り、以降の初期化が
+// すべて実行されないという壊れ方をした。呼び出し順序に依存しない形にする。
+window.__newsSources = window.__newsSources || null;
 
 async function loadNewsSources() {
   try {
@@ -1305,7 +1308,7 @@ async function loadNewsSources() {
     if (!res.ok) return;
     const json = await res.json();
     if (json && json.sources && typeof json.sources === 'object') {
-      newsSources = json.sources;
+      window.__newsSources = json.sources;
       renderNewsSources();
     }
   } catch (e) {
@@ -1331,12 +1334,13 @@ function safeHttpUrl(u) {
 }
 
 function renderNewsSources() {
-  if (!newsSources) return;
+  const sources = window.__newsSources;
+  if (!sources) return;
   const map = { geo: 'geopolitical', env: 'environmental', eco: 'economic', soc: 'social' };
   const label = lang === 'ja' ? '// 出典' : '// SOURCE';
   Object.entries(map).forEach(([key, axis]) => {
     const list = document.getElementById('evl-' + key);
-    const src = newsSources[axis];
+    const src = sources[axis];
     if (!list) return;
     const old = list.querySelector('.evidence-source');
     if (old) old.remove();
@@ -1540,8 +1544,7 @@ window.addEventListener('load', () => {
   setCity(savedCity);
 });
 
-// 出典ニュースの読み込み。newsSources / renderNewsSources の宣言より後で呼ぶ必要があるため
-// スクリプトの末尾に置いている。解析の完了は待たない（失敗しても本体の表示に影響しない）。
+// 出典ニュースの読み込み。解析の完了は待たない（失敗しても本体の表示に影響しない）。
 loadNewsSources();
 
 </script>
