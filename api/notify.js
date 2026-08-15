@@ -34,6 +34,37 @@ webpush.setVapidDetails(
   process.env.VAPID_PRIVATE_KEY
 );
 
+// AI解析の結果を取得する。
+//
+// ⚠️ Redis の analysis_cache_ja を直接読んではいけない（2026-08-12 の不具合）。
+// analyze.js はキャッシュが6時間より古いときに再生成するが、その再生成は
+// 「誰かが /api/analyze を呼んだとき」にしか起きない。サイトの訪問が少ないと
+// キャッシュが何日も凍ったままになり、投稿日をまたいでも同じ内容を投稿してしまう。
+// 実際 8/10 と 8/12 の自動投稿が「残り約11.5年」の同一文面になった。
+//
+// そのため /api/analyze を経由して取得する。期限切れなら向こうで再生成される。
+// 取得できなかった場合のみ、日数だけでも出せるよう Redis のキャッシュへフォールバックする。
+async function fetchAnalysis() {
+  try {
+    const res = await fetch(`${SITE_URL}/api/analyze`, {
+      headers: { 'User-Agent': 'earth-reboot-cron' },
+    });
+    if (res.ok) {
+      const json = await res.json();
+      if (json && typeof json.reboot_years_from_now !== 'undefined') return json;
+    }
+    console.error(`Notify: analyze fetch returned ${res.status}`);
+  } catch (err) {
+    console.error('Notify: analyze fetch failed:', err);
+  }
+  try {
+    return await redis.get(ANALYSIS_CACHE_KEY);
+  } catch (err) {
+    console.error('Notify: analysis cache read failed:', err);
+    return null;
+  }
+}
+
 // メインサイト（public/index.html）と同じ計算で再起動までの残り日数を求める
 function daysUntilReboot(analysis) {
   if (!analysis) return null;
@@ -113,7 +144,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const analysis = await redis.get(ANALYSIS_CACHE_KEY);
+    const analysis = await fetchAnalysis();
     const diffDays = daysUntilReboot(analysis);
 
     const push = await sendPushNotifications(diffDays);

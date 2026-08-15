@@ -25,6 +25,9 @@ const MAX_WEIGHTED_LENGTH = 280;
 // 投稿する曜日（JST）。0=日 1=月 … 6=土。既存の広報プラン「週2-3回」に合わせて月・水・土。
 const POST_WEEKDAYS = new Set([1, 3, 6]);
 
+// 直近に投稿した本文。同じ文面の連投を防ぐために保持する
+const LAST_POST_TEXT_KEY = "x:last_post_text";
+
 /**
  * Xの重み付き文字数を数える。日本語などは1文字=2カウント、URLはt.co短縮により一律23カウント。
  * 過去に文字数超過で投稿に失敗しているため、送信前に必ずこれで検証する。
@@ -140,6 +143,21 @@ export async function postDailyUpdate(redis, analysis, now = new Date()) {
   const text = composePost(analysis);
   if (!text) return { posted: false, reason: "could not compose post" };
 
+  // 前回と一字一句同じ内容なら投稿しない（2026-08-12 の不具合への二重の備え）。
+  // 本来は notify.js 側で毎回新しい解析を取りに行くことで防いでいるが、
+  // 解析が何らかの理由で更新されなかったとき、同じ文面を流すのは「壊れている」ように見える。
+  // 投稿を1回落とす方が害が小さいと判断し、ここで止める。
+  try {
+    const lastText = await redis.get(LAST_POST_TEXT_KEY);
+    if (lastText === text) {
+      console.error("X post: skipped — 前回と同一の文面のため（解析が更新されていない可能性）");
+      return { posted: false, reason: "identical to previous post" };
+    }
+  } catch (e) {
+    console.error("X post: last-post check failed:", e);
+    // 判定できないだけなら投稿は続行する（無投稿になる方が困るため）
+  }
+
   // 同じ日に二重投稿しない（Cronの再試行対策）
   const jstDate = new Date(now.getTime() + 9 * 3600 * 1000).toISOString().slice(0, 10);
   const dedupeKey = `x:posted:${jstDate}`;
@@ -170,5 +188,13 @@ export async function postDailyUpdate(redis, analysis, now = new Date()) {
   }
 
   const json = await res.json().catch(() => ({}));
+
+  // 次回の重複判定に使うため、投稿できた文面を保持する（60日）
+  try {
+    await redis.set(LAST_POST_TEXT_KEY, text, { ex: 60 * 60 * 24 * 60 });
+  } catch (e) {
+    console.error("X post: failed to record last post text:", e);
+  }
+
   return { posted: true, id: json?.data?.id || null, weighted: weightedLength(text) };
 }
