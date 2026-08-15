@@ -149,6 +149,12 @@
   .evidence-box.open{max-height:360px;margin-top:8px;}
   .evidence-list{border-left:1px solid rgba(139,0,0,.4);padding-left:10px;display:flex;flex-direction:column;gap:4px;}
   .evidence-item{font-size:.58rem;color:var(--text);letter-spacing:.05em;line-height:1.6;opacity:.85;}
+  /* 出典の実ニュース。上の根拠はAIが書いた要約なので、元記事を示して検証可能にする */
+  .evidence-source{margin-top:7px;padding-top:6px;border-top:1px dashed rgba(139,0,0,.35);}
+  .evidence-source a{display:block;font-size:.55rem;line-height:1.5;color:var(--ember);text-decoration:none;opacity:.9;}
+  .evidence-source a:hover{opacity:1;text-decoration:underline;}
+  .evidence-source .src-label{font-size:.5rem;color:rgba(200,80,80,.75);letter-spacing:.12em;margin-bottom:2px;}
+  .evidence-source .src-name{font-size:.5rem;color:rgba(200,80,80,.6);letter-spacing:.08em;margin-top:2px;}
   .evidence-item::before{content:"// ";color:var(--ember);opacity:.6;}
   .evidence-loading{font-size:.58rem;color:rgba(120,60,60,.5);letter-spacing:.1em;}
 
@@ -1006,6 +1012,8 @@ function applyLang() {
 
   updateDelayPreview(selectedAmount);
   updateClock();
+  // 出典ラベル（// 出典 / // SOURCE）を言語に追従させる
+  if (typeof renderNewsSources === "function") renderNewsSources();
 }
 
 function pad(n){return String(n).padStart(2,"0");}
@@ -1271,6 +1279,9 @@ Promise.all([runAnalysis(false),loadDonationStats()]).finally(()=>{
   setTimeout(()=>{document.getElementById("loading-overlay").classList.add("hidden");handlePostDonate();},400);
 });
 
+// 出典ニュースは解析の完了を待たずに読み込む（失敗しても本体の表示に影響しない）
+loadNewsSources();
+
 // 証拠データ
 let threatEvidence = {};
 
@@ -1280,6 +1291,67 @@ function toggleEvidence(key) {
   const isOpen = box.classList.contains('open');
   box.classList.toggle('open', !isOpen);
   arrow.classList.toggle('open', !isOpen);
+}
+
+// ── 出典の実ニュース ──────────────────────────
+// 危機4軸の根拠として表示しているのはAIが書いた要約文なので、それだけでは
+// 「本当に実ニュースを見ているのか」を読者が確かめられない。
+// daily-build が保存した実際の記事（見出し・媒体名・URL）を各軸に添える。
+let newsSources = null;
+
+async function loadNewsSources() {
+  try {
+    const res = await fetch('/api/daily', { cache: 'no-store' });
+    if (!res.ok) return;
+    const json = await res.json();
+    if (json && json.sources && typeof json.sources === 'object') {
+      newsSources = json.sources;
+      renderNewsSources();
+    }
+  } catch (e) {
+    // 出典が出せなくても本体の表示は成立するため、失敗しても何もしない
+  }
+}
+
+// NewsAPI 由来の文字列をそのまま挿入しない
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// 想定外のスキーム（javascript: など）を弾く
+function safeHttpUrl(u) {
+  try {
+    const parsed = new URL(String(u));
+    return (parsed.protocol === 'https:' || parsed.protocol === 'http:') ? parsed.href : null;
+  } catch (e) { return null; }
+}
+
+function renderNewsSources() {
+  if (!newsSources) return;
+  const map = { geo: 'geopolitical', env: 'environmental', eco: 'economic', soc: 'social' };
+  const label = lang === 'ja' ? '// 出典' : '// SOURCE';
+  Object.entries(map).forEach(([key, axis]) => {
+    const list = document.getElementById('evl-' + key);
+    const src = newsSources[axis];
+    if (!list) return;
+    const old = list.querySelector('.evidence-source');
+    if (old) old.remove();
+    if (!src || !src.title) return;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'evidence-source';
+    const url = safeHttpUrl(src.url);
+    const title = escapeHtml(src.title);
+    const name = src.source ? escapeHtml(src.source) : '';
+    wrap.innerHTML =
+      `<div class="src-label">${label}</div>` +
+      (url
+        ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${title}</a>`
+        : `<div style="font-size:.55rem;line-height:1.5;color:var(--ember);opacity:.9;">${title}</div>`) +
+      (name ? `<div class="src-name">${name}</div>` : '');
+    list.appendChild(wrap);
+  });
 }
 
 function updateEvidence(evidence) {
@@ -1304,6 +1376,8 @@ function updateEvidence(evidence) {
       `<div class="evidence-item">${item}</div>`
     ).join('');
   });
+  // innerHTML の置き換えで出典が消えるため、描き直す
+  renderNewsSources();
 }
 
 

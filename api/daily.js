@@ -81,6 +81,8 @@ export default async function handler(req, res) {
       scenes: Array.isArray(overlay.scenes) ? overlay.scenes : [],
       choices: overlay.choices && typeof overlay.choices === "object" ? overlay.choices : {},
       digest: overlay.digest && typeof overlay.digest === "object" ? overlay.digest : null,
+      // メインサイトが危機4軸の出典として表示する実際の記事
+      sources: overlay.sources && typeof overlay.sources === "object" ? overlay.sources : null,
     });
   } catch (e) {
     console.error("daily endpoint error:", e);

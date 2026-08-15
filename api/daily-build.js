@@ -41,6 +41,27 @@ export function buildPatches(news) {
   return patches;
 }
 
+// メインサイトの危機4軸 → ニュースカテゴリの対応。
+// ニュースは6カテゴリあるが、サイトの指標は4軸なので、対応するものだけを使う
+// （virus / ai はゲーム側の章では使うが、サイトの4軸には対応先が無い）。
+const AXIS_TO_CATEGORY = {
+  geopolitical: "conflict",
+  environmental: "climate",
+  economic: "economy",
+  social: "social",
+};
+
+export function buildSources(news) {
+  const out = {};
+  for (const [axis, catKey] of Object.entries(AXIS_TO_CATEGORY)) {
+    const top = ((news.categories && news.categories[catKey]) || [])[0];
+    if (top && top.title) {
+      out[axis] = { title: top.title, source: top.source || null, url: top.url || null };
+    }
+  }
+  return out;
+}
+
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
 
@@ -81,6 +102,10 @@ export default async function handler(req, res) {
       phase: "B",
       digest: news.digest,
       patches: buildPatches(news),
+      // メインサイトの危機4軸に、その根拠となった実際の記事を1本ずつ添える。
+      // 表示しているのはAIが書いた要約文なので、出典が見えないと「本当に実ニュース連動なのか」
+      // が読者に確かめられない。元記事へのリンクを出すことで検証可能にする。
+      sources: buildSources(news),
     };
 
     await redis.set(OVERLAY_LATEST, overlay, { ex: TTL_SECONDS });

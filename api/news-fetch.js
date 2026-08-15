@@ -99,6 +99,8 @@ async function fetchCategory(cat, apiKey) {
     const articles = relevant.slice(0, 5).map((a) => ({
       title: a.title.trim(),
       source: (a.source && a.source.name) || "Unknown",
+      // url はメインサイトで出典リンクとして使う（AI要約だけでなく元記事を辿れるようにする）
+      url: a.url || null,
       publishedAt: a.publishedAt || null,
       description: (a.description || "").trim().slice(0, 200),
     }));
