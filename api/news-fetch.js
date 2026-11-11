@@ -28,7 +28,9 @@ export const CATEGORIES = [
   {
     key: "virus", slot: "daily_slot_ch3", label: "感染症", theme: "感染症",
     q: '(outbreak OR pandemic OR "infectious disease" OR vaccine OR "World Health Organization" OR epidemic)',
-    relevance: /(outbreak|pandemic|epidemic|vaccin|infection|infectious|virus strain|world health organization|\bWHO\b\.?\s)/i,
+    // \bWHO\b は入れない。/i 付きの正規表現では関係代名詞の "who" に一致してしまい、
+    // 英文のほぼ全ての記事が感染症として通っていた（2026-11-11 に発見）。
+    relevance: /(outbreak|pandemic|epidemic|vaccin|infection|infectious|virus strain|world health organization|ebola|mpox|bird flu|avian flu|cholera|measles)/i,
   },
   {
     key: "economy", slot: "daily_slot_ch4", label: "経済", theme: "経済不安",
@@ -71,6 +73,22 @@ export function isRelevant(cat, article) {
   return relevanceTier(cat, article) > 0;
 }
 
+// 見出しそのものが主題語を含むか。概要の中で触れているだけの記事（「パンデミック以降、
+// 映画館は…」のような）と区別する。各章に出るのは先頭1件の見出しなので、これを優先する。
+export function titleMatches(cat, article) {
+  return cat.relevance.test(article.title || "");
+}
+
+// 関連性フィルタを通し、「見出しが主題語を含む → 概要だけが含む → 曖昧語＋文脈語」の順に並べる。
+// sort は安定なので、同じ段階の中では NewsAPI の relevancy 順が保たれる。
+export function rankArticles(cat, all) {
+  return all
+    .map((a) => ({ a, score: relevanceTier(cat, a) * 2 + (titleMatches(cat, a) ? 1 : 0) }))
+    .filter((x) => x.score > 0)
+    .sort((x, y) => y.score - x.score)
+    .map((x) => x.a);
+}
+
 function todayStr() {
   return new Date().toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
 }
@@ -84,19 +102,35 @@ function todayStr() {
 // なお無料プランは配信が約1日遅れるため、ここで取れる最新は「昨日」まで。
 export const SEARCH_WINDOWS_DAYS = [3, 7];
 
+// 検索対象の報道機関。期間を直近に絞ると、NewsAPI の「関連度順」はセール情報・ゲーム記事・
+// ポッドキャストのように語が偶然一致しただけの記事を上位に返す（1か月ぶんから選ぶときは
+// 大きな記事が自然と上に来ていたので目立たなかった）。見出しはサイトとゲーム本編にそのまま
+// 出るため、一般ニュースと科学・技術・経済の報道機関に限る。
+export const TRUSTED_DOMAINS = [
+  "bbc.co.uk", "bbc.com", "theguardian.com", "aljazeera.com", "reuters.com", "apnews.com",
+  "npr.org", "nytimes.com", "washingtonpost.com", "cnn.com", "abcnews.go.com", "cbsnews.com",
+  "nbcnews.com", "dw.com", "france24.com", "time.com", "politico.com", "bloomberg.com",
+  "ft.com", "economist.com", "nature.com", "scientificamerican.com", "newscientist.com",
+  "statnews.com", "technologyreview.com", "theverge.com", "arstechnica.com", "wired.com",
+];
+
 export function buildSearchUrl(cat, days, now = new Date()) {
   const from = new Date(now.getTime() - days * 24 * 3600 * 1000).toISOString().slice(0, 19);
-  return `https://newsapi.org/v2/everything?q=${encodeURIComponent(cat.q)}&language=en&sortBy=relevancy&pageSize=20&from=${from}`;
+  return `https://newsapi.org/v2/everything?q=${encodeURIComponent(cat.q)}&language=en&sortBy=relevancy&pageSize=20&from=${from}&domains=${TRUSTED_DOMAINS.join(",")}`;
 }
 
-// 1カテゴリ分のニュースを取得する。直近で関連記事が見つからなければ期間を広げる
+// 1カテゴリ分のニュースを取得する。直近に「見出しが主題語を含む記事」が無ければ期間を広げる。
+// 広げても見つからなければ、関連記事が1本でもある最初の結果を使う。
 async function fetchCategory(cat, apiKey) {
+  let fallback = null;
   let last = null;
   for (const days of SEARCH_WINDOWS_DAYS) {
     last = { ...(await fetchCategoryWindow(cat, apiKey, days)), windowDays: days };
-    if (!last.ok || last.articles.length > 0) break;
+    if (!last.ok) break;
+    if (last.strong) return last;
+    if (!fallback && last.articles.length > 0) fallback = last;
   }
-  return last;
+  return fallback || last;
 }
 
 // 指定した期間で取得し、関連性フィルタを通したものだけ残す
@@ -114,11 +148,7 @@ async function fetchCategoryWindow(cat, apiKey, days) {
     // 各章のスロットには先頭1件だけが使われるため、曖昧語で拾った記事が1位に来ると
     // 後続に本物の記事があってもスロットが汚染される。主題語に一致した記事を前に出す。
     // sort は安定なので、同じ段階の中では NewsAPI の relevancy 順が保たれる。
-    const relevant = all
-      .map((a) => ({ a, tier: relevanceTier(cat, a) }))
-      .filter((x) => x.tier > 0)
-      .sort((x, y) => y.tier - x.tier)
-      .map((x) => x.a);
+    const relevant = rankArticles(cat, all);
 
     const articles = relevant.slice(0, 5).map((a) => ({
       title: a.title.trim(),
@@ -128,7 +158,10 @@ async function fetchCategoryWindow(cat, apiKey, days) {
       publishedAt: a.publishedAt || null,
       description: (a.description || "").trim().slice(0, 200),
     }));
-    return { key: cat.key, ok: true, articles, rawCount: all.length, filteredOutCount: all.length - relevant.length };
+    return {
+      key: cat.key, ok: true, articles, rawCount: all.length, filteredOutCount: all.length - relevant.length,
+      strong: relevant.length > 0 && titleMatches(cat, relevant[0]),
+    };
   } catch (e) {
     return { key: cat.key, ok: false, error: String(e), articles: [] };
   }
@@ -182,7 +215,7 @@ export async function fetchNews() {
     digest,
     meta: results.map((r) => ({
       key: r.key, ok: r.ok, count: r.articles.length, status: r.status,
-      rawCount: r.rawCount, filteredOutCount: r.filteredOutCount, windowDays: r.windowDays,
+      rawCount: r.rawCount, filteredOutCount: r.filteredOutCount, windowDays: r.windowDays, strong: r.strong,
     })),
   };
 }

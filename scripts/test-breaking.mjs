@@ -8,7 +8,7 @@ import {
   buildTriagePrompt, runBreakingCheck, SETTINGS, KEYS,
 } from "../api/_breaking.js";
 import { weightedLength } from "../api/_x-post.js";
-import { buildSearchUrl, SEARCH_WINDOWS_DAYS, CATEGORIES } from "../api/news-fetch.js";
+import { buildSearchUrl, SEARCH_WINDOWS_DAYS, CATEGORIES, isRelevant, rankArticles, titleMatches } from "../api/news-fetch.js";
 import { evaluateHealth } from "../api/_health.js";
 
 let fail = 0;
@@ -156,6 +156,16 @@ const url = new URL(buildSearchUrl(CATEGORIES[0], 3, new Date("2026-11-11T06:00:
 check("直近3日に絞る", url.searchParams.get("from"), "2026-11-08T06:00:00");
 check("関連度順は維持", url.searchParams.get("sortBy"), "relevancy");
 check("まず3日、無ければ7日", SEARCH_WINDOWS_DAYS, [3, 7]);
+check("報道機関に限る", url.searchParams.get("domains").split(",").includes("bbc.co.uk"), true);
+
+// --- 並び順: 見出しが主題語を含む記事を先頭に（2026-11-11 に本番で実際に混入した記事） ---
+const virus = CATEGORIES.find((c) => c.key === "virus");
+const theater = { title: "Theater Chains Pout About Shorter Streaming Release Windows", description: "Among the business concepts exposed as folly during the COVID-19 pandemic was the release window" };
+const executive = { title: "I'm a hospital executive who started working 12-hour ER shifts", description: "Frontline workers needed better communication than emails." };
+const ebola = { title: "Ebola cases in DR Congo pass 11,000, with 5,387 deaths", description: "Health officials report a sharp rise." };
+check("関係代名詞の who では感染症に一致しない", isRelevant(virus, executive), false);
+check("概要で触れているだけの記事より、見出しが主題の記事を前に", rankArticles(virus, [theater, executive, ebola]).map((a) => a.title.slice(0, 5)), ["Ebola", "Theat"]);
+check("見出しの一致を判定", [titleMatches(virus, ebola), titleMatches(virus, theater)], [true, false]);
 
 // --- 鮮度監視: 見張りが止まったら知らせる ---
 const T = Date.parse("2026-11-11T22:30:00Z");
