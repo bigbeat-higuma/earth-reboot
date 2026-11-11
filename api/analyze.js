@@ -206,10 +206,6 @@ export default async function handler(req, res) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: "API key not configured" });
 
-  const config = LANG_CONFIG[lang];
-  const today = new Date();
-  const dateStr = config.dateFormat(today);
-
   // Phase B のニュースオーバーレイ（dyn:overlay:latest）を読み取り、分析の根拠に使う。
   // 存在しない/読み取り失敗時は newsDigestText="" のまま、従来通りClaudeの内部知識のみで分析する。
   let newsDigestText = "";
@@ -222,80 +218,88 @@ export default async function handler(req, res) {
     console.log("News overlay read error:", e.message);
   }
 
-  const prompt = config.prompt(dateStr, newsDigestText);
-
+  let parsed;
   try {
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-6",
-        // 5軸×根拠3件に増えたぶん出力が長くなる。途中で切れると JSON.parse に失敗して
-        // フォールバックに落ちるため、余裕を持たせる
-        max_tokens: 1800,
-        messages: [{ role: "user", content: prompt }],
-      }),
-    });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("Anthropic API error:", errText);
-      if (errText.includes("rate_limit_error")) {
-        try { await redis.set("rate_limit_until", String(now + RETRY_WAIT_MS)); } catch(e){}
-      }
-      try {
-        const cached = await redis.get(cacheKey);
-        if (cached) return res.status(200).json({ ...cached, cached: true, fallback: true });
-      } catch(e){}
-      return res.status(200).json(getFallback(60, lang));
-    }
-
-    const data = await response.json();
-    const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("");
-    const clean = text.replace(/```json|```/g, "").trim();
-    const parsed = JSON.parse(clean);
-
-    if (parsed.summary_jp && !parsed.summary) parsed.summary = parsed.summary_jp;
-    if (parsed.summary) parsed.summary = removeTags(parsed.summary);
-    if (parsed.summary_jp) parsed.summary_jp = parsed.summary;
-    if (parsed.key_factors) parsed.key_factors = parsed.key_factors.map(f => removeTags(f));
-    if (parsed.threat_evidence) {
-      Object.keys(parsed.threat_evidence).forEach(k => {
-        parsed.threat_evidence[k] = parsed.threat_evidence[k].map(e => removeTags(e));
-      });
-    }
-
-    const result = {
-      ...parsed,
-      lang,
-      analyzed_at: new Date().toISOString(),
-      cached: false,
-      cache_age_minutes: 0,
-      next_update_minutes: Math.ceil(CACHE_DURATION_MS / 60000),
-    };
-
-    try { await redis.set(cacheKey, result); } catch(e){}
-    try { await redis.del("rate_limit_until"); } catch(e){}
-
-    return res.status(200).json(result);
-
+    parsed = await generateAnalysis({ lang, newsDigestText, apiKey });
   } catch (err) {
-    console.error("Handler error:", err);
+    console.error(err.apiError ? "Anthropic API error:" : "Handler error:", err.message);
+    if (err.rateLimited) {
+      try { await redis.set("rate_limit_until", String(now + RETRY_WAIT_MS)); } catch(e){}
+    }
     try {
       const cached = await redis.get(cacheKey);
       if (cached) return res.status(200).json({ ...cached, cached: true, fallback: true });
     } catch(e){}
     return res.status(200).json(getFallback(60, lang));
   }
+
+  const result = {
+    ...parsed,
+    lang,
+    analyzed_at: new Date().toISOString(),
+    cached: false,
+    cache_age_minutes: 0,
+    next_update_minutes: Math.ceil(CACHE_DURATION_MS / 60000),
+  };
+
+  try { await redis.set(cacheKey, result); } catch(e){}
+  try { await redis.del("rate_limit_until"); } catch(e){}
+
+  return res.status(200).json(result);
+}
+
+// Claude に解析させ、整形済みの結果を返す。キャッシュには一切触れない。
+// 上の handler（サイトの値）と、速報の見張り（_breaking.js）の試算の両方がこれを使う。
+// 同じプロンプト・同じモデルを通すことで、試算の値をサイトの値と比べられるようにしている。
+// 失敗時は例外を投げる（err.apiError: APIがエラーを返した / err.rateLimited: レート制限）。
+export async function generateAnalysis({ lang = "ja", newsDigestText = "", apiKey }) {
+  const config = LANG_CONFIG[lang] || LANG_CONFIG.ja;
+  const prompt = config.prompt(config.dateFormat(new Date()), newsDigestText);
+
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-6",
+      // 5軸×根拠3件に増えたぶん出力が長くなる。途中で切れると JSON.parse に失敗して
+      // フォールバックに落ちるため、余裕を持たせる
+      max_tokens: 1800,
+      messages: [{ role: "user", content: prompt }],
+    }),
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    const err = new Error(errText.slice(0, 500));
+    err.apiError = true;
+    err.rateLimited = errText.includes("rate_limit_error");
+    throw err;
+  }
+
+  const data = await response.json();
+  const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("");
+  const clean = text.replace(/```json|```/g, "").trim();
+  const parsed = JSON.parse(clean);
+
+  if (parsed.summary_jp && !parsed.summary) parsed.summary = parsed.summary_jp;
+  if (parsed.summary) parsed.summary = removeTags(parsed.summary);
+  if (parsed.summary_jp) parsed.summary_jp = parsed.summary;
+  if (parsed.key_factors) parsed.key_factors = parsed.key_factors.map(f => removeTags(f));
+  if (parsed.threat_evidence) {
+    Object.keys(parsed.threat_evidence).forEach(k => {
+      parsed.threat_evidence[k] = parsed.threat_evidence[k].map(e => removeTags(e));
+    });
+  }
+  return parsed;
 }
 
 // Phase B の news-fetch.js が生成した digest（カテゴリ別スコア・主要見出し）を
 // Claude プロンプトに埋め込むための短いテキストに整形する。
-function buildNewsDigestText(digest, date) {
+export function buildNewsDigestText(digest, date) {
   if (!digest) return "";
   const labels = { climate: "環境", conflict: "紛争", virus: "感染症", economy: "経済", social: "社会", ai: "AI" };
   const lines = [`[${date || ""}]`];

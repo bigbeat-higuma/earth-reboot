@@ -15,6 +15,7 @@ import webpush from 'web-push';
 import { timingSafeTokenEqual } from './_security.js';
 import { postDailyUpdate } from './_x-post.js';
 import { buildSnapshot, recordSnapshot } from './_history.js';
+import { runBreakingCheck } from './_breaking.js';
 
 // Redis 接続（2026-08-08 修正）:
 // 以前は Redis.fromEnv() を使っていたが、これは UPSTASH_REDIS_REST_URL / _TOKEN を参照する。
@@ -135,10 +136,30 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Vercel Cron の認証。User-Agent は詐称できるため認証の根拠に使わない。
+  const auth = req.headers['authorization'] || '';
   const cronSecret = process.env.CRON_SECRET;
+
+  // ?only=breaking … 速報の見張り（_breaking.js）。GitHub Actions が数時間おきに叩く。
+  // Functions が12本で満杯のため、このエンドポイントに相乗りさせている。
+  // 鍵は CRON_SECRET とは別の WATCH_SECRET を使う。GitHub に預ける鍵で出来ることを
+  // 「見張りを1回走らせる」だけに絞り、漏れてもプッシュ通知や定期投稿を起動できないようにする。
+  // 鍵が1つも設定されていない場合は必ず拒否する（AIの呼び出しに費用がかかるため）。
+  if (req.query && req.query.only === 'breaking') {
+    const accepted = [process.env.WATCH_SECRET, cronSecret].filter(Boolean);
+    if (!accepted.some((s) => timingSafeTokenEqual(auth, `Bearer ${s}`))) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    try {
+      const breaking = await runBreakingCheck(redis);
+      return res.status(200).json({ message: 'Done (breaking only)', breaking });
+    } catch (error) {
+      console.error('Breaking check error:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  // Vercel Cron の認証。User-Agent は詐称できるため認証の根拠に使わない。
   if (cronSecret) {
-    const auth = req.headers['authorization'] || '';
     if (!timingSafeTokenEqual(auth, `Bearer ${cronSecret}`)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }

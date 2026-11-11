@@ -75,9 +75,33 @@ function todayStr() {
   return new Date().toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
 }
 
-// 1カテゴリ分のニュースを取得し、関連性フィルタを通したものだけ残す
+// 検索する期間（日数）。まず直近を見て、関連する記事が1本も無いカテゴリだけ広げてやり直す。
+//
+// 2026-11-11 まで期間を指定しておらず、NewsAPI は過去約1か月から「関連度順」で返していた。
+// 実測すると取得した30記事の古さは中央値で23日、24時間以内の記事は0本だった。
+// 「今日のニュースで動く時計」と言いながら、実際はこの1か月の主要ニュースで動いていたことになり、
+// 同じ記事が何日もトップに居座って自動投稿の書き出しが似る原因にもなっていた。
+// なお無料プランは配信が約1日遅れるため、ここで取れる最新は「昨日」まで。
+export const SEARCH_WINDOWS_DAYS = [3, 7];
+
+export function buildSearchUrl(cat, days, now = new Date()) {
+  const from = new Date(now.getTime() - days * 24 * 3600 * 1000).toISOString().slice(0, 19);
+  return `https://newsapi.org/v2/everything?q=${encodeURIComponent(cat.q)}&language=en&sortBy=relevancy&pageSize=20&from=${from}`;
+}
+
+// 1カテゴリ分のニュースを取得する。直近で関連記事が見つからなければ期間を広げる
 async function fetchCategory(cat, apiKey) {
-  const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(cat.q)}&language=en&sortBy=relevancy&pageSize=10`;
+  let last = null;
+  for (const days of SEARCH_WINDOWS_DAYS) {
+    last = { ...(await fetchCategoryWindow(cat, apiKey, days)), windowDays: days };
+    if (!last.ok || last.articles.length > 0) break;
+  }
+  return last;
+}
+
+// 指定した期間で取得し、関連性フィルタを通したものだけ残す
+async function fetchCategoryWindow(cat, apiKey, days) {
+  const url = buildSearchUrl(cat, days);
   try {
     const res = await fetch(url, { headers: { "X-Api-Key": apiKey, "User-Agent": "earth-reboot/1.0" } });
     if (!res.ok) {
@@ -158,7 +182,7 @@ export async function fetchNews() {
     digest,
     meta: results.map((r) => ({
       key: r.key, ok: r.ok, count: r.articles.length, status: r.status,
-      rawCount: r.rawCount, filteredOutCount: r.filteredOutCount,
+      rawCount: r.rawCount, filteredOutCount: r.filteredOutCount, windowDays: r.windowDays,
     })),
   };
 }

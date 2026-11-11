@@ -1,0 +1,56 @@
+# 速報の見張り（観察モード）。
+#
+# 時計は1日1回しか更新されない。3時間おきに /api/notify?only=breaking を叩き、
+# 主要メディアのRSSに「次の定期更新を待たずに時計を動かすべき出来事」が無いかを確認させる。
+# いまは観察モードで、X への投稿もサイトの値の変更も行わない。結果は Redis に記録されるだけ
+# （詳細は api/_breaking.js）。Vercel Hobby の Cron は1日1回までなので、ここから叩いている。
+#
+# 必要な設定: リポジトリの Settings → Secrets and variables → Actions に WATCH_SECRET を登録する
+# （Vercel の環境変数 WATCH_SECRET と同じ値）。未登録のあいだは何もせずに終わる。
+#
+# このワークフローは失敗させない。3時間おきに失敗メールが届くと通知が埋もれるため。
+# 見張りが止まった場合は、サイト側が最後に成功した時刻を覚えていて、
+# 毎朝の Health check（health-check.yml）が1日1回の失敗メールで知らせる。
+name: Breaking watch
+
+on:
+  schedule:
+    - cron: "17 */3 * * *" # 3時間おき（毎時0分は GitHub 側が混むので外している）
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: breaking-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: 速報を確認
+        env:
+          WATCH_URL: https://www.earth-re-boot.com/api/notify?only=breaking
+          WATCH_SECRET: ${{ secrets.WATCH_SECRET }}
+        run: |
+          if [ -z "$WATCH_SECRET" ]; then
+            echo "::notice::WATCH_SECRET が未登録のため、何もしませんでした。"
+            exit 0
+          fi
+
+          code=$(curl -sS -o result.json -w '%{http_code}' --max-time 120 \
+            -H "Authorization: Bearer $WATCH_SECRET" "$WATCH_URL" || true)
+
+          if [ "$code" != "200" ]; then
+            echo "::warning::速報の確認に失敗しました（HTTP $code）。401 なら WATCH_SECRET が Vercel 側と一致していません。"
+            exit 0
+          fi
+
+          jq '.breaking | {at, ok, n, severity, direction, axis, reason, headline, source, shadow, wouldPost, error}' result.json
+          {
+            echo "## 速報の見張り（観察モード）"
+            echo
+            jq -r '.breaking | "- 新しい見出し: \(.n // 0) 件\n- 重大度: \(.severity // "—")\n- 内容: \(.reason // "" | if . == "" then "該当なし" else . end)\n- 投稿していたか: \(.wouldPost // false)\(if .error then "\n- エラー: \(.error)" else "" end)"' result.json
+          } >> "$GITHUB_STEP_SUMMARY"

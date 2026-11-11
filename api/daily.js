@@ -20,15 +20,17 @@ import { evaluateHealth } from "./_health.js";
 const OVERLAY_LATEST = "dyn:overlay:latest";
 const ANALYSIS_CACHE_KEY = "analysis_cache_ja";
 const X_LAST_POST_AT_KEY = "x:last_post_at";
+const WATCH_LAST_CHECK_AT_KEY = "breaking:last_check_at"; // _breaking.js が書く
 
 const isOn = (v) => v === "1" || v === "true";
 
 async function handleHealth(redis, res) {
-  const [overlay, analysis, historyDates, xLastPostAt] = await Promise.all([
+  const [overlay, analysis, historyDates, xLastPostAt, watchLastCheckAt] = await Promise.all([
     redis.get(OVERLAY_LATEST),
     redis.get(ANALYSIS_CACHE_KEY),
     redis.hkeys(HISTORY_KEY),
     redis.get(X_LAST_POST_AT_KEY),
+    redis.get(WATCH_LAST_CHECK_AT_KEY),
   ]);
   const historyLatest = Array.isArray(historyDates) && historyDates.length ? historyDates.slice().sort().pop() : null;
   const health = evaluateHealth({
@@ -37,6 +39,7 @@ async function handleHealth(redis, res) {
     historyLatest,
     xLastPostAt: xLastPostAt ? String(xLastPostAt) : null,
     xEnabled: Boolean(process.env.X_API_KEY && process.env.X_ACCESS_TOKEN),
+    watchLastCheckAt: watchLastCheckAt ? String(watchLastCheckAt) : null,
     todayJst: jstDateString(),
     now: Date.now(),
   });
