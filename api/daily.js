@@ -3,49 +3,67 @@
 // Redis から当日の動的オーバーレイ（patches/scenes/choices）を返す。
 // データが無ければ {} を返し、ゲームは静的シナリオで動作する。
 //
-// GET /api/daily?health=1 は鮮度ウォッチドッグ。
-// 日次Cron(daily-build)が止まるとゲーム内のニュースが古いまま気づけないため、
-// オーバーレイの生成時刻を監視する。古ければ HTTP 503 を返すので、
-// UptimeRobot 等の外形監視をこのURLに向ければ停止を検知できる。
-// （Hobbyプランの Functions 12本上限のため、独立した /api/health は作らず相乗りさせている）
+// Hobbyプランの Functions 12本上限が満杯のため、以下もこのエンドポイントに相乗りさせている。
+//
+//   GET /api/daily?health=1
+//     無人運用のための総合ヘルス。日次ニュース・AI解析・履歴の記録・X投稿のどれかが
+//     止まっていれば HTTP 503 を返す（判定は _health.js）。GitHub Actions が毎日これを叩き、
+//     失敗時に GitHub からメールが届く。
+//
+//   GET /api/daily?history=1&days=180
+//     日次スナップショットの履歴（_history.js）。メインサイトの推移グラフが使う。
 
 import { Redis } from "@upstash/redis";
+import { readHistory, jstDateString, HISTORY_KEY } from "./_history.js";
+import { evaluateHealth } from "./_health.js";
 
 const OVERLAY_LATEST = "dyn:overlay:latest";
+const ANALYSIS_CACHE_KEY = "analysis_cache_ja";
+const X_LAST_POST_AT_KEY = "x:last_post_at";
 
-// Cronは毎日21:00 UTC(=06:00 JST)。1回スキップされたら異常とみなす閾値。
-const STALE_AFTER_HOURS = 30;
+const isOn = (v) => v === "1" || v === "true";
 
-function buildHealth(overlay) {
-  if (!overlay || typeof overlay !== "object") {
-    return { ok: false, status: "missing", reason: "オーバーレイが存在しません（Cron未実行 or Redis空）" };
-  }
+async function handleHealth(redis, res) {
+  const [overlay, analysis, historyDates, xLastPostAt] = await Promise.all([
+    redis.get(OVERLAY_LATEST),
+    redis.get(ANALYSIS_CACHE_KEY),
+    redis.hkeys(HISTORY_KEY),
+    redis.get(X_LAST_POST_AT_KEY),
+  ]);
+  const historyLatest = Array.isArray(historyDates) && historyDates.length ? historyDates.slice().sort().pop() : null;
+  const health = evaluateHealth({
+    overlay,
+    analysis,
+    historyLatest,
+    xLastPostAt: xLastPostAt ? String(xLastPostAt) : null,
+    xEnabled: Boolean(process.env.X_API_KEY && process.env.X_ACCESS_TOKEN),
+    todayJst: jstDateString(),
+    now: Date.now(),
+  });
+  return res.status(health.ok ? 200 : 503).json(health);
+}
 
-  const generatedAt = overlay.generatedAt || null;
-  const ageHours = generatedAt
-    ? Math.round(((Date.now() - new Date(generatedAt).getTime()) / 3600000) * 10) / 10
-    : null;
-  const patches = Array.isArray(overlay.patches) ? overlay.patches.length : 0;
-  const stale = ageHours === null || ageHours > STALE_AFTER_HOURS;
-
-  return {
-    ok: !stale && patches > 0,
-    status: stale ? "stale" : patches > 0 ? "fresh" : "empty",
-    date: overlay.date || null,
-    generatedAt,
-    ageHours,
-    staleAfterHours: STALE_AFTER_HOURS,
-    patches,
-    source: overlay.source || null,
-  };
+async function handleHistory(redis, req, res) {
+  const days = Math.max(1, Math.min(730, parseInt(req.query.days, 10) || 180));
+  const rows = await readHistory(redis, days);
+  return res.status(200).json({
+    count: rows.length,
+    from: rows.length ? rows[0].date : null,
+    to: rows.length ? rows[rows.length - 1].date : null,
+    days: rows,
+  });
 }
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  const isHealth = req.query && (req.query.health === "1" || req.query.health === "true");
+  const isHealth = req.query && isOn(req.query.health);
+  const isHistory = req.query && isOn(req.query.history);
 
   if (isHealth) {
     res.setHeader("Cache-Control", "no-store");
+  } else if (isHistory) {
+    // 1日1件しか増えないので長めにキャッシュしてよい
+    res.setHeader("Cache-Control", "public, max-age=600, s-maxage=600");
   } else {
     // クライアント側は no-store で取得するが、CDN/エッジでは短時間キャッシュ可
     res.setHeader("Cache-Control", "public, max-age=300, s-maxage=300");
@@ -56,20 +74,19 @@ export default async function handler(req, res) {
   const token = process.env.KV_REST_API_TOKEN;
   if (!url || !token) {
     if (isHealth) {
-      return res.status(503).json({ ok: false, status: "unconfigured", reason: "KV_REST_API_* が未設定です" });
+      return res.status(503).json({ ok: false, failed: ["config"], reason: "KV_REST_API_* が未設定です" });
     }
+    if (isHistory) return res.status(200).json({ count: 0, from: null, to: null, days: [] });
     return res.status(200).json({}); // 未設定でもゲームを壊さない
   }
 
   try {
     const redis = new Redis({ url, token });
+
+    if (isHealth) return await handleHealth(redis, res);
+    if (isHistory) return await handleHistory(redis, req, res);
+
     const overlay = await redis.get(OVERLAY_LATEST);
-
-    if (isHealth) {
-      const health = buildHealth(overlay);
-      return res.status(health.ok ? 200 : 503).json(health);
-    }
-
     if (!overlay || typeof overlay !== "object") {
       return res.status(200).json({});
     }
@@ -81,14 +98,15 @@ export default async function handler(req, res) {
       scenes: Array.isArray(overlay.scenes) ? overlay.scenes : [],
       choices: overlay.choices && typeof overlay.choices === "object" ? overlay.choices : {},
       digest: overlay.digest && typeof overlay.digest === "object" ? overlay.digest : null,
-      // メインサイトが危機4軸の出典として表示する実際の記事
+      // メインサイトが危機の各軸の出典として表示する実際の記事
       sources: overlay.sources && typeof overlay.sources === "object" ? overlay.sources : null,
     });
   } catch (e) {
     console.error("daily endpoint error:", e);
     if (isHealth) {
-      return res.status(503).json({ ok: false, status: "error", reason: "Redis 読み取りに失敗しました" });
+      return res.status(503).json({ ok: false, failed: ["redis"], reason: "Redis 読み取りに失敗しました" });
     }
+    if (isHistory) return res.status(200).json({ count: 0, from: null, to: null, days: [] });
     return res.status(200).json({}); // 失敗してもゲームは静的で続行
   }
 }

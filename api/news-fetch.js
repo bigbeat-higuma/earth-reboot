@@ -142,6 +142,14 @@ export async function fetchNews() {
   }
   digest.top3_headlines = top3;
 
+  // カテゴリごとの代表見出し。AI解析（analyze.js）が全軸を実際の記事に基づいて採点できるようにする
+  const headlines = {};
+  for (const cat of CATEGORIES) {
+    const arr = categories[cat.key];
+    if (arr && arr[0]) headlines[cat.key] = arr[0].title;
+  }
+  digest.headlines = headlines;
+
   return {
     ok: anyOk,
     date: todayStr(),

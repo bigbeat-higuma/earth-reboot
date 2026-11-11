@@ -14,6 +14,7 @@ import { Redis } from '@upstash/redis';
 import webpush from 'web-push';
 import { timingSafeTokenEqual } from './_security.js';
 import { postDailyUpdate } from './_x-post.js';
+import { buildSnapshot, recordSnapshot } from './_history.js';
 
 // Redis 接続（2026-08-08 修正）:
 // 以前は Redis.fromEnv() を使っていたが、これは UPSTASH_REDIS_REST_URL / _TOKEN を参照する。
@@ -147,6 +148,25 @@ export default async function handler(req, res) {
     const analysis = await fetchAnalysis();
     const diffDays = daysUntilReboot(analysis);
 
+    // その日の値を履歴に積む（推移グラフの元データ）。
+    // 失敗しても通知・投稿は続ける。記録が止まれば鮮度監視（?health=1）が拾う。
+    let history;
+    try {
+      const overlay = await redis.get('dyn:overlay:latest');
+      const snapshot = buildSnapshot(analysis, overlay);
+      history = snapshot
+        ? await recordSnapshot(redis, snapshot)
+        : { recorded: false, reason: 'analysis unavailable or fallback' };
+    } catch (err) {
+      console.error('History record error:', err);
+      history = { recorded: false, reason: 'exception' };
+    }
+
+    // ?only=history … 記録だけを行う（手動での再実行・検証用。通知と投稿は行わない）
+    if (req.query && req.query.only === 'history') {
+      return res.status(200).json({ message: 'Done (history only)', days: diffDays, history });
+    }
+
     const push = await sendPushNotifications(diffDays);
 
     // X への定期投稿。購読者ゼロでもここに到達させるため、プッシュ通知とは独立して実行する。
@@ -160,7 +180,7 @@ export default async function handler(req, res) {
       x = { posted: false, reason: 'exception' };
     }
 
-    return res.status(200).json({ message: 'Done', days: diffDays, push, x });
+    return res.status(200).json({ message: 'Done', days: diffDays, history, push, x });
   } catch (error) {
     console.error('Notify error:', error);
     return res.status(500).json({ error: 'Internal server error' });

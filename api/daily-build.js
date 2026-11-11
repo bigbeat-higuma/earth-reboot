@@ -41,14 +41,16 @@ export function buildPatches(news) {
   return patches;
 }
 
-// メインサイトの危機4軸 → ニュースカテゴリの対応。
-// ニュースは6カテゴリあるが、サイトの指標は4軸なので、対応するものだけを使う
-// （virus / ai はゲーム側の章では使うが、サイトの4軸には対応先が無い）。
+// メインサイトの危機5軸 → ニュースカテゴリの対応。
+// ニュースは6カテゴリあり、対応するものだけを使う（virus はゲーム側の章でのみ使用）。
+// ai は 2026-11-11 に追加した。本家の終末時計が 2026年の声明でAIを理由に挙げたのに、
+// こちらはAIのニュースを取得・採点していながらサイトに出していなかった。
 const AXIS_TO_CATEGORY = {
   geopolitical: "conflict",
   environmental: "climate",
   economic: "economy",
   social: "social",
+  ai: "ai",
 };
 
 export function buildSources(news) {

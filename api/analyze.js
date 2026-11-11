@@ -21,13 +21,15 @@ HTMLタグ・引用タグ・Markdownは一切含めないこと。すべて純�
     "geopolitical": <0〜100の整数>,
     "environmental": <0〜100の整数>,
     "economic": <0〜100の整数>,
-    "social": <0〜100の整数>
+    "social": <0〜100の整数>,
+    "ai": <0〜100の整数。AIに起因するリスク（暴走・悪用・軍事利用・偽情報・雇用や産業の混乱・規制の失敗）>
   },
   "threat_evidence": {
     "geopolitical": ["<根拠1（40字以内）>", "<根拠2>", "<根拠3>"],
     "environmental": ["<根拠1（40字以内）>", "<根拠2>", "<根拠3>"],
     "economic":      ["<根拠1（40字以内）>", "<根拠2>", "<根拠3>"],
-    "social":        ["<根拠1（40字以内）>", "<根拠2>", "<根拠3>"]
+    "social":        ["<根拠1（40字以内）>", "<根拠2>", "<根拠3>"],
+    "ai":        ["<根拠1（40字以内）>", "<根拠2>", "<根拠3>"]
   },
   "key_factors": ["<主要因1（20字以内）>", "<主要因2>", "<主要因3>"]
 }`,
@@ -50,13 +52,15 @@ No HTML tags, no markdown, no quote tags. Pure text only.
     "geopolitical": <integer 0-100>,
     "environmental": <integer 0-100>,
     "economic": <integer 0-100>,
-    "social": <integer 0-100>
+    "social": <integer 0-100>,
+    "ai": <integer 0-100. Risk originating from AI: loss of control, misuse, military use, disinformation, labor and industry disruption, regulatory failure>
   },
   "threat_evidence": {
     "geopolitical": ["<evidence 1 (under 60 chars)>", "<evidence 2>", "<evidence 3>"],
     "environmental": ["<evidence 1>", "<evidence 2>", "<evidence 3>"],
     "economic":      ["<evidence 1>", "<evidence 2>", "<evidence 3>"],
-    "social":        ["<evidence 1>", "<evidence 2>", "<evidence 3>"]
+    "social":        ["<evidence 1>", "<evidence 2>", "<evidence 3>"],
+    "ai":        ["<evidence 1>", "<evidence 2>", "<evidence 3>"]
   },
   "key_factors": ["<factor 1 (under 30 chars)>", "<factor 2>", "<factor 3>"]
 }`,
@@ -79,13 +83,15 @@ Keine HTML-Tags, kein Markdown, keine Anführungszeichen-Tags. Nur reiner Text.
     "geopolitical": <ganze Zahl 0-100>,
     "environmental": <ganze Zahl 0-100>,
     "economic": <ganze Zahl 0-100>,
-    "social": <ganze Zahl 0-100>
+    "social": <ganze Zahl 0-100>,
+    "ai": <ganze Zahl 0-100. Von KI ausgehende Risiken: Kontrollverlust, Missbrauch, militärische Nutzung, Desinformation, Umbrüche in Arbeit und Industrie, Regulierungsversagen>
   },
   "threat_evidence": {
     "geopolitical": ["<Beleg 1 (max. 60 Zeichen)>", "<Beleg 2>", "<Beleg 3>"],
     "environmental": ["<Beleg 1>", "<Beleg 2>", "<Beleg 3>"],
     "economic":      ["<Beleg 1>", "<Beleg 2>", "<Beleg 3>"],
-    "social":        ["<Beleg 1>", "<Beleg 2>", "<Beleg 3>"]
+    "social":        ["<Beleg 1>", "<Beleg 2>", "<Beleg 3>"],
+    "ai":        ["<Beleg 1>", "<Beleg 2>", "<Beleg 3>"]
   },
   "key_factors": ["<Faktor 1 (max. 30 Zeichen)>", "<Faktor 2>", "<Faktor 3>"]
 }`,
@@ -108,13 +114,15 @@ Aucune balise HTML, aucun markdown, aucune balise de citation. Texte pur uniquem
     "geopolitical": <entier 0-100>,
     "environmental": <entier 0-100>,
     "economic": <entier 0-100>,
-    "social": <entier 0-100>
+    "social": <entier 0-100>,
+    "ai": <entier 0-100. Risques liés à l'IA : perte de contrôle, usage malveillant, usage militaire, désinformation, bouleversement de l'emploi et de l'industrie, échec de la régulation>
   },
   "threat_evidence": {
     "geopolitical": ["<preuve 1 (max. 60 caractères)>", "<preuve 2>", "<preuve 3>"],
     "environmental": ["<preuve 1>", "<preuve 2>", "<preuve 3>"],
     "economic":      ["<preuve 1>", "<preuve 2>", "<preuve 3>"],
-    "social":        ["<preuve 1>", "<preuve 2>", "<preuve 3>"]
+    "social":        ["<preuve 1>", "<preuve 2>", "<preuve 3>"],
+    "ai":        ["<preuve 1>", "<preuve 2>", "<preuve 3>"]
   },
   "key_factors": ["<facteur 1 (max. 30 caractères)>", "<facteur 2>", "<facteur 3>"]
 }`,
@@ -137,13 +145,15 @@ ${newsDigest ? `\n以下是今天实际报道的世界新闻标题。请将这�
     "geopolitical": <0到100的整数>,
     "environmental": <0到100的整数>,
     "economic": <0到100的整数>,
-    "social": <0到100的整数>
+    "social": <0到100的整数>,
+    "ai": <0到100的整数。源自AI的风险：失控、滥用、军事化、虚假信息、就业与产业冲击、监管失败>
   },
   "threat_evidence": {
     "geopolitical": ["<依据1（30字以内）>", "<依据2>", "<依据3>"],
     "environmental": ["<依据1>", "<依据2>", "<依据3>"],
     "economic":      ["<依据1>", "<依据2>", "<依据3>"],
-    "social":        ["<依据1>", "<依据2>", "<依据3>"]
+    "social":        ["<依据1>", "<依据2>", "<依据3>"],
+    "ai":        ["<依据1>", "<依据2>", "<依据3>"]
   },
   "key_factors": ["<主要因素1（15字以内）>", "<主要因素2>", "<主要因素3>"]
 }`,
@@ -224,7 +234,9 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-6",
-        max_tokens: 1200,
+        // 5軸×根拠3件に増えたぶん出力が長くなる。途中で切れると JSON.parse に失敗して
+        // フォールバックに落ちるため、余裕を持たせる
+        max_tokens: 1800,
         messages: [{ role: "user", content: prompt }],
       }),
     });
@@ -291,7 +303,15 @@ function buildNewsDigestText(digest, date) {
     const score = digest[key + "_score"];
     if (score != null) lines.push(`- ${labels[key]}スコア: ${score}/100`);
   }
-  if (Array.isArray(digest.top3_headlines) && digest.top3_headlines.length) {
+  // カテゴリ別の見出し（2026-11-11〜）。以前は top3_headlines しか渡しておらず、それは
+  // 先頭3カテゴリ（環境・紛争・感染症）の見出しだったため、経済・社会・AIの軸は
+  // 実際の記事を一件も見ないまま採点されていた。
+  if (digest.headlines && typeof digest.headlines === "object") {
+    lines.push("カテゴリ別の主要見出し:");
+    for (const key of Object.keys(labels)) {
+      if (digest.headlines[key]) lines.push(`  • [${labels[key]}] ${digest.headlines[key]}`);
+    }
+  } else if (Array.isArray(digest.top3_headlines) && digest.top3_headlines.length) {
     lines.push("主要見出し:");
     digest.top3_headlines.forEach((h) => lines.push(`  • ${h}`));
   }
@@ -311,12 +331,13 @@ function getFallback(nextMinutes, lang = "ja") {
     summary: config.fallbackSummary,
     summary_jp: config.fallbackSummary,
     lang,
-    threats: { geopolitical: 72, environmental: 68, economic: 61, social: 55 },
+    threats: { geopolitical: 72, environmental: 68, economic: 61, social: 55, ai: 60 },
     threat_evidence: {
       geopolitical: [...ev],
       environmental: [...ev],
       economic: [...ev],
       social: [...ev],
+      ai: [...ev],
     },
     key_factors: config.fallbackFactors,
     analyzed_at: new Date().toISOString(),

@@ -27,6 +27,9 @@ const POST_WEEKDAYS = new Set([1, 3, 6]);
 
 // 直近に投稿した本文。同じ文面の連投を防ぐために保持する
 const LAST_POST_TEXT_KEY = "x:last_post_text";
+// 最後に投稿できた時刻。鮮度監視（_health.js）が「投稿が止まっていないか」の判定に使う。
+// クレジット切れやトークン失効は外から見えないため、成功した事実の方を記録しておく。
+const LAST_POST_AT_KEY = "x:last_post_at";
 
 /**
  * Xの重み付き文字数を数える。日本語などは1文字=2カウント、URLはt.co短縮により一律23カウント。
@@ -192,6 +195,7 @@ export async function postDailyUpdate(redis, analysis, now = new Date()) {
   // 次回の重複判定に使うため、投稿できた文面を保持する（60日）
   try {
     await redis.set(LAST_POST_TEXT_KEY, text, { ex: 60 * 60 * 24 * 60 });
+    await redis.set(LAST_POST_AT_KEY, now.toISOString());
   } catch (e) {
     console.error("X post: failed to record last post text:", e);
   }

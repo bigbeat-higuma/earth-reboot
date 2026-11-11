@@ -1,0 +1,81 @@
+# 無人運用の見張り番。
+#
+# このサイトは数か月単位で誰も見に来ない前提で動いている。日次ニュース・AI解析・
+# 日次の記録・X投稿のどれかが止まっても、誰かが気づく仕組みが無かった。
+# 毎朝 /api/daily?health=1 を叩き、異常ならこのワークフローを失敗させる。
+# 失敗すると GitHub からリポジトリの持ち主へメールが届く（GitHub の既定の通知設定）。
+#
+# 通知が届くかの確認: Actions タブ → Health check → Run workflow →
+# 「simulate_failure」にチェックを入れて実行する。数分以内にメールが来れば正常。
+name: Health check
+
+on:
+  schedule:
+    - cron: "30 22 * * *" # 毎日 07:30 JST（06:00 JST の日次ニュース取得の後）
+  workflow_dispatch:
+    inputs:
+      simulate_failure:
+        description: "失敗通知のメールが届くかを確認する（チェックすると必ず失敗する）"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: write # 下の keepalive で、このワークフロー自身を「有効」に保つために必要
+
+concurrency:
+  group: health-check
+  cancel-in-progress: true
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: サイトの総合ヘルスを確認
+        env:
+          HEALTH_URL: https://www.earth-re-boot.com/api/daily?health=1
+          SIMULATE_FAILURE: ${{ inputs.simulate_failure }}
+        run: |
+          if [ "$SIMULATE_FAILURE" = "true" ]; then
+            echo "::error::通知の確認用に、わざと失敗させています。サイトに異常はありません。"
+            exit 1
+          fi
+
+          # 一時的な通信エラーで誤報を出さないよう、3回まで試す
+          code=000
+          for attempt in 1 2 3; do
+            code=$(curl -sS -o health.json -w '%{http_code}' --max-time 30 "$HEALTH_URL" || true)
+            if [ "$code" = "200" ] && jq -e '.ok == true' health.json > /dev/null 2>&1; then
+              echo "正常です（HTTP $code）"
+              jq '.checks' health.json
+              exit 0
+            fi
+            echo "試行 $attempt: HTTP $code"
+            [ "$attempt" -lt 3 ] && sleep 60
+          done
+
+          {
+            echo "## 地球再起動時間: 異常を検知しました"
+            echo
+            echo "HTTP $code — 止まっている項目:"
+            echo
+            jq -r '.checks // {} | to_entries[] | select(.value.ok == false) | "- **\(.key)**: \(.value.reason // "理由不明")"' health.json 2> /dev/null \
+              || echo "- 応答を読み取れませんでした（サイト自体が落ちている可能性があります）"
+            jq -r 'select(.reason != null) | "- \(.reason)"' health.json 2> /dev/null || true
+            echo
+            echo "確認先: $HEALTH_URL"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "::error::サイトのヘルスチェックに失敗しました（HTTP $code）。詳細はこの実行の Summary を参照してください。"
+          cat health.json 2> /dev/null || true
+          exit 1
+
+      # GitHub は、公開リポジトリで60日間コミットが無いと定期実行（schedule）を自動で止める。
+      # 止まると見張り番そのものが黙って居なくなるため、実行のたびに自分自身を「有効」に
+      # し直して期限を延ばす。これが失敗したときも、黙殺せずジョブを失敗させて知らせる。
+      - name: 定期実行が自動停止されないようにする（keepalive）
+        if: always() && github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method PUT "repos/${{ github.repository }}/actions/workflows/health-check.yml/enable"

@@ -83,6 +83,29 @@
   .threat-bar-bg{height:4px;background:rgba(60,0,0,.4);overflow:hidden;}
   .threat-bar-fill{height:100%;background:linear-gradient(90deg,var(--blood),var(--glow));transition:width 1.5s ease;box-shadow:0 0 6px var(--ember);}
   .threat-value{font-size:.55rem;color:var(--text);text-align:right;}
+  .threat-item.wide{grid-column:1/-1;}
+  .threat-spark{display:none;width:100%;height:20px;margin-top:2px;}
+  .spark-note{font-size:.5rem;color:rgba(200,80,80,.7);letter-spacing:.08em;margin-top:10px;}
+  .hist-sub{font-size:.6rem;color:rgba(204,153,136,.8);letter-spacing:.08em;line-height:1.6;min-height:1em;}
+  #hist-chart{position:relative;margin-top:10px;touch-action:pan-y;}
+  #hist-chart:focus{outline:none;}
+  #hist-chart:focus-visible{outline:1px solid rgba(255,204,170,.5);outline-offset:4px;}
+  #hist-chart svg{display:block;width:100%;height:auto;font-family:inherit;}
+  .hist-empty{font-size:.65rem;color:rgba(204,153,136,.8);letter-spacing:.08em;line-height:1.8;padding:18px 0;text-align:center;}
+  .hist-tip{position:absolute;top:0;left:0;pointer-events:none;opacity:0;transition:opacity .12s;background:rgba(10,0,0,.94);border:1px solid rgba(139,0,0,.6);padding:8px 10px;min-width:130px;max-width:220px;z-index:2;}
+  .hist-tip.on{opacity:1;}
+  .hist-tip .tip-date{font-size:.55rem;color:rgba(204,153,136,.8);letter-spacing:.1em;}
+  .hist-tip .tip-val{font-size:.95rem;color:#ffccaa;margin:2px 0 6px;}
+  .hist-tip .tip-row{display:flex;justify-content:space-between;gap:12px;font-size:.55rem;color:rgba(204,153,136,.8);line-height:1.7;}
+  .hist-tip .tip-row b{font-weight:400;color:var(--text);}
+  .hist-tip .tip-note{font-size:.5rem;color:rgba(204,153,136,.7);line-height:1.5;margin-top:6px;padding-top:5px;border-top:1px dashed rgba(139,0,0,.35);}
+  #hist-table-wrap{margin-top:10px;}
+  #hist-table-wrap summary{font-size:.55rem;color:var(--ember);letter-spacing:.12em;cursor:pointer;}
+  .hist-table-scroll{max-height:220px;overflow:auto;margin-top:8px;}
+  #hist-table{width:100%;border-collapse:collapse;font-size:.55rem;color:var(--text);}
+  #hist-table th,#hist-table td{padding:4px 6px;text-align:right;border-bottom:1px solid rgba(80,0,0,.3);white-space:nowrap;}
+  #hist-table th{color:var(--ember);font-weight:400;letter-spacing:.05em;position:sticky;top:0;background:#0d0000;}
+  #hist-table th:first-child,#hist-table td:first-child{text-align:left;}
   .cache-info{display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding-top:12px;border-top:1px solid rgba(80,0,0,.3);}
   .cache-badge{font-size:.55rem;letter-spacing:.15em;padding:2px 8px;border:1px solid;}
   .cache-badge.live{color:var(--green);border-color:rgba(68,255,136,.4);}
@@ -485,6 +508,17 @@ function updateShareText() {
     </div>
   </div>
 
+  <!-- 推移（日次の記録） -->
+  <div class="panel" id="hist-panel">
+    <div class="panel-label" id="lbl-hist-title">// 推移 — 再起動までの残り年数</div>
+    <div class="hist-sub" id="hist-sub"></div>
+    <div id="hist-chart" role="img"></div>
+    <details id="hist-table-wrap" hidden>
+      <summary id="hist-table-summary">表で見る</summary>
+      <div class="hist-table-scroll"><table id="hist-table"></table></div>
+    </details>
+  </div>
+
   <!-- AI解析（価値提示を先に） -->
   <div class="panel">
     <div class="panel-label" id="lbl-ai-title">// AI解析ログ — 地球危機指数</div>
@@ -498,6 +532,7 @@ function updateShareText() {
           <div class="threat-right"><div class="threat-value" id="t1v">0%</div><div class="threat-arrow open" id="arrow-geo">▶</div></div>
         </div>
         <div class="threat-bar-bg"><div class="threat-bar-fill" id="t1" style="width:0%"></div></div>
+        <svg class="threat-spark" id="spark-geo" aria-hidden="true"></svg>
         <div class="evidence-box open" id="ev-geo"><div class="evidence-list" id="evl-geo"><div class="evidence-loading">// データ読み込み中...</div></div></div>
       </div>
       <div class="threat-item">
@@ -506,6 +541,7 @@ function updateShareText() {
           <div class="threat-right"><div class="threat-value" id="t2v">0%</div><div class="threat-arrow open" id="arrow-env">▶</div></div>
         </div>
         <div class="threat-bar-bg"><div class="threat-bar-fill" id="t2" style="width:0%"></div></div>
+        <svg class="threat-spark" id="spark-env" aria-hidden="true"></svg>
         <div class="evidence-box open" id="ev-env"><div class="evidence-list" id="evl-env"><div class="evidence-loading">// データ読み込み中...</div></div></div>
       </div>
       <div class="threat-item">
@@ -514,6 +550,7 @@ function updateShareText() {
           <div class="threat-right"><div class="threat-value" id="t3v">0%</div><div class="threat-arrow open" id="arrow-eco">▶</div></div>
         </div>
         <div class="threat-bar-bg"><div class="threat-bar-fill" id="t3" style="width:0%"></div></div>
+        <svg class="threat-spark" id="spark-eco" aria-hidden="true"></svg>
         <div class="evidence-box open" id="ev-eco"><div class="evidence-list" id="evl-eco"><div class="evidence-loading">// データ読み込み中...</div></div></div>
       </div>
       <div class="threat-item">
@@ -522,9 +559,20 @@ function updateShareText() {
           <div class="threat-right"><div class="threat-value" id="t4v">0%</div><div class="threat-arrow open" id="arrow-soc">▶</div></div>
         </div>
         <div class="threat-bar-bg"><div class="threat-bar-fill" id="t4" style="width:0%"></div></div>
+        <svg class="threat-spark" id="spark-soc" aria-hidden="true"></svg>
         <div class="evidence-box open" id="ev-soc"><div class="evidence-list" id="evl-soc"><div class="evidence-loading">// データ読み込み中...</div></div></div>
       </div>
+      <div class="threat-item wide">
+        <div class="threat-header" onclick="toggleEvidence('ai')">
+          <div class="threat-name" id="lbl-t5">AIリスク</div>
+          <div class="threat-right"><div class="threat-value" id="t5v">—</div><div class="threat-arrow open" id="arrow-ai">▶</div></div>
+        </div>
+        <div class="threat-bar-bg"><div class="threat-bar-fill" id="t5" style="width:0%"></div></div>
+        <svg class="threat-spark" id="spark-ai" aria-hidden="true"></svg>
+        <div class="evidence-box open" id="ev-ai"><div class="evidence-list" id="evl-ai"><div class="evidence-loading">// データ読み込み中...</div></div></div>
+      </div>
     </div>
+    <div class="spark-note" id="spark-note" hidden></div>
     <div class="cache-info">
       <span class="cache-badge" id="cache-badge">--</span>
       <span class="cache-next" id="cache-next">--</span>
@@ -663,7 +711,12 @@ const T = {
     aiError: "// 接続エラー",
     aiErrorMsg: "解析システムへの接続が失敗しました。",
     analyzing: "世界情勢を解析しています...",
-    t1: "地政学的緊張", t2: "環境崩壊指数", t3: "経済システム不安", t4: "社会的混乱度",
+    t1: "地政学的緊張", t2: "環境崩壊指数", t3: "経済システム不安", t4: "社会的混乱度", t5: "AIリスク",
+    lblHistTitle: "// 推移 — 再起動までの残り年数",
+    histSub: (n, from) => `${from} からの記録（${n}日分）。数字が小さいほど深刻です。`,
+    histEmpty: "記録を開始しました。明日以降、ここに推移が表示されます。",
+    histTable: "表で見る", histDate: "日付", histYears: "残り年数", histUnit: "年", histRestored: "X投稿から復元",
+    sparkNote: "各メーター下の細い線は、その軸の日々の推移です。",
     cached: (m) => `CACHED — ${m}分前の解析`,
     cacheNext: (m) => `次回更新まで約${m}分`,
     live: "LIVE — 今回新規解析",
@@ -701,7 +754,12 @@ const T = {
     aiError: "// CONNECTION ERROR",
     aiErrorMsg: "Failed to connect to analysis system.",
     analyzing: "Analyzing global situation...",
-    t1: "Geopolitical Tension", t2: "Environmental Collapse", t3: "Economic Instability", t4: "Social Disorder",
+    t1: "Geopolitical Tension", t2: "Environmental Collapse", t3: "Economic Instability", t4: "Social Disorder", t5: "AI Risk",
+    lblHistTitle: "// TREND — YEARS UNTIL REBOOT",
+    histSub: (n, from) => `${n} daily records since ${from}. Lower means worse.`,
+    histEmpty: "Recording has started. The trend will appear here from tomorrow.",
+    histTable: "View as table", histDate: "Date", histYears: "Years left", histUnit: " yrs", histRestored: "Restored from X posts",
+    sparkNote: "The thin line under each meter shows that axis's daily trend.",
     cached: (m) => `CACHED — Analysis from ${m}min ago`,
     cacheNext: (m) => `Next update in ~${m}min`,
     live: "LIVE — Fresh analysis",
@@ -739,7 +797,12 @@ const T = {
     aiError: "// VERBINDUNGSFEHLER",
     aiErrorMsg: "Verbindung zum Analysesystem fehlgeschlagen.",
     analyzing: "Weltlage wird analysiert...",
-    t1: "Geopolitische Spannung", t2: "Umweltkollaps", t3: "Wirtschaftsinstabilität", t4: "Soziale Unordnung",
+    t1: "Geopolitische Spannung", t2: "Umweltkollaps", t3: "Wirtschaftsinstabilität", t4: "Soziale Unordnung", t5: "KI-Risiko",
+    lblHistTitle: "// VERLAUF — JAHRE BIS ZUM NEUSTART",
+    histSub: (n, from) => `${n} Tageswerte seit ${from}. Niedriger bedeutet ernster.`,
+    histEmpty: "Die Aufzeichnung hat begonnen. Ab morgen erscheint hier der Verlauf.",
+    histTable: "Als Tabelle anzeigen", histDate: "Datum", histYears: "Verbleibende Jahre", histUnit: " Jahre", histRestored: "Aus X-Beiträgen rekonstruiert",
+    sparkNote: "Die dünne Linie unter jeder Anzeige zeigt den täglichen Verlauf dieser Achse.",
     cached: (m) => `GECACHT — Analyse vor ${m} Min.`,
     cacheNext: (m) => `Nächste Aktualisierung in ~${m} Min.`,
     live: "LIVE — Neue Analyse",
@@ -777,7 +840,12 @@ const T = {
     aiError: "// ERREUR DE CONNEXION",
     aiErrorMsg: "Échec de la connexion au système d'analyse.",
     analyzing: "Analyse de la situation mondiale...",
-    t1: "Tension Géopolitique", t2: "Effondrement Environnemental", t3: "Instabilité Économique", t4: "Désordre Social",
+    t1: "Tension Géopolitique", t2: "Effondrement Environnemental", t3: "Instabilité Économique", t4: "Désordre Social", t5: "Risque IA",
+    lblHistTitle: "// ÉVOLUTION — ANNÉES AVANT LE REDÉMARRAGE",
+    histSub: (n, from) => `${n} relevés quotidiens depuis le ${from}. Plus la valeur est basse, plus la situation est grave.`,
+    histEmpty: "L'enregistrement a commencé. L'évolution s'affichera ici à partir de demain.",
+    histTable: "Voir le tableau", histDate: "Date", histYears: "Années restantes", histUnit: " ans", histRestored: "Reconstitué à partir des publications X",
+    sparkNote: "La fine ligne sous chaque jauge montre l'évolution quotidienne de cet axe.",
     cached: (m) => `EN CACHE — Analyse il y a ${m} min`,
     cacheNext: (m) => `Prochaine mise à jour dans ~${m} min`,
     live: "EN DIRECT — Nouvelle analyse",
@@ -815,7 +883,12 @@ const T = {
     aiError: "// 连接错误",
     aiErrorMsg: "无法连接到分析系统。",
     analyzing: "正在分析全球形势...",
-    t1: "地缘政治紧张", t2: "环境崩溃", t3: "经济不稳定", t4: "社会动荡",
+    t1: "地缘政治紧张", t2: "环境崩溃", t3: "经济不稳定", t4: "社会动荡", t5: "AI风险",
+    lblHistTitle: "// 走势 — 距离重启的剩余年数",
+    histSub: (n, from) => `自 ${from} 起的 ${n} 天记录。数值越小越严重。`,
+    histEmpty: "已开始记录。从明天起，这里将显示走势。",
+    histTable: "以表格查看", histDate: "日期", histYears: "剩余年数", histUnit: "年", histRestored: "根据 X 帖文恢复",
+    sparkNote: "每个指标下方的细线表示该项的每日走势。",
     cached: (m) => `已缓存 — ${m}分钟前的分析`,
     cacheNext: (m) => `下次更新约${m}分钟后`,
     live: "实时 — 最新分析",
@@ -962,6 +1035,7 @@ function applyLang() {
   document.getElementById("lbl-t2").textContent = t("t2");
   document.getElementById("lbl-t3").textContent = t("t3");
   document.getElementById("lbl-t4").textContent = t("t4");
+  document.getElementById("lbl-t5").textContent = t("t5");
   document.getElementById("reload-btn").textContent = t("reloadBtn");
   document.getElementById("lbl-log-title").textContent = t("lblLogTitle");
   document.getElementById("lbl-total-amount").textContent = t("lblTotalAmount");
@@ -1014,6 +1088,8 @@ function applyLang() {
   updateClock();
   // 出典ラベル（// 出典 / // SOURCE）を言語に追従させる
   if (typeof renderNewsSources === "function") renderNewsSources();
+  // 推移グラフの見出し・単位・表の列名も言語に追従させる
+  if (typeof renderHistory === "function") renderHistory();
 }
 
 function pad(n){return String(n).padStart(2,"0");}
@@ -1199,7 +1275,8 @@ function applyResult(json){
   const kf=document.getElementById("key-factors");kf.innerHTML="";
   (json.key_factors||[]).forEach(f=>{const tag=document.createElement("span");tag.className="factor-tag";tag.textContent=f;kf.appendChild(tag);});
   const th=json.threats||{};
-  [["t1","t1v",th.geopolitical],["t2","t2v",th.environmental],["t3","t3v",th.economic],["t4","t4v",th.social]].forEach(([b,v,val])=>{const n=val??0;document.getElementById(b).style.width=n+"%";document.getElementById(v).textContent=n+"%";});
+  // ai は 2026-11-11 に追加した軸。それ以前のキャッシュには値が無いので、0% ではなく「—」を出す
+  [["t1","t1v",th.geopolitical],["t2","t2v",th.environmental],["t3","t3v",th.economic],["t4","t4v",th.social],["t5","t5v",th.ai]].forEach(([b,v,val])=>{const has=val!=null;const n=has?val:0;document.getElementById(b).style.width=n+"%";document.getElementById(v).textContent=has?n+"%":"—";});
   const badge=document.getElementById("cache-badge");
   if(json.cached){badge.textContent=t("cached",json.cache_age_minutes);badge.className="cache-badge cached";document.getElementById("cache-next").textContent=t("cacheNext",json.next_update_minutes);}
   else{badge.textContent=t("live");badge.className="cache-badge live";document.getElementById("cache-next").textContent=t("liveNext",json.next_update_minutes);}
@@ -1336,7 +1413,7 @@ function safeHttpUrl(u) {
 function renderNewsSources() {
   const sources = window.__newsSources;
   if (!sources) return;
-  const map = { geo: 'geopolitical', env: 'environmental', eco: 'economic', soc: 'social' };
+  const map = { geo: 'geopolitical', env: 'environmental', eco: 'economic', soc: 'social', ai: 'ai' };
   const label = lang === 'ja' ? '// 出典' : '// SOURCE';
   Object.entries(map).forEach(([key, axis]) => {
     const list = document.getElementById('evl-' + key);
@@ -1364,7 +1441,7 @@ function renderNewsSources() {
 function updateEvidence(evidence) {
   if (!evidence) return;
   threatEvidence = evidence;
-  const map = { geo: 'geopolitical', env: 'environmental', eco: 'economic', soc: 'social' };
+  const map = { geo: 'geopolitical', env: 'environmental', eco: 'economic', soc: 'social', ai: 'ai' };
   const labelMap = {
     geo: { ja: '地政学的緊張', en: 'Geopolitical Tension' },
     env: { ja: '環境崩壊指数', en: 'Environmental Collapse' },
@@ -1544,8 +1621,290 @@ window.addEventListener('load', () => {
   setCity(savedCity);
 });
 
+// ── 推移（日次の記録） ──────────────────────────
+// 日次Cronが1日1件ずつ積んでいる記録（/api/daily?history=1）を折れ線で見せる。
+// 「毎日動く時計」と言いながら、動いた跡を見せる場所がどこにも無かった。
+//
+// 設計上の決めごと:
+// - 状態は window に置き、定数は histCfg() の中に置く。トップレベルの let / const にすると、
+//   宣言行より前に呼ばれた瞬間 TDZ でスクリプト全体が止まる（2026-08-15 に出典表示で実際に踏んだ）。
+//   renderHistory は applyLang からも呼ばれるため、呼び出し順に依存させない。
+// - 残り年数(年)と各軸のスコア(0〜100)は単位が違うので同じグラフに重ねない（二軸グラフにしない）。
+//   各軸は危機メーターの下に小さな推移として分けて出す。
+// - 記録が10日を超えて途切れた区間は線を結ばない。欠損を直線で埋めると、無かった推移を描くことになる。
+// - 記録由来の文字列は textContent でのみ挿入する。
+window.__history = window.__history || null;
+
+function histCfg() {
+  return {
+    gapDays: 10,
+    line: '#ff2200',     // --glow。暗い地に対する明度・コントラストは検証済み
+    surface: '#0d0000',
+    ink: 'rgba(204,153,136,.8)',
+    // [解析結果のキー, 表示名の辞書キー, DOMのid接尾辞]
+    axes: [['geopolitical', 't1', 'geo'], ['environmental', 't2', 'env'], ['economic', 't3', 'eco'], ['social', 't4', 'soc'], ['ai', 't5', 'ai']],
+  };
+}
+
+async function loadHistory() {
+  try {
+    const res = await fetch('/api/daily?history=1&days=365');
+    if (!res.ok) return;
+    const json = await res.json();
+    window.__history = Array.isArray(json.days) ? json.days : [];
+    renderHistory();
+  } catch (e) {
+    console.warn('履歴の読み込みに失敗:', e);
+  }
+}
+
+function histSvg(name, attrs) {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', name);
+  for (const k in attrs) el.setAttribute(k, attrs[k]);
+  return el;
+}
+function histDay(dateStr) { return Math.round(Date.parse(dateStr + 'T00:00:00Z') / 86400000); }
+function histFmtDate(dateStr) { return String(dateStr).replace(/-/g, '/'); }
+function histFmtYears(v) { return Number(v).toFixed(1) + t('histUnit'); }
+
+// 記録が途切れた箇所で分割する
+function histSegments(points, gapDays) {
+  const segs = [];
+  let cur = [];
+  points.forEach((p, i) => {
+    if (i > 0 && p.day - points[i - 1].day > gapDays) { segs.push(cur); cur = []; }
+    cur.push(p);
+  });
+  if (cur.length) segs.push(cur);
+  return segs;
+}
+
+function histNiceStep(range) {
+  const raw = range / 3;
+  const pow = Math.pow(10, Math.floor(Math.log10(raw)));
+  const n = raw / pow;
+  return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * pow;
+}
+
+function renderHistory() {
+  const rows = window.__history;
+  const panel = document.getElementById('hist-panel');
+  if (!panel || !Array.isArray(rows)) return;
+  const C = histCfg();
+
+  const title = document.getElementById('lbl-hist-title');
+  const sub = document.getElementById('hist-sub');
+  const box = document.getElementById('hist-chart');
+  const tableWrap = document.getElementById('hist-table-wrap');
+  if (title) title.textContent = t('lblHistTitle');
+  box.textContent = '';
+
+  if (rows.length < 2) {
+    sub.textContent = '';
+    const empty = document.createElement('div');
+    empty.className = 'hist-empty';
+    empty.textContent = t('histEmpty');
+    box.appendChild(empty);
+    box.removeAttribute('tabindex');
+    tableWrap.hidden = true;
+    renderThreatSparks([]);
+    return;
+  }
+
+  sub.textContent = t('histSub', rows.length, histFmtDate(rows[0].date));
+
+  const points = rows.map(r => ({ row: r, day: histDay(r.date), v: Number(r.years) }));
+  const W = Math.max(280, Math.round(box.clientWidth || 600));
+  const H = 190;
+  const m = { l: 34, r: 52, t: 14, b: 24 };
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+
+  const vals = points.map(p => p.v);
+  let lo = Math.min(...vals), hi = Math.max(...vals);
+  const pad = Math.max(0.4, (hi - lo) * 0.2);
+  lo = Math.max(0, lo - pad); hi = hi + pad;
+  const d0 = points[0].day, d1 = points[points.length - 1].day;
+  const x = d => m.l + (d1 === d0 ? iw / 2 : ((d - d0) / (d1 - d0)) * iw);
+  const y = v => m.t + (1 - (v - lo) / (hi - lo)) * ih;
+  points.forEach(p => { p.x = x(p.day); p.y = y(p.v); });
+
+  const svg = histSvg('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H, 'aria-hidden': 'true' });
+
+  // 目盛り線と縦軸（控えめに。主役はデータ）
+  const step = histNiceStep(hi - lo);
+  for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) {
+    const yy = Math.round(y(v)) + 0.5;
+    svg.appendChild(histSvg('line', { x1: m.l, x2: W - m.r, y1: yy, y2: yy, stroke: 'rgba(139,0,0,.28)', 'stroke-width': 1 }));
+    const tx = histSvg('text', { x: m.l - 6, y: yy + 3, 'text-anchor': 'end', 'font-size': 10, fill: C.ink });
+    tx.textContent = (Math.round(v * 10) / 10).toString();
+    svg.appendChild(tx);
+  }
+
+  // 横軸: 両端の日付だけ（全部の点に日付を付けない）
+  const axisY = H - 6;
+  const first = histSvg('text', { x: m.l, y: axisY, 'text-anchor': 'start', 'font-size': 10, fill: C.ink });
+  first.textContent = histFmtDate(points[0].row.date).slice(5);
+  const last = histSvg('text', { x: W - m.r, y: axisY, 'text-anchor': 'end', 'font-size': 10, fill: C.ink });
+  last.textContent = histFmtDate(points[points.length - 1].row.date).slice(5);
+  svg.appendChild(first); svg.appendChild(last);
+
+  // 折れ線（途切れた区間は結ばない）
+  histSegments(points, C.gapDays).forEach(seg => {
+    if (seg.length === 1) {
+      svg.appendChild(histSvg('circle', { cx: seg[0].x, cy: seg[0].y, r: 4, fill: C.line, stroke: C.surface, 'stroke-width': 2 }));
+      return;
+    }
+    const line = seg.map((p, i) => (i ? 'L' : 'M') + p.x.toFixed(1) + ' ' + p.y.toFixed(1)).join(' ');
+    const base = (m.t + ih).toFixed(1);
+    svg.appendChild(histSvg('path', { d: `${line} L${seg[seg.length - 1].x.toFixed(1)} ${base} L${seg[0].x.toFixed(1)} ${base} Z`, fill: C.line, 'fill-opacity': 0.1 }));
+    svg.appendChild(histSvg('path', { d: line, fill: 'none', stroke: C.line, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+  });
+
+  // 終点だけ値を直接ラベルする
+  const end = points[points.length - 1];
+  svg.appendChild(histSvg('circle', { cx: end.x, cy: end.y, r: 4, fill: C.line, stroke: C.surface, 'stroke-width': 2 }));
+  const endLabel = histSvg('text', { x: end.x + 8, y: end.y + 4, 'font-size': 11, fill: '#ffccaa' });
+  endLabel.textContent = histFmtYears(end.v);
+  svg.appendChild(endLabel);
+
+  // ホバー用: 縦の十字線と強調点
+  const cross = histSvg('line', { y1: m.t, y2: m.t + ih, stroke: 'rgba(255,204,170,.45)', 'stroke-width': 1, visibility: 'hidden' });
+  const dot = histSvg('circle', { r: 5, fill: C.line, stroke: '#ffccaa', 'stroke-width': 2, visibility: 'hidden' });
+  svg.appendChild(cross); svg.appendChild(dot);
+  box.appendChild(svg);
+
+  const tip = document.createElement('div');
+  tip.className = 'hist-tip';
+  box.appendChild(tip);
+
+  let active = -1;
+  function show(i) {
+    active = Math.max(0, Math.min(points.length - 1, i));
+    const p = points[active], r = p.row;
+    cross.setAttribute('x1', p.x); cross.setAttribute('x2', p.x); cross.setAttribute('visibility', 'visible');
+    dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y); dot.setAttribute('visibility', 'visible');
+
+    tip.textContent = '';
+    const dEl = document.createElement('div'); dEl.className = 'tip-date'; dEl.textContent = histFmtDate(r.date);
+    const vEl = document.createElement('div'); vEl.className = 'tip-val'; vEl.textContent = histFmtYears(p.v);
+    tip.appendChild(dEl); tip.appendChild(vEl);
+    C.axes.forEach(([axis, key]) => {
+      const val = r.threats && r.threats[axis];
+      if (val == null) return;
+      const row = document.createElement('div'); row.className = 'tip-row';
+      const name = document.createElement('span'); name.textContent = t(key);
+      const num = document.createElement('b'); num.textContent = val + '%';
+      row.appendChild(name); row.appendChild(num); tip.appendChild(row);
+    });
+    const noteText = r.src === 'x' ? t('histRestored') : (Array.isArray(r.factors) ? r.factors.join(' / ') : '');
+    if (noteText) {
+      const note = document.createElement('div'); note.className = 'tip-note'; note.textContent = noteText;
+      tip.appendChild(note);
+    }
+    tip.classList.add('on');
+    const tw = tip.offsetWidth;
+    // 点の左右どちらか入る側に出す（点そのものを隠さない）
+    const left = p.x + 12 + tw <= W ? p.x + 12 : Math.max(0, p.x - 12 - tw);
+    tip.style.left = left + 'px';
+    tip.style.top = '0px';
+  }
+  function hide() {
+    active = -1;
+    cross.setAttribute('visibility', 'hidden'); dot.setAttribute('visibility', 'hidden');
+    tip.classList.remove('on');
+  }
+  function nearest(clientX) {
+    const rect = svg.getBoundingClientRect();
+    const px = (clientX - rect.left) * (W / rect.width);
+    let best = 0, bd = Infinity;
+    points.forEach((p, i) => { const dd = Math.abs(p.x - px); if (dd < bd) { bd = dd; best = i; } });
+    return best;
+  }
+  // 再描画のたびにリスナーが積み上がらないよう、プロパティで付け替える
+  box.onpointermove = e => show(nearest(e.clientX));
+  box.onpointerdown = e => show(nearest(e.clientX));
+  box.onpointerleave = hide;
+  box.onfocus = () => { if (active < 0) show(points.length - 1); };
+  box.onblur = hide;
+  box.onkeydown = e => {
+    if (e.key === 'ArrowLeft') { show((active < 0 ? points.length : active) - 1); e.preventDefault(); }
+    else if (e.key === 'ArrowRight') { show((active < 0 ? -1 : active) + 1); e.preventDefault(); }
+    else if (e.key === 'Escape') hide();
+  };
+  box.setAttribute('tabindex', '0');
+  box.setAttribute('aria-label', `${t('lblHistTitle').replace(/^\/\/\s*/, '')}: ${histFmtDate(end.row.date)} ${histFmtYears(end.v)}`);
+
+  renderHistoryTable(rows);
+  renderThreatSparks(rows);
+}
+
+// グラフを見られない・見たくない人のための表（ツールチップの中身はここでも全部読める）
+function renderHistoryTable(rows) {
+  const C = histCfg();
+  const wrap = document.getElementById('hist-table-wrap');
+  const table = document.getElementById('hist-table');
+  const summary = document.getElementById('hist-table-summary');
+  if (!wrap || !table) return;
+  summary.textContent = t('histTable');
+  table.textContent = '';
+  const head = document.createElement('tr');
+  [t('histDate'), t('histYears')].concat(C.axes.map(a => t(a[1]))).forEach(label => {
+    const th = document.createElement('th'); th.textContent = label; head.appendChild(th);
+  });
+  table.appendChild(head);
+  rows.slice().reverse().forEach(r => {
+    const tr = document.createElement('tr');
+    const cells = [histFmtDate(r.date), Number(r.years).toFixed(1)].concat(
+      C.axes.map(a => (r.threats && r.threats[a[0]] != null) ? String(r.threats[a[0]]) : '—'));
+    cells.forEach(c => { const td = document.createElement('td'); td.textContent = c; tr.appendChild(td); });
+    table.appendChild(tr);
+  });
+  wrap.hidden = false;
+}
+
+// 危機メーターの下に出す、その軸だけの小さな推移。2点以上貯まるまでは出さない
+function renderThreatSparks(rows) {
+  const C = histCfg();
+  let shown = 0;
+  C.axes.forEach(([axis, , key]) => {
+    const svg = document.getElementById('spark-' + key);
+    if (!svg) return;
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    const pts = (rows || []).filter(r => r.threats && r.threats[axis] != null)
+      .map(r => ({ day: histDay(r.date), v: Number(r.threats[axis]) }));
+    if (pts.length < 2) { svg.style.display = 'none'; return; }
+    svg.style.display = 'block';
+    shown++;
+    const W = Math.max(60, Math.round(svg.parentElement.clientWidth || 200)), H = 20;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    let lo = Math.min(...pts.map(p => p.v)), hi = Math.max(...pts.map(p => p.v));
+    if (hi - lo < 10) { const mid = (hi + lo) / 2; lo = mid - 5; hi = mid + 5; }
+    const d0 = pts[0].day, d1 = pts[pts.length - 1].day;
+    const px = d => 3 + ((d - d0) / Math.max(1, d1 - d0)) * (W - 9);
+    const py = v => 3 + (1 - (v - lo) / (hi - lo)) * (H - 6);
+    // 本体のグラフと同じく、記録が途切れた区間は結ばない
+    histSegments(pts, C.gapDays).forEach(seg => {
+      if (seg.length < 2) return;
+      const path = seg.map((p, i) => (i ? 'L' : 'M') + px(p.day).toFixed(1) + ' ' + py(p.v).toFixed(1)).join(' ');
+      svg.appendChild(histSvg('path', { d: path, fill: 'none', stroke: 'rgba(204,153,136,.55)', 'stroke-width': 1.5, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+    });
+    const e = pts[pts.length - 1];
+    svg.appendChild(histSvg('circle', { cx: px(e.day), cy: py(e.v), r: 2.5, fill: C.line }));
+  });
+  // 説明なしの細線は何の線か分からないので、出ているときだけ一言添える
+  const note = document.getElementById('spark-note');
+  if (note) { note.textContent = t('sparkNote'); note.hidden = shown === 0; }
+}
+
+window.addEventListener('resize', () => {
+  clearTimeout(window.__histResizeTimer);
+  window.__histResizeTimer = setTimeout(() => { if (window.__history) renderHistory(); }, 200);
+});
+
 // 出典ニュースの読み込み。解析の完了は待たない（失敗しても本体の表示に影響しない）。
 loadNewsSources();
+// 推移の読み込み。同じく本体の表示とは独立させる。
+loadHistory();
 
 </script>
 
